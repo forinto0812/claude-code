@@ -1,6 +1,77 @@
-# Claude Code (Reverse-Engineered)
+# Claude Code Best V3 (CCB)
 
-Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 工具的源码反编译/逆向还原项目。目标是将 Claude Code 核心功能跑通，必要时删减次级能力。
+牢 A (Anthropic) 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 工具的源码反编译/逆向还原项目。目标是将 Claude Code 大部分功能及工程化能力复现。虽然很难绷, 但是它叫做 CCB(踩踩背)...
+
+[文档在这里, 支持投稿 PR](https://ccb.agent-aura.top/)
+
+赞助商占位符
+
+- [x] v1 会完成跑通及基本的类型检查通过;
+- [x] V2 会完整实现工程化配套设施;
+  - [ ] Biome 格式化可能不会先实施, 避免代码冲突
+  - [x] 构建流水线完成, 产物 Node/Bun 都可以运行
+- [x] V3 会写大量文档, 完善文档站点
+- [ ] V4 会完成大量的测试文件, 以提高稳定性
+
+> 我不知道这个项目还会存在多久, Star + Fork + git clone + .zip 包最稳健;
+>
+> 这个项目更新很快, 后台有 Opus 持续优化, 所以你可以提 issues, 但是 PR 暂时不会接受;
+>
+> Claude 已经烧了 800$ 以上, 如果你个人想赞助, 请随便找个机构捐款, 然后截图在 issues, 大家的力量是温暖的;
+>
+> 某些模型提供商想要赞助, 那么请私发一个 1w 额度以上的账号到 <claude-code-best@proton.me>; 我们会在赞助商栏直接给你最亮的位置
+
+存活记录:
+
+1. 开源后 24 小时: 突破 6k Star, 感谢各位支持. 完成 docs 文档的站点构建, 达到 v3 版本, 后续开始进行测试用例维护, 完成之后可以接受 PR; 看来牢 A 是不想理我们了;
+2. 开源后 15 小时: 完成了构建产物的 node 支持, 现在是完全体了; star 快到 3k 了; 等待牢 A 的邮件
+3. 开源后 12 小时: 愚人节, star 破 1k, 并且牢 A 没有发邮件搞这个项目
+4. 如果你想要私人咨询服务, 那么可以发送邮件到 <claude-code-best@proton.me>, 备注咨询与联系方式即可; 由于后续工作非常多, 可能会忽略邮件, 半天没回复, 可以多发;
+
+## 快速开始
+
+### 环境要求
+
+一定要最新版本的 bun 啊, 不然一堆奇奇怪怪的 BUG!!! bun upgrade!!!
+
+- [Bun](https://bun.sh/) >= 1.3.11
+- 常规的配置 CC 的方式, 各大提供商都有自己的配置方式
+
+### 安装
+
+```bash
+bun install
+```
+
+### 运行
+
+```bash
+# 开发模式, 看到版本号 888 说明就是对了
+bun run dev
+
+# 构建
+bun run build
+```
+
+构建采用 code splitting 多文件打包（`build.ts`），产物输出到 `dist/` 目录（入口 `dist/cli.js` + 约 450 个 chunk 文件）。
+
+构建出的版本 bun 和 node 都可以启动, 你 publish 到私有源可以直接启动
+
+如果遇到 bug 请直接提一个 issues, 我们优先解决
+
+## 相关文档及网站
+
+<https://deepwiki.com/claude-code-best/claude-code>
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=claude-code-best%2Fclaude-code&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ## 能力清单
 
@@ -45,9 +116,14 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | BriefTool | ✅ | 简短消息 + 附件发送 |
 | TaskOutputTool | ✅ | 后台任务输出读取 |
 | TaskStopTool | ✅ | 后台任务停止 |
-| ListMcpResourcesTool | ✅ | MCP 资源列表 |
-| ReadMcpResourceTool | ✅ | MCP 资源读取 |
-| SyntheticOutputTool | ✅ | 非交互会话结构化输出 |
+| ListMcpResourcesTool | ⚠️ | MCP 资源列表（被 specialTools 过滤，特定条件下加入） |
+| ReadMcpResourceTool | ⚠️ | MCP 资源读取（同上） |
+| SyntheticOutputTool | ⚠️ | 仅在非交互会话（SDK/pipe 模式）下创建 |
+| CronCreateTool | ✅ | 定时任务创建（已移除 AGENT_TRIGGERS gate） |
+| CronDeleteTool | ✅ | 定时任务删除 |
+| CronListTool | ✅ | 定时任务列表 |
+| EnterWorktreeTool | ✅ | 进入 Git Worktree（`isWorktreeModeEnabled()` 已硬编码为 true） |
+| ExitWorktreeTool | ✅ | 退出 Git Worktree |
 
 ### 工具 — 条件启用
 
@@ -59,8 +135,6 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | TaskGetTool | ⚠️ | 同上 |
 | TaskUpdateTool | ⚠️ | 同上 |
 | TaskListTool | ⚠️ | 同上 |
-| EnterWorktreeTool | ⚠️ | `isWorktreeModeEnabled()` |
-| ExitWorktreeTool | ⚠️ | 同上 |
 | TeamCreateTool | ⚠️ | `isAgentSwarmsEnabled()` |
 | TeamDeleteTool | ⚠️ | 同上 |
 | ToolSearchTool | ⚠️ | `isToolSearchEnabledOptimistic()` |
@@ -73,7 +147,6 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | 工具 | Feature Flag |
 |------|-------------|
 | SleepTool | `PROACTIVE` / `KAIROS` |
-| CronCreate/Delete/ListTool | `AGENT_TRIGGERS` |
 | RemoteTriggerTool | `AGENT_TRIGGERS_REMOTE` |
 | MonitorTool | `MONITOR_TOOL` |
 | SendUserFileTool | `KAIROS` |
@@ -82,7 +155,7 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | WebBrowserTool | `WEB_BROWSER_TOOL` |
 | SnipTool | `HISTORY_SNIP` |
 | WorkflowTool | `WORKFLOW_SCRIPTS` |
-| PushNotificationTool | `KAIROS` |
+| PushNotificationTool | `KAIROS` / `KAIROS_PUSH_NOTIFICATION` |
 | SubscribePRTool | `KAIROS_GITHUB_WEBHOOKS` |
 | ListPeersTool | `UDS_INBOX` |
 | CtxInspectTool | `CONTEXT_COLLAPSE` |
@@ -124,7 +197,7 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | `/extra-usage` | ✅ | 额外用量信息 |
 | `/fast` | ✅ | 切换 fast 模式 |
 | `/feedback` | ✅ | 反馈 |
-| `/files` | ✅ | 已跟踪文件 |
+| `/loop` | ✅ | 定时循环执行（bundled skill，可通过 `CLAUDE_CODE_DISABLE_CRON` 关闭） |
 | `/heapdump` | ✅ | Heap dump（调试） |
 | `/help` | ✅ | 帮助 |
 | `/hooks` | ✅ | Hook 管理 |
@@ -178,7 +251,7 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | `/proactive` | `PROACTIVE` / `KAIROS` |
 | `/brief` | `KAIROS` / `KAIROS_BRIEF` |
 | `/assistant` | `KAIROS` |
-| `/bridge` | `BRIDGE_MODE` |
+| `/remote-control` (alias `rc`) | `BRIDGE_MODE` |
 | `/remote-control-server` | `DAEMON` + `BRIDGE_MODE` |
 | `/force-snip` | `HISTORY_SNIP` |
 | `/workflows` | `WORKFLOW_SCRIPTS` |
@@ -192,7 +265,7 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 
 ### 斜杠命令 — ANT-ONLY（不可用）
 
-`/tag` `/backfill-sessions` `/break-cache` `/bughunter` `/commit` `/commit-push-pr` `/ctx_viz` `/good-claude` `/issue` `/init-verifiers` `/mock-limits` `/bridge-kick` `/version` `/reset-limits` `/onboarding` `/share` `/summary` `/teleport` `/ant-trace` `/perf-issue` `/env` `/oauth-refresh` `/debug-tool-call` `/agents-platform` `/autofix-pr`
+`/files` `/tag` `/backfill-sessions` `/break-cache` `/bughunter` `/commit` `/commit-push-pr` `/ctx_viz` `/good-claude` `/issue` `/init-verifiers` `/mock-limits` `/bridge-kick` `/version` `/reset-limits` `/onboarding` `/share` `/summary` `/teleport` `/ant-trace` `/perf-issue` `/env` `/oauth-refresh` `/debug-tool-call` `/agents-platform` `/autofix-pr`
 
 ### CLI 子命令
 
@@ -220,7 +293,7 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 | 服务 | 状态 | 说明 |
 |------|------|------|
 | API 客户端 (`services/api/`) | ✅ | 3400+ 行，4 个 provider |
-| MCP (`services/mcp/`) | ✅ | 24 个文件，12000+ 行 |
+| MCP (`services/mcp/`) | ✅ | 34 个文件，12000+ 行 |
 | OAuth (`services/oauth/`) | ✅ | 完整 OAuth 流程 |
 | 插件 (`services/plugins/`) | ✅ | 基础设施完整，无内置插件 |
 | LSP (`services/lsp/`) | ⚠️ | 实现存在，默认关闭 |
@@ -237,51 +310,19 @@ Anthropic 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) C
 
 | 包 | 状态 | 说明 |
 |------|------|------|
-| `color-diff-napi` | ✅ | 997 行完整 TypeScript 实现（语法高亮 diff） |
-| `audio-capture-napi` | ❌ | stub，`isNativeAudioAvailable()` 返回 false |
-| `image-processor-napi` | ❌ | stub，`getNativeModule()` 返回 null |
-| `modifiers-napi` | ❌ | stub，`isModifierPressed()` 返回 false |
+| `color-diff-napi` | ✅ | 1006 行完整 TypeScript 实现（语法高亮 diff） |
+| `audio-capture-napi` | ✅ | 151 行完整实现（跨平台音频录制，使用 SoX/arecord） |
+| `image-processor-napi` | ✅ | 125 行完整实现（macOS 剪贴板图片读取，使用 osascript + sharp） |
+| `modifiers-napi` | ✅ | 67 行完整实现（macOS 修饰键检测，bun:ffi + CoreGraphics） |
 | `url-handler-napi` | ❌ | stub，`waitForUrlEvent()` 返回 null |
 | `@ant/claude-for-chrome-mcp` | ❌ | stub，`createServer()` 返回 null |
-| `@ant/computer-use-mcp` | ❌ | stub，`buildTools()` 返回 [] |
-| `@ant/computer-use-input` | ❌ | stub，仅类型声明 |
-| `@ant/computer-use-swift` | ❌ | stub，仅类型声明 |
+| `@ant/computer-use-mcp` | ⚠️ | 类型安全 stub（265 行，完整类型定义但函数返回空值） |
+| `@ant/computer-use-input` | ✅ | 183 行完整实现（macOS 键鼠模拟，AppleScript/JXA/CGEvent） |
+| `@ant/computer-use-swift` | ✅ | 388 行完整实现（macOS 显示器/应用管理/截图，JXA/screencapture） |
 
-### Feature Flags（30 个，全部返回 `false`）
+### Feature Flags（31 个，全部返回 `false`）
 
 `ABLATION_BASELINE` `AGENT_MEMORY_SNAPSHOT` `BG_SESSIONS` `BRIDGE_MODE` `BUDDY` `CCR_MIRROR` `CCR_REMOTE_SETUP` `CHICAGO_MCP` `COORDINATOR_MODE` `DAEMON` `DIRECT_CONNECT` `EXPERIMENTAL_SKILL_SEARCH` `FORK_SUBAGENT` `HARD_FAIL` `HISTORY_SNIP` `KAIROS` `KAIROS_BRIEF` `KAIROS_CHANNELS` `KAIROS_GITHUB_WEBHOOKS` `LODESTONE` `MCP_SKILLS` `PROACTIVE` `SSH_REMOTE` `TORCH` `TRANSCRIPT_CLASSIFIER` `UDS_INBOX` `ULTRAPLAN` `UPLOAD_USER_SETTINGS` `VOICE_MODE` `WEB_BROWSER_TOOL` `WORKFLOW_SCRIPTS`
-
-## 快速开始
-
-### 环境要求
-
-- [Bun](https://bun.sh/) >= 1.0
-- Node.js >= 18（部分依赖需要）
-- 有效的 Anthropic API Key（或 Bedrock / Vertex 凭据）
-
-### 安装
-
-```bash
-bun install
-```
-
-### 运行
-
-```bash
-# 开发模式（watch）
-bun run dev
-
-# 直接运行
-bun run src/entrypoints/cli.tsx
-
-# 管道模式（-p）
-echo "say hello" | bun run src/entrypoints/cli.tsx -p
-
-# 构建
-bun run build
-```
-
-构建产物输出到 `dist/cli.js`（~25.75 MB，5326 模块）。
 
 ## 项目结构
 
@@ -307,7 +348,8 @@ claude-code/
 │       ├── computer-use-input/
 │       └── computer-use-swift/
 ├── scripts/                 # 自动化 stub 生成脚本
-├── dist/                    # 构建输出
+├── build.ts                 # 构建脚本（Bun.build + code splitting + Node.js 兼容后处理）
+├── dist/                    # 构建输出（入口 cli.js + ~450 chunk 文件）
 └── package.json             # Bun workspaces monorepo 配置
 ```
 
@@ -319,10 +361,6 @@ claude-code/
 
 - `feature()` — 所有 feature flag 返回 `false`，跳过未实现分支
 - `globalThis.MACRO` — 模拟构建时宏注入（VERSION 等）
-
-### 类型状态
-
-经过系统性修复，tsc 错误从 ~1341 降至 **~289**（减少 78%）。剩余错误分散在小文件中，均为反编译产生的源码级类型问题，**不影响 Bun 运行时**。详见 [RECORD.md](./RECORD.md) 第六节。
 
 ### Monorepo
 
