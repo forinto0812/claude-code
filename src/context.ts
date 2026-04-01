@@ -5,6 +5,8 @@ import {
   setCachedClaudeMdContent,
 } from './bootstrap/state.js'
 import { getLocalISODate } from './constants/common.js'
+import { t } from './constants/prompts/content.js'
+import { GIT_STATUS_SECTION } from './constants/prompts/content.js'
 import {
   filterInjectedMemoryFiles,
   getClaudeMds,
@@ -82,10 +84,10 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
     })
 
     // Check if status exceeds character limit
+    const gitStatusSection = t(GIT_STATUS_SECTION)
     const truncatedStatus =
       status.length > MAX_STATUS_CHARS
-        ? status.substring(0, MAX_STATUS_CHARS) +
-          '\n... (truncated because it exceeds 2k characters. If you need more information, run "git status" using BashTool)'
+        ? status.substring(0, MAX_STATUS_CHARS) + gitStatusSection.truncated
         : status
 
     logForDiagnosticsNoPII('info', 'git_status_completed', {
@@ -94,12 +96,12 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
     })
 
     return [
-      `This is the git status at the start of the conversation. Note that this status is a snapshot in time, and will not update during the conversation.`,
-      `Current branch: ${branch}`,
-      `Main branch (you will usually use this for PRs): ${mainBranch}`,
-      ...(userName ? [`Git user: ${userName}`] : []),
-      `Status:\n${truncatedStatus || '(clean)'}`,
-      `Recent commits:\n${log}`,
+      gitStatusSection.intro,
+      gitStatusSection.currentBranch(branch),
+      gitStatusSection.mainBranch(mainBranch),
+      ...(userName ? [gitStatusSection.gitUser(userName)] : []),
+      gitStatusSection.status(truncatedStatus),
+      gitStatusSection.recentCommits(log),
     ].join('\n\n')
   } catch (error) {
     logForDiagnosticsNoPII('error', 'git_status_failed', {
