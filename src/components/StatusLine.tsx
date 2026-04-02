@@ -1,19 +1,21 @@
+import { feature } from 'bun:bundle';
 import * as React from 'react';
 import { memo } from 'react';
-import { getSdkBetas } from 'src/bootstrap/state.js';
-import { getTotalCost } from 'src/cost-tracker.js';
-import { useMainLoopModel } from 'src/hooks/useMainLoopModel.js';
-import { type ReadonlySettings } from 'src/hooks/useSettings.js';
-import { getRawUtilization } from 'src/services/claudeAiLimits.js';
 import { useAppState } from 'src/state/AppState.js';
-import type { Message } from 'src/types/message.js';
-import { calculateContextPercentages, getContextWindowForModel } from 'src/utils/context.js';
-import { getLastAssistantMessage } from 'src/utils/messages.js';
-import { getRuntimeMainLoopModel, renderModelName } from 'src/utils/model/model.js';
-import { doesMostRecentAssistantMessageExceed200k, getCurrentUsage } from 'src/utils/tokens.js';
-import { BuiltinStatusLine } from 'src/components/BuiltinStatusLine.js';
+import { getSdkBetas, getKairosActive } from '../bootstrap/state.js';
+import { getTotalCost, getTotalInputTokens, getTotalOutputTokens } from '../cost-tracker.js';
+import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
+import { type ReadonlySettings } from '../hooks/useSettings.js';
+import { getRawUtilization } from '../services/claudeAiLimits.js';
+import type { Message } from '../types/message.js';
+import { calculateContextPercentages, getContextWindowForModel } from '../utils/context.js';
+import { getLastAssistantMessage } from '../utils/messages.js';
+import { getRuntimeMainLoopModel, renderModelName } from '../utils/model/model.js';
+import { doesMostRecentAssistantMessageExceed200k, getCurrentUsage } from '../utils/tokens.js';
+import { BuiltinStatusLine } from './BuiltinStatusLine.js';
 
-export function statusLineShouldDisplay(_settings: ReadonlySettings): boolean {
+export function statusLineShouldDisplay(settings: ReadonlySettings): boolean {
+  if (feature('KAIROS') && getKairosActive()) return false;
   return true;
 }
 
@@ -42,13 +44,7 @@ function StatusLineInner({ messagesRef, lastAssistantMessageId }: Props): React.
   const contextPercentages = calculateContextPercentages(currentUsage, contextWindowSize);
   const rawUtil = getRawUtilization();
   const totalCost = getTotalCost();
-  // Derive usedTokens from currentUsage (same source as contextUsedPct) for consistency
-  const usedTokens = currentUsage
-    ? currentUsage.input_tokens +
-      currentUsage.output_tokens +
-      currentUsage.cache_creation_input_tokens +
-      currentUsage.cache_read_input_tokens
-    : 0;
+  const usedTokens = getTotalInputTokens() + getTotalOutputTokens();
 
   return (
     <BuiltinStatusLine
