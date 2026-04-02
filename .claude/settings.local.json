@@ -31,7 +31,24 @@
       "Bash(curl -sI https://github.com/cli/cli/releases/latest)",
       "Bash(curl -sL \"https://github.com/cli/cli/releases/download/v2.89.0/gh_2.89.0_linux_amd64.tar.gz\" -o /tmp/gh.tar.gz)",
       "Bash(cp /tmp/gh_2.89.0_linux_amd64/bin/gh /usr/local/bin/gh)",
-      "Bash(chmod +x /usr/local/bin/gh)"
+      "Bash(chmod +x /usr/local/bin/gh)",
+      "Bash(git checkout:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh api:*)",
+      "Bash(curl:*)",
+      "Bash(ssh:*)",
+      "Bash(git reset:*)",
+      "WebSearch",
+      "Bash(mkdir -p ~/.claude/skills)",
+      "Read(//root/.claude/**)",
+      "Bash(mkdir -p /mnt/user/appdata/claude-code/.claude/skills)",
+      "Bash(git clone:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f''''  {d[\"\"name\"\"]}/ \\({d[\"\"type\"\"]}\\)''''\\) for d in data]\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f''''  {d[\"\"name\"\"]} \\({d[\"\"type\"\"]}\\)''''\\) for d in data]\")",
+      "Bash(git pull:*)"
     ]
   }
 }
