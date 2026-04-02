@@ -8,3 +8,11 @@ coverage
 .vscode
 *.suo
 *.lock
+
+# Local settings (contains machine-specific paths and permissions)
+.claude/settings.local.json
+.claude/skills/
+.agents/skills/
+
+# Screenshots and temp files
+QQ*.png

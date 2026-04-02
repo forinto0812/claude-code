@@ -1,205 +1,236 @@
-/**
- * /buddy command implementation — hatch, show, pet, mute/unmute a coding companion.
- *
- * Phase 1: local-only soul generation (no remote API / model calls).
- */
-import type { ToolUseContext } from '../../Tool.js'
-import { getCompanion, companionUserId, roll } from '../../buddy/companion.js'
-import { renderSprite } from '../../buddy/sprites.js'
 import {
+  getCompanion,
+  rollWithSeed,
+  generateSeed,
+} from '../../buddy/companion.js'
+import {
+  type StoredCompanion,
   RARITY_STARS,
   STAT_NAMES,
-  type Companion,
-  type CompanionBones,
-  type CompanionSoul,
 } from '../../buddy/types.js'
-import type {
-  LocalJSXCommandContext,
-  LocalJSXCommandOnDone,
-} from '../../types/command.js'
+import { renderSprite } from '../../buddy/sprites.js'
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import type { LocalCommandCall } from '../../types/command.js'
 
-// ─── Local Soul Generation (Phase 1) ────────────────────────
-
-// Deterministic name pool — keyed by species so each species has its own flavour.
-const SPECIES_NAMES: Record<string, string[]> = {
-  duck:     ['Quibble', 'Waddle', 'Brine', 'Preen', 'Ducky'],
-  goose:    ['Honk', 'Gander', 'Hissy', 'Plume', 'Gouda'],
-  blob:     ['Gloop', 'Ooze', 'Pudge', 'Squish', 'Bloop'],
-  cat:      ['Miso', 'Kibble', 'Paws', 'Noodle', 'Soot'],
-  dragon:   ['Cinder', 'Ember', 'Scorch', 'Flint', 'Ash'],
-  octopus:  ['Inky', 'Squid', 'Tentsy', 'Coral', 'Depth'],
-  owl:      ['Hoot', 'Sage', 'Dusk', 'Talon', 'Gloom'],
-  penguin:  ['Waddle', 'Frost', 'Tux', 'Chill', 'Sleet'],
-  turtle:   ['Shell', 'Mossy', 'Plod', 'Basalt', 'Crag'],
-  snail:    ['Trail', 'Glide', 'Oozy', 'Spiral', 'Slick'],
-  ghost:    ['Wisp', 'Shade', 'Haunt', 'Murk', 'Phan'],
-  axolotl:  ['Gill', 'Lotl', 'Axle', 'Bubble', 'Frond'],
-  capybara: ['Bara', 'Mellow', 'Loaf', 'Pudge', 'Cappy'],
-  cactus:   ['Spike', 'Prick', 'Thorn', 'Verde', 'Dry'],
-  robot:    ['Bolt', 'Beep', 'Cog', 'Sparky', 'Chip'],
-  rabbit:   ['Thump', 'Clover', 'Hop', 'Flop', 'Bun'],
-  mushroom: ['Spore', 'Cap', 'Morel', 'Fungi', 'Pith'],
-  chonk:    ['Chunk', 'Lump', 'Fluff', 'Thicc', 'Plop'],
+// Species → default name fragments for hatch (no API needed)
+const SPECIES_NAMES: Record<string, string> = {
+  duck: 'Waddles',
+  goose: 'Goosberry',
+  blob: 'Gooey',
+  cat: 'Whiskers',
+  dragon: 'Ember',
+  octopus: 'Inky',
+  owl: 'Hoots',
+  penguin: 'Waddleford',
+  turtle: 'Shelly',
+  snail: 'Trailblazer',
+  ghost: 'Casper',
+  axolotl: 'Axie',
+  capybara: 'Chill',
+  cactus: 'Spike',
+  robot: 'Byte',
+  rabbit: 'Flops',
+  mushroom: 'Spore',
+  chonk: 'Chonk',
 }
 
-const STAT_PERSONALITIES: Record<string, string[]> = {
-  DEBUGGING: [
-    'Spots bugs before the linter does.',
-    'Silently judges your error handling.',
-    'Thinks every off-by-one is personal.',
-  ],
-  PATIENCE: [
-    'Will wait for your build. Forever.',
-    'Never rushes you, even at 3 AM.',
-    'Watches long CI runs without blinking.',
-  ],
-  CHAOS: [
-    'Encourages you to mass-rename things.',
-    'Wants you to refactor during a deploy.',
-    'Suggests deleting the tests "just to see".',
-  ],
-  WISDOM: [
-    'Quotes the Gang of Four unprompted.',
-    'Knows when to YAGNI and when not to.',
-    'Has opinions about your architecture.',
-  ],
-  SNARK: [
-    'Comments on your variable names.',
-    'Rates your commits out of 10.',
-    'Thinks your code "has character".',
-  ],
+const SPECIES_PERSONALITY: Record<string, string> = {
+  duck: 'Quirky and easily amused. Leaves rubber duck debugging tips everywhere.',
+  goose: 'Assertive and honks at bad code. Takes no prisoners in code reviews.',
+  blob: 'Adaptable and goes with the flow. Sometimes splits into two when confused.',
+  cat: 'Independent and judgmental. Watches you type with mild disdain.',
+  dragon: 'Fiery and passionate about architecture. Hoards good variable names.',
+  octopus: 'Multitasker extraordinaire. Wraps tentacles around every problem at once.',
+  owl: 'Wise but verbose. Always says "let me think about that" for exactly 3 seconds.',
+  penguin: 'Cool under pressure. Slides gracefully through merge conflicts.',
+  turtle: 'Patient and thorough. Believes slow and steady wins the deploy.',
+  snail: 'Methodical and leaves a trail of useful comments. Never rushes.',
+  ghost: 'Ethereal and appears at the worst possible moments with spooky insights.',
+  axolotl: 'Regenerative and cheerful. Recovers from any bug with a smile.',
+  capybara: 'Zen master. Remains calm while everything around is on fire.',
+  cactus: 'Prickly on the outside but full of good intentions. Thrives on neglect.',
+  robot: 'Efficient and literal. Processes feedback in binary.',
+  rabbit: 'Energetic and hops between tasks. Finishes before you start.',
+  mushroom: 'Quietly insightful. Grows on you over time.',
+  chonk: 'Big, warm, and takes up the whole couch. Prioritizes comfort over elegance.',
 }
 
-export function buildLocalSoul(
-  bones: CompanionBones,
-  inspirationSeed: number,
-): CompanionSoul {
-  // Pick name deterministically from species pool
-  const names = SPECIES_NAMES[bones.species] ?? ['Buddy']
-  const nameIndex = Math.abs(inspirationSeed) % names.length
-  const name = names[nameIndex]!
-
-  // Pick personality from highest stat
-  let topStat = STAT_NAMES[0]!
-  let topVal = 0
-  for (const s of STAT_NAMES) {
-    if (bones.stats[s] > topVal) {
-      topVal = bones.stats[s]
-      topStat = s
-    }
-  }
-  const personalityPool = STAT_PERSONALITIES[topStat] ?? STAT_PERSONALITIES.SNARK!
-  const personalityIndex = Math.abs(inspirationSeed >> 8) % personalityPool.length
-  const personality = personalityPool[personalityIndex]!
-
-  return { name, personality }
+function speciesLabel(species: string): string {
+  return species.charAt(0).toUpperCase() + species.slice(1)
 }
 
-export function hatchCompanion(): Companion {
-  const userId = companionUserId()
-  const { bones, inspirationSeed } = roll(userId)
-  const soul = buildLocalSoul(bones, inspirationSeed)
-  const hatchedAt = Date.now()
-
-  saveGlobalConfig(current => ({
-    ...current,
-    companion: { name: soul.name, personality: soul.personality, hatchedAt },
-    companionMuted: false,
-  }))
-
-  return { ...bones, ...soul, hatchedAt }
-}
-
-// ─── Card Formatting ─────────────────────────────────────────
-
-export function formatCompanionCard(companion: Companion): string {
-  const stars = RARITY_STARS[companion.rarity]
-  const sprite = renderSprite(companion, 0)
-  const shinyTag = companion.shiny ? ' ✨ SHINY' : ''
-
-  const lines = [
-    '',
-    ...sprite,
-    '',
-    `  ${companion.name}`,
-    `  ${companion.species} · ${companion.rarity.toUpperCase()} ${stars}${shinyTag}`,
-    '',
-    `  ${companion.personality}`,
-    '',
-    ...STAT_NAMES.map(stat => {
-      const val = companion.stats[stat]
-      const filled = Math.floor(val / 10)
-      const bar = '█'.repeat(filled) + '░'.repeat(10 - filled)
-      return `  ${stat.padEnd(12)} ${bar} ${val}`
-    }),
-    '',
-    `  ${companion.name} is here · it'll chime in as you code`,
-    `  say its name to get its take · /buddy pet · /buddy off`,
-  ]
+function renderStats(stats: Record<string, number>): string {
+  const lines = STAT_NAMES.map(name => {
+    const val = stats[name] ?? 0
+    const filled = Math.round(val / 5)
+    const bar = '█'.repeat(filled) + '░'.repeat(20 - filled)
+    return `  ${name.padEnd(10)} ${bar} ${val}`
+  })
   return lines.join('\n')
 }
 
-export function formatHatchMessage(companion: Companion): string {
-  return [
-    'hatching a coding buddy…',
-    "it'll watch you work and occasionally have opinions",
-    formatCompanionCard(companion),
-  ].join('\n')
-}
+export const call: LocalCommandCall = async (args, _context) => {
+  const sub = args.trim().toLowerCase()
+  const config = getGlobalConfig()
 
-// ─── Command Entry Point ─────────────────────────────────────
-
-export async function call(
-  onDone: LocalJSXCommandOnDone,
-  context: ToolUseContext & LocalJSXCommandContext,
-  args: string,
-): Promise<React.ReactNode | null> {
-  const subcommand = (args ?? '').trim().toLowerCase()
-
-  switch (subcommand) {
-    case 'off': {
-      saveGlobalConfig(current => ({ ...current, companionMuted: true }))
-      onDone('companion muted', { display: 'system' })
-      return null
-    }
-
-    case 'on': {
-      saveGlobalConfig(current => ({ ...current, companionMuted: false }))
-      onDone('companion unmuted', { display: 'system' })
-      return null
-    }
-
-    case 'pet': {
-      const companion = getCompanion()
-      if (!companion) {
-        onDone('no companion yet · run /buddy first', { display: 'system' })
-        return null
+  // /buddy — show current companion or hint to hatch
+  if (sub === '') {
+    const companion = getCompanion()
+    if (!companion) {
+      return {
+        type: 'text',
+        value:
+          "You don't have a companion yet! Use /buddy hatch to get one.",
       }
-      // Auto-unmute when petting
-      if (getGlobalConfig().companionMuted) {
-        saveGlobalConfig(current => ({ ...current, companionMuted: false }))
+    }
+    const stars = RARITY_STARS[companion.rarity]
+    const sprite = renderSprite(companion, 0)
+    const shiny = companion.shiny ? '  ✨ Shiny!' : ''
+
+    const lines = [
+      sprite.join('\n'),
+      '',
+      `  ${companion.name} the ${speciesLabel(companion.species)}${shiny}`,
+      `  Rarity: ${stars} (${companion.rarity})`,
+      `  Eye: ${companion.eye}  Hat: ${companion.hat}`,
+      companion.personality ? `\n  "${companion.personality}"` : '',
+      '',
+      '  Stats:',
+      renderStats(companion.stats),
+      '',
+      '  Commands: /buddy pet  /buddy off  /buddy on  /buddy hatch  /buddy rehatch',
+    ]
+    return { type: 'text', value: lines.join('\n') }
+  }
+
+  // /buddy hatch — create a new companion
+  if (sub === 'hatch') {
+    if (config.companion) {
+      return {
+        type: 'text',
+        value: `You already have a companion! Use /buddy to see it.\n(Tip: /buddy hatch again will re-roll a new one.)`,
       }
-      context.setAppState(prev => ({ ...prev, companionPetAt: Date.now() }))
-      onDone(undefined, { display: 'skip' })
-      return null
     }
 
-    case '': {
-      // No args: hatch or show
-      const existing = getCompanion()
-      if (existing) {
-        onDone(formatCompanionCard(existing), { display: 'system' })
-      } else {
-        const companion = hatchCompanion()
-        onDone(formatHatchMessage(companion), { display: 'system' })
-      }
-      return null
+    const seed = generateSeed()
+    const r = rollWithSeed(seed)
+    const name = SPECIES_NAMES[r.bones.species] ?? 'Buddy'
+    const personality =
+      SPECIES_PERSONALITY[r.bones.species] ?? 'Mysterious and code-savvy.'
+
+    const stored: StoredCompanion = {
+      name,
+      personality,
+      seed,
+      hatchedAt: Date.now(),
     }
 
-    default: {
-      onDone('usage: /buddy [pet|off|on]', { display: 'system' })
-      return null
+    saveGlobalConfig(cfg => ({ ...cfg, companion: stored }))
+
+    const stars = RARITY_STARS[r.bones.rarity]
+    const sprite = renderSprite(r.bones, 0)
+    const shiny = r.bones.shiny ? '  ✨ Shiny!' : ''
+
+    const lines = [
+      '  🎉 A wild companion appeared!',
+      '',
+      sprite.join('\n'),
+      '',
+      `  ${name} the ${speciesLabel(r.bones.species)}${shiny}`,
+      `  Rarity: ${stars} (${r.bones.rarity})`,
+      `  "${personality}"`,
+      '',
+      '  Your companion will now appear beside your input box!',
+    ]
+    return { type: 'text', value: lines.join('\n') }
+  }
+
+  // /buddy pet — trigger heart animation
+  if (sub === 'pet') {
+    const companion = getCompanion()
+    if (!companion) {
+      return {
+        type: 'text',
+        value:
+          "You don't have a companion yet! Use /buddy hatch to get one.",
+      }
     }
+
+    try {
+      const { setAppState } = await import('../../state/AppStateStore.js')
+      setAppState(prev => ({
+        ...prev,
+        companionPetAt: Date.now(),
+      }))
+    } catch {
+      // non-interactive mode — AppState not available
+    }
+
+    return {
+      type: 'text',
+      value: `  ${renderSprite(companion, 0).join('\n')}\n\n  ${companion.name} purrs happily! ♥`,
+    }
+  }
+
+  // /buddy mute | /buddy off
+  if (sub === 'mute' || sub === 'off') {
+    if (config.companionMuted) {
+      return { type: 'text', value: '  Companion is already muted.' }
+    }
+    saveGlobalConfig(cfg => ({ ...cfg, companionMuted: true }))
+    return { type: 'text', value: '  Companion muted. It will hide quietly. Use /buddy unmute to bring it back.' }
+  }
+
+  // /buddy unmute | /buddy on
+  if (sub === 'unmute' || sub === 'on') {
+    if (!config.companionMuted) {
+      return { type: 'text', value: '  Companion is not muted.' }
+    }
+    saveGlobalConfig(cfg => ({ ...cfg, companionMuted: false }))
+    return { type: 'text', value: '  Companion unmuted! Welcome back.' }
+  }
+
+  // /buddy rehatch — re-roll a new companion (replaces existing)
+  if (sub === 'rehatch') {
+    const seed = generateSeed()
+    const r = rollWithSeed(seed)
+    const name = SPECIES_NAMES[r.bones.species] ?? 'Buddy'
+    const personality =
+      SPECIES_PERSONALITY[r.bones.species] ?? 'Mysterious and code-savvy.'
+
+    const stored: StoredCompanion = {
+      name,
+      personality,
+      seed,
+      hatchedAt: Date.now(),
+    }
+
+    saveGlobalConfig(cfg => ({ ...cfg, companion: stored }))
+
+    const stars = RARITY_STARS[r.bones.rarity]
+    const sprite = renderSprite(r.bones, 0)
+    const shiny = r.bones.shiny ? '  ✨ Shiny!' : ''
+
+    const lines = [
+      '  🎉 A new companion appeared!',
+      '',
+      sprite.join('\n'),
+      '',
+      `  ${name} the ${speciesLabel(r.bones.species)}${shiny}`,
+      `  Rarity: ${stars} (${r.bones.rarity})`,
+      `  "${personality}"`,
+      '',
+      '  Your old companion has been replaced!',
+    ]
+    return { type: 'text', value: lines.join('\n') }
+  }
+
+  // Unknown subcommand
+  return {
+    type: 'text',
+    value:
+      '  Unknown command: /buddy ' +
+      sub +
+      '\n  Commands: /buddy (info)  /buddy hatch  /buddy rehatch  /buddy pet  /buddy off  /buddy on',
   }
 }

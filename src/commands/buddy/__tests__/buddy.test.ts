@@ -1,10 +1,9 @@
 import { describe, expect, test, beforeEach } from 'bun:test'
 import { getGlobalConfig, saveGlobalConfig } from '../../../utils/config.js'
-import { getCompanion, roll } from '../../../buddy/companion.js'
+import { getCompanion } from '../../../buddy/companion.js'
 
-// buddy.ts is pure logic — no bun:bundle or heavy deps, so direct import works.
-const { call, hatchCompanion, buildLocalSoul, formatCompanionCard } =
-  await import('../buddy.js')
+// Upstream buddy.ts uses LocalCommandCall: call(args, context) → LocalCommandResult
+const { call } = await import('../buddy.js')
 
 // Reset config before each test (NODE_ENV=test uses in-memory object)
 function resetConfig() {
@@ -15,198 +14,102 @@ function resetConfig() {
   }))
 }
 
-// Minimal mock for onDone
-function createOnDone() {
-  const calls: Array<{ result?: string; options?: Record<string, unknown> }> =
-    []
-  const fn = (
-    result?: string,
-    options?: Record<string, unknown>,
-  ) => {
-    calls.push({ result, options })
-  }
-  return { fn, calls }
-}
-
-// Minimal mock for context.setAppState
-function createContext() {
-  const stateUpdates: Array<(prev: any) => any> = []
-  return {
-    context: {
-      setAppState: (updater: (prev: any) => any) => {
-        stateUpdates.push(updater)
-      },
-    } as any,
-    stateUpdates,
-  }
-}
-
 describe('/buddy command', () => {
   beforeEach(() => {
     resetConfig()
   })
 
-  test('/buddy first run hatches a new companion', async () => {
-    const { fn, calls } = createOnDone()
-    const { context } = createContext()
+  test('/buddy with no companion shows hint to hatch', async () => {
     expect(getCompanion()).toBeUndefined()
+    const result = await call('', {} as any)
+    expect(result.type).toBe('text')
+    expect(result.value).toContain('hatch')
+  })
 
-    await call(fn, context, '')
+  test('/buddy hatch creates a new companion', async () => {
+    expect(getCompanion()).toBeUndefined()
+    const result = await call('hatch', {} as any)
 
-    // Should have saved companion to config
+    expect(result.type).toBe('text')
+    expect(result.value).toContain('companion appeared')
+
     const config = getGlobalConfig()
     expect(config.companion).toBeDefined()
     expect(config.companion!.name).toBeTruthy()
     expect(config.companion!.personality).toBeTruthy()
     expect(config.companion!.hatchedAt).toBeGreaterThan(0)
-    expect(config.companionMuted).toBe(false)
-
-    // onDone should have been called with hatch message
-    expect(calls).toHaveLength(1)
-    expect(calls[0]!.result).toContain('hatching a coding buddy')
-    expect(calls[0]!.options?.display).toBe('system')
   })
 
-  test('/buddy again does not overwrite existing companion', async () => {
-    // First hatch
-    const { fn: fn1 } = createOnDone()
-    const { context: ctx1 } = createContext()
-    await call(fn1, ctx1, '')
-    const firstCompanion = getGlobalConfig().companion
+  test('/buddy shows existing companion card', async () => {
+    // Hatch first
+    await call('hatch', {} as any)
+    const name = getGlobalConfig().companion!.name
 
-    // Second call
-    const { fn: fn2, calls: calls2 } = createOnDone()
-    const { context: ctx2 } = createContext()
-    await call(fn2, ctx2, '')
+    // Show card
+    const result = await call('', {} as any)
+    expect(result.type).toBe('text')
+    expect(result.value).toContain(name)
+    expect(result.value).toContain('Stats')
+  })
 
-    // Should show card, not hatch again
-    const secondCompanion = getGlobalConfig().companion
-    expect(secondCompanion!.name).toBe(firstCompanion!.name)
-    expect(secondCompanion!.hatchedAt).toBe(firstCompanion!.hatchedAt)
-    // Should NOT contain hatch message
-    expect(calls2[0]!.result).not.toContain('hatching a coding buddy')
-    // Should contain the companion name (card)
-    expect(calls2[0]!.result).toContain(firstCompanion!.name)
+  test('/buddy hatch again hints about existing companion', async () => {
+    await call('hatch', {} as any)
+    const result = await call('hatch', {} as any)
+    expect(result.type).toBe('text')
+    expect(result.value).toContain('already have a companion')
+  })
+
+  test('/buddy rehatch replaces existing companion', async () => {
+    await call('hatch', {} as any)
+    const first = getGlobalConfig().companion!
+
+    const result = await call('rehatch', {} as any)
+    expect(result.type).toBe('text')
+    expect(result.value).toContain('new companion appeared')
+
+    const second = getGlobalConfig().companion!
+    expect(second.hatchedAt).toBeGreaterThanOrEqual(first.hatchedAt)
   })
 
   test('/buddy off sets companionMuted to true', async () => {
-    const { fn, calls } = createOnDone()
-    const { context } = createContext()
-
-    await call(fn, context, 'off')
-
+    const result = await call('off', {} as any)
     expect(getGlobalConfig().companionMuted).toBe(true)
-    expect(calls[0]!.result).toBe('companion muted')
-    expect(calls[0]!.options?.display).toBe('system')
+    expect(result.value).toContain('muted')
   })
 
   test('/buddy on sets companionMuted to false', async () => {
-    // First mute
     saveGlobalConfig(c => ({ ...c, companionMuted: true }))
-    expect(getGlobalConfig().companionMuted).toBe(true)
-
-    const { fn, calls } = createOnDone()
-    const { context } = createContext()
-
-    await call(fn, context, 'on')
-
+    const result = await call('on', {} as any)
     expect(getGlobalConfig().companionMuted).toBe(false)
-    expect(calls[0]!.result).toBe('companion unmuted')
-    expect(calls[0]!.options?.display).toBe('system')
+    expect(result.value).toContain('unmuted')
   })
 
-  test('/buddy pet with no companion shows prompt', async () => {
-    const { fn, calls } = createOnDone()
-    const { context } = createContext()
-
-    await call(fn, context, 'pet')
-
-    expect(calls[0]!.result).toContain('no companion yet')
-    expect(calls[0]!.options?.display).toBe('system')
-  })
-
-  test('/buddy pet with companion sets companionPetAt', async () => {
-    // Hatch first
-    hatchCompanion()
-    expect(getCompanion()).toBeDefined()
-
-    const { fn, calls } = createOnDone()
-    const { context, stateUpdates } = createContext()
-
-    await call(fn, context, 'pet')
-
-    // Should call setAppState with companionPetAt
-    expect(stateUpdates).toHaveLength(1)
-    const result = stateUpdates[0]!({ companionPetAt: undefined })
-    expect(result.companionPetAt).toBeGreaterThan(0)
-
-    // onDone with display: skip
-    expect(calls[0]!.result).toBeUndefined()
-    expect(calls[0]!.options?.display).toBe('skip')
-  })
-
-  test('/buddy pet auto-unmutes', async () => {
-    hatchCompanion()
-    saveGlobalConfig(c => ({ ...c, companionMuted: true }))
+  test('/buddy mute and /buddy unmute also work', async () => {
+    const r1 = await call('mute', {} as any)
     expect(getGlobalConfig().companionMuted).toBe(true)
+    expect(r1.value).toContain('muted')
 
-    const { fn } = createOnDone()
-    const { context } = createContext()
-
-    await call(fn, context, 'pet')
-
+    const r2 = await call('unmute', {} as any)
     expect(getGlobalConfig().companionMuted).toBe(false)
+    expect(r2.value).toContain('unmuted')
+  })
+
+  test('/buddy pet with no companion shows hint', async () => {
+    const result = await call('pet', {} as any)
+    expect(result.value).toContain('hatch')
+  })
+
+  test('/buddy pet with companion shows hearts', async () => {
+    await call('hatch', {} as any)
+    const name = getGlobalConfig().companion!.name
+    const result = await call('pet', {} as any)
+    expect(result.value).toContain(name)
+    expect(result.value).toContain('♥')
   })
 
   test('invalid subcommand shows usage', async () => {
-    const { fn, calls } = createOnDone()
-    const { context } = createContext()
-
-    await call(fn, context, 'dance')
-
-    expect(calls[0]!.result).toContain('usage:')
-    expect(calls[0]!.options?.display).toBe('system')
-  })
-})
-
-describe('buildLocalSoul', () => {
-  test('returns name and personality', () => {
-    const { bones } = roll('test-user')
-    const soul = buildLocalSoul(bones, 42)
-
-    expect(soul.name).toBeTruthy()
-    expect(soul.name.length).toBeGreaterThan(0)
-    expect(soul.name.length).toBeLessThanOrEqual(14)
-    expect(soul.personality).toBeTruthy()
-    expect(soul.personality.length).toBeLessThanOrEqual(120)
-  })
-
-  test('is deterministic for same input', () => {
-    const { bones } = roll('test-user')
-    const soul1 = buildLocalSoul(bones, 42)
-    const soul2 = buildLocalSoul(bones, 42)
-
-    expect(soul1.name).toBe(soul2.name)
-    expect(soul1.personality).toBe(soul2.personality)
-  })
-})
-
-describe('formatCompanionCard', () => {
-  test('card contains all required fields', () => {
-    resetConfig()
-    const companion = hatchCompanion()
-    const card = formatCompanionCard(companion)
-
-    expect(card).toContain(companion.name)
-    expect(card).toContain(companion.species)
-    expect(card).toContain(companion.rarity.toUpperCase())
-    expect(card).toContain(companion.personality)
-    // All 5 stats should appear
-    for (const stat of ['DEBUGGING', 'PATIENCE', 'CHAOS', 'WISDOM', 'SNARK']) {
-      expect(card).toContain(stat)
-    }
-    // Should have bar characters
-    expect(card).toContain('█')
-    expect(card).toContain('░')
+    const result = await call('dance', {} as any)
+    expect(result.value).toContain('Unknown command')
+    expect(result.value).toContain('/buddy')
   })
 })
