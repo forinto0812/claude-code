@@ -1,3 +1,3 @@
-export function getProtectedNamespace() {
-  return null
-}
+// Auto-generated stub — replace with real implementation
+export {};
+export const checkProtectedNamespace: () => boolean = () => false;

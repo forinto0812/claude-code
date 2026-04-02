@@ -1,2 +1,3 @@
-export type ViewState = string
-export type PluginSettingsProps = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type ViewState = any;
+export type PluginSettingsProps = any;

@@ -1,7 +1,2 @@
-export function hideCursor(): string {
-  return ''
-}
-
-export function showCursor(): string {
-  return ''
-}
+// Auto-generated stub — replace with real implementation
+export type Cursor = any;

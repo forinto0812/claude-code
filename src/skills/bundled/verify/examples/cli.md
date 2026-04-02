@@ -1,3 +1,1 @@
-# Verify CLI Example
-
-Restored placeholder content.
+# CLI

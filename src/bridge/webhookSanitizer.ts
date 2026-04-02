@@ -1,3 +1,3 @@
-export function sanitizeWebhookPayload<T>(value: T): T {
-  return value
-}
+// Auto-generated stub — replace with real implementation
+export {};
+export const sanitizeInboundWebhookContent: (content: string) => string = (content) => content;

@@ -1,15 +1,12 @@
-export type ToolProgressData = {
-  kind?: string
-  [key: string]: unknown
-}
-
-export type ShellProgress = ToolProgressData
-export type BashProgress = ToolProgressData
-export type PowerShellProgress = ToolProgressData
-export type MCPProgress = ToolProgressData
-export type SkillToolProgress = ToolProgressData
-export type TaskOutputProgress = ToolProgressData
-export type WebSearchProgress = ToolProgressData
-export type AgentToolProgress = ToolProgressData
-export type REPLToolProgress = ToolProgressData
-export type SdkWorkflowProgress = ToolProgressData
+// Auto-generated stub — replace with real implementation
+export type AgentToolProgress = any;
+export type BashProgress = any;
+export type MCPProgress = any;
+export type REPLToolProgress = any;
+export type SkillToolProgress = any;
+export type TaskOutputProgress = any;
+export type ToolProgressData = any;
+export type WebSearchProgress = any;
+export type ShellProgress = any;
+export type PowerShellProgress = any;
+export type SdkWorkflowProgress = any;

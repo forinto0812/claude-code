@@ -1,3 +1,2 @@
-export function createSkillSearchSignal() {
-  return null
-}
+// Auto-generated stub — replace with real implementation
+export type DiscoverySignal = any;

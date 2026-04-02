@@ -1,3 +1,3 @@
-export function transitionQueryState<T>(value: T): T {
-  return value
-}
+// Auto-generated stub — replace with real implementation
+export type Terminal = any;
+export type Continue = any;

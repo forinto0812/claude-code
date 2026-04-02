@@ -1,7 +1,3 @@
-export type SecureStorageData = Record<string, unknown>
-
-export interface SecureStorage {
-  get(key: string): Promise<SecureStorageData | null>
-  set(key: string, value: SecureStorageData): Promise<void>
-  delete(key: string): Promise<void>
-}
+// Auto-generated stub — replace with real implementation
+export type SecureStorage = any;
+export type SecureStorageData = any;

@@ -1,51 +1,66 @@
-type Stats = {
-  collapsedSpans: number
-  stagedSpans: number
-  health: {
-    totalErrors: number
-    totalEmptySpawns: number
-    emptySpawnWarningEmitted: boolean
-  }
+// Auto-generated stub — replace with real implementation
+import type { Message } from '../../types/message.js'
+import type { ToolUseContext } from '../../Tool.js'
+import type { QuerySource } from '../../constants/querySource.js'
+
+export interface ContextCollapseHealth {
+  totalSpawns: number
+  totalErrors: number
+  lastError: string | null
+  emptySpawnWarningEmitted: boolean
+  totalEmptySpawns: number
 }
 
-const stats: Stats = {
+export interface ContextCollapseStats {
+  collapsedSpans: number
+  collapsedMessages: number
+  stagedSpans: number
+  health: ContextCollapseHealth
+}
+
+export interface CollapseResult {
+  messages: Message[]
+}
+
+export interface DrainResult {
+  committed: number
+  messages: Message[]
+}
+
+export const getStats: () => ContextCollapseStats = (() => ({
   collapsedSpans: 0,
+  collapsedMessages: 0,
   stagedSpans: 0,
   health: {
+    totalSpawns: 0,
     totalErrors: 0,
-    totalEmptySpawns: 0,
+    lastError: null,
     emptySpawnWarningEmitted: false,
+    totalEmptySpawns: 0,
   },
-}
+}));
 
-const listeners = new Set<() => void>()
+export const isContextCollapseEnabled: () => boolean = (() => false);
 
-export function subscribe(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
+export const subscribe: (callback: () => void) => () => void = ((_callback: () => void) => () => {});
 
-export function getStats(): Stats {
-  return stats
-}
+export const applyCollapsesIfNeeded: (
+  messages: Message[],
+  toolUseContext: ToolUseContext,
+  querySource: QuerySource,
+) => Promise<CollapseResult> = (async (messages: Message[]) => ({ messages }));
 
-export function isContextCollapseEnabled(): boolean {
-  return false
-}
+export const isWithheldPromptTooLong: (
+  message: Message,
+  isPromptTooLongMessage: (msg: Message) => boolean,
+  querySource: QuerySource,
+) => boolean = (() => false);
 
-export function resetContextCollapse(): void {}
+export const recoverFromOverflow: (
+  messages: Message[],
+  querySource: QuerySource,
+) => DrainResult = ((messages: Message[]) => ({ committed: 0, messages }));
 
-export async function applyCollapsesIfNeeded<T>(messages: T): Promise<{
-  messages: T
-  changed: boolean
-}> {
-  return { messages, changed: false }
-}
+export const resetContextCollapse: () => void = (() => {});
 
-export function isWithheldPromptTooLong(): boolean {
-  return false
-}
-
-export function recoverFromOverflow<T>(messages: T): T {
-  return messages
-}
+export const initContextCollapse: () => void = (() => {});

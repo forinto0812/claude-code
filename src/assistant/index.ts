@@ -1,14 +1,8 @@
-function readAssistantModeFlag(): boolean {
-  return (
-    process.env.CLAUDE_CODE_ASSISTANT_MODE === '1' ||
-    process.env.CLAUDE_CODE_ASSISTANT_MODE === 'true'
-  )
-}
-
-export function isAssistantMode(): boolean {
-  return readAssistantModeFlag()
-}
-
-export function isAssistantModeEnabled(): boolean {
-  return readAssistantModeFlag()
-}
+// Auto-generated stub — replace with real implementation
+export {};
+export const isAssistantMode: () => boolean = () => false;
+export const initializeAssistantTeam: () => Promise<void> = async () => {};
+export const markAssistantForced: () => void = () => {};
+export const isAssistantForced: () => boolean = () => false;
+export const getAssistantSystemPromptAddendum: () => string = () => '';
+export const getAssistantActivationPath: () => string | undefined = () => undefined;

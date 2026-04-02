@@ -1,2 +1,2 @@
-export type UnifiedMarketplaceItem = Record<string, unknown>
-export type UnifiedInstalledPlugin = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type UnifiedInstalledItem = any;

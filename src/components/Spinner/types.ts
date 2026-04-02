@@ -1,6 +1,3 @@
-export type SpinnerMode = string
-export type RGBColor = {
-  r: number
-  g: number
-  b: number
-}
+// Auto-generated stub — replace with real implementation
+export type SpinnerMode = any;
+export type RGBColor = any;

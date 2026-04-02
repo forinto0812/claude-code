@@ -1,8 +1,3 @@
-export type FeedbackSurveyResponse =
-  | 'good'
-  | 'bad'
-  | 'neutral'
-  | 'dismissed'
-  | string
-
-export type FeedbackSurveyType = string
+// Auto-generated stub — replace with real implementation
+export type FeedbackSurveyResponse = any;
+export type FeedbackSurveyType = any;

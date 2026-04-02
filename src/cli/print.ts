@@ -362,15 +362,9 @@ const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
     ? (require('../proactive/index.js') as typeof import('../proactive/index.js'))
     : null
-const cronSchedulerModule = feature('AGENT_TRIGGERS')
-  ? (require('../utils/cronScheduler.js') as typeof import('../utils/cronScheduler.js'))
-  : null
-const cronJitterConfigModule = feature('AGENT_TRIGGERS')
-  ? (require('../utils/cronJitterConfig.js') as typeof import('../utils/cronJitterConfig.js'))
-  : null
-const cronGate = feature('AGENT_TRIGGERS')
-  ? (require('../tools/ScheduleCronTool/prompt.js') as typeof import('../tools/ScheduleCronTool/prompt.js'))
-  : null
+const cronSchedulerModule = require('../utils/cronScheduler.js') as typeof import('../utils/cronScheduler.js')
+const cronJitterConfigModule = require('../utils/cronJitterConfig.js') as typeof import('../utils/cronJitterConfig.js')
+const cronGate = require('../tools/ScheduleCronTool/prompt.js') as typeof import('../tools/ScheduleCronTool/prompt.js')
 const extractMemoriesModule = feature('EXTRACT_MEMORIES')
   ? (require('../services/extractMemories/extractMemories.js') as typeof import('../services/extractMemories/extractMemories.js'))
   : null
@@ -935,9 +929,9 @@ export async function runHeadless(
       switch (lastMessage.subtype) {
         case 'success':
           writeToStdout(
-            lastMessage.result.endsWith('\n')
-              ? lastMessage.result
-              : lastMessage.result + '\n',
+            (lastMessage.result as string).endsWith('\n')
+              ? (lastMessage.result as string)
+              : (lastMessage.result as string) + '\n',
           )
           break
         case 'error_during_execution':
@@ -1203,6 +1197,7 @@ function runHeadlessStreaming(
     const hasFastMode = isFastModeSupportedByModel(option.value)
     const hasAutoMode = modelSupportsAutoMode(resolvedModel)
     return {
+      name: modelId,
       value: modelId,
       displayName: option.label,
       description: option.description,
@@ -1235,13 +1230,14 @@ function runHeadlessStreaming(
       ) {
         output.enqueue({
           type: 'user',
+          content: crumb.message.content,
           message: crumb.message,
           session_id: getSessionId(),
           parent_tool_use_id: null,
           uuid: crumb.uuid,
           timestamp: crumb.timestamp,
           isReplay: true,
-        } satisfies SDKUserMessageReplay)
+        } as SDKUserMessageReplay)
       }
     }
   }
@@ -1646,10 +1642,11 @@ function runHeadlessStreaming(
         connection.config.type === 'stdio' ||
         connection.config.type === undefined
       ) {
+        const stdioConfig = connection.config as { command: string; args: string[] }
         config = {
           type: 'stdio' as const,
-          command: connection.config.command,
-          args: connection.config.args,
+          command: stdioConfig.command,
+          args: stdioConfig.args,
         }
       }
       const serverTools =
@@ -1688,7 +1685,7 @@ function runHeadlessStreaming(
       }
       return {
         name: connection.name,
-        status: connection.type,
+        status: connection.type as McpServerStatus['status'],
         serverInfo:
           connection.type === 'connected' ? connection.serverInfo : undefined,
         error: connection.type === 'failed' ? connection.error : undefined,
@@ -1697,7 +1694,7 @@ function runHeadlessStreaming(
         tools: serverTools,
         capabilities,
       }
-    })
+    }) as McpServerStatus[]
   }
 
   // NOTE: Nested function required - needs closure access to applyMcpServerChanges and updateSdkMcp
@@ -1802,12 +1799,12 @@ function runHeadlessStreaming(
         type === 'http' ||
         type === 'sdk'
       ) {
-        supportedConfigs[name] = config
+        supportedConfigs[name] = config as McpServerConfigForProcessTransport
       }
     }
     for (const [name, config] of Object.entries(sdkMcpConfigs)) {
       if (config.type === 'sdk' && !(name in supportedConfigs)) {
-        supportedConfigs[name] = config
+        supportedConfigs[name] = config as unknown as McpServerConfigForProcessTransport
       }
     }
     const { response, sdkServersChanged } =
@@ -1971,12 +1968,13 @@ function runHeadlessStreaming(
               if (c.uuid && c.uuid !== command.uuid) {
                 output.enqueue({
                   type: 'user',
+                  content: c.value,
                   message: { role: 'user', content: c.value },
                   session_id: getSessionId(),
                   parent_tool_use_id: null,
-                  uuid: c.uuid,
+                  uuid: c.uuid as string,
                   isReplay: true,
-                } satisfies SDKUserMessageReplay)
+                } as SDKUserMessageReplay)
               }
             }
           }
@@ -2255,14 +2253,14 @@ function runHeadlessStreaming(
 
           if (feature('FILE_PERSISTENCE') && turnStartTime !== undefined) {
             void executeFilePersistence(
-              turnStartTime,
+              { turnStartTime } as import('src/utils/filePersistence/types.js').TurnStartTime,
               abortController.signal,
               result => {
                 output.enqueue({
                   type: 'system' as const,
                   subtype: 'files_persisted' as const,
-                  files: result.files,
-                  failed: result.failed,
+                  files: (result as any).persistedFiles,
+                  failed: (result as any).failedFiles,
                   processed_at: new Date().toISOString(),
                   uuid: randomUUID(),
                   session_id: getSessionId(),
@@ -2702,9 +2700,7 @@ function runHeadlessStreaming(
   let cronScheduler: import('../utils/cronScheduler.js').CronScheduler | null =
     null
   if (
-    feature('AGENT_TRIGGERS') &&
-    cronSchedulerModule &&
-    cronGate?.isKairosCronEnabled()
+    cronGate.isKairosCronEnabled()
   ) {
     cronScheduler = cronSchedulerModule.createCronScheduler({
       onFire: prompt => {
@@ -3005,7 +3001,7 @@ function runHeadlessStreaming(
           } else {
             sendControlResponseError(
               message,
-              result.error ?? 'Unexpected error',
+              (result.error as string) ?? 'Unexpected error',
             )
           }
         } else if (message.request.subtype === 'cancel_async_message') {
@@ -4077,13 +4073,14 @@ function runHeadlessStreaming(
             )
             output.enqueue({
               type: 'user',
+              content: message.message?.content ?? '',
               message: message.message,
               session_id: sessionId,
               parent_tool_use_id: null,
               uuid: message.uuid,
               timestamp: message.timestamp,
               isReplay: true,
-            } as SDKUserMessageReplay)
+            } as unknown as SDKUserMessageReplay)
           }
           // Historical dup = transcript already has this turn's output, so it
           // ran but its lifecycle was never closed (interrupted before ack).
@@ -4434,7 +4431,7 @@ async function handleInitializeRequest(
   const accountInfo = getAccountInformation()
   if (request.hooks) {
     const hooks: Partial<Record<HookEvent, HookCallbackMatcher[]>> = {}
-    for (const [event, matchers] of Object.entries(request.hooks)) {
+    for (const [event, matchers] of Object.entries(request.hooks) as [string, Array<{ hookCallbackIds: string[]; timeout?: number; matcher?: string }>][]) {
       hooks[event as HookEvent] = matchers.map(matcher => {
         const callbacks = matcher.hookCallbackIds.map(callbackId => {
           return structuredIO.createHookCallback(callbackId, matcher.timeout)
@@ -4524,12 +4521,13 @@ async function handleRewindFiles(
   dryRun: boolean,
 ): Promise<RewindFilesResult> {
   if (!fileHistoryEnabled()) {
-    return { canRewind: false, error: 'File rewinding is not enabled.' }
+    return { canRewind: false, error: 'File rewinding is not enabled.', filesChanged: [] }
   }
   if (!fileHistoryCanRestore(appState.fileHistory, userMessageId)) {
     return {
       canRewind: false,
       error: 'No file checkpoint found for this message.',
+      filesChanged: [],
     }
   }
 
@@ -4559,10 +4557,11 @@ async function handleRewindFiles(
     return {
       canRewind: false,
       error: `Failed to rewind: ${errorMessage(error)}`,
+      filesChanged: [],
     }
   }
 
-  return { canRewind: true }
+  return { canRewind: true, filesChanged: [] }
 }
 
 function handleSetPermissionMode(
@@ -4751,7 +4750,7 @@ function handleChannelEnable(
         value: wrapChannelMessage(serverName, content, meta),
         priority: 'next',
         isMeta: true,
-        origin: { kind: 'channel', server: serverName },
+        origin: { kind: 'channel', server: serverName } as unknown as string,
         skipSlashCommands: true,
       })
     },
@@ -4827,7 +4826,7 @@ function reregisterChannelHandlerAfterReconnect(
         value: wrapChannelMessage(connection.name, content, meta),
         priority: 'next',
         isMeta: true,
-        origin: { kind: 'channel', server: connection.name },
+        origin: { kind: 'channel', server: connection.name } as unknown as string,
         skipSlashCommands: true,
       })
     },
@@ -5210,6 +5209,8 @@ function getStructuredIO(
       inputStream = fromArray([
         jsonStringify({
           type: 'user',
+          content: inputPrompt,
+          uuid: '',
           session_id: '',
           message: {
             role: 'user',
@@ -5249,19 +5250,20 @@ export async function handleOrphanedPermissionResponse({
   onEnqueued?: () => void
   handledToolUseIds: Set<string>
 }): Promise<boolean> {
+  const responseInner = message.response as { subtype?: string; response?: Record<string, unknown>; request_id?: string } | undefined
   if (
-    message.response.subtype === 'success' &&
-    message.response.response?.toolUseID &&
-    typeof message.response.response.toolUseID === 'string'
+    responseInner?.subtype === 'success' &&
+    responseInner.response?.toolUseID &&
+    typeof responseInner.response.toolUseID === 'string'
   ) {
-    const permissionResult = message.response.response as PermissionResult
-    const { toolUseID } = permissionResult
+    const permissionResult = responseInner.response as PermissionResult & { toolUseID?: string }
+    const toolUseID = permissionResult.toolUseID
     if (!toolUseID) {
       return false
     }
 
     logForDebugging(
-      `handleOrphanedPermissionResponse: received orphaned control_response for toolUseID=${toolUseID} request_id=${message.response.request_id}`,
+      `handleOrphanedPermissionResponse: received orphaned control_response for toolUseID=${toolUseID} request_id=${responseInner.request_id}`,
     )
 
     // Prevent re-processing the same orphaned tool_use. Without this guard,
@@ -5373,8 +5375,8 @@ export async function handleMcpSetServers(
   const processServers: Record<string, McpServerConfigForProcessTransport> = {}
 
   for (const [name, config] of Object.entries(allowedServers)) {
-    if (config.type === 'sdk') {
-      sdkServers[name] = config
+    if ((config.type as string) === 'sdk') {
+      sdkServers[name] = config as unknown as McpSdkServerConfig
     } else {
       processServers[name] = config
     }
@@ -5515,7 +5517,7 @@ export async function reconcileMcpServers(
 
     // SDK servers are managed by the SDK process, not the CLI.
     // Just track them without trying to connect.
-    if (config.type === 'sdk') {
+    if ((config.type as string) === 'sdk') {
       added.push(name)
       continue
     }

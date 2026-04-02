@@ -1,3 +1,1 @@
-# Verify Server Example
-
-Restored placeholder content.
+# Server

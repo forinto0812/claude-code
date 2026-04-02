@@ -1,3 +1,1 @@
-# Verify
-
-Restored placeholder content.
+# Skill

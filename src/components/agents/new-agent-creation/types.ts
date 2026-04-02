@@ -1,1 +1,2 @@
-export type AgentWizardData = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type AgentWizardData = any;

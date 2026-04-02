@@ -1,7 +1,8 @@
-export type ServerInfo = Record<string, unknown>
-export type AgentMcpServerInfo = Record<string, unknown>
-export type ClaudeAIServerInfo = Record<string, unknown>
-export type HTTPServerInfo = Record<string, unknown>
-export type SSEServerInfo = Record<string, unknown>
-export type StdioServerInfo = Record<string, unknown>
-export type MCPViewState = string
+// Auto-generated stub — replace with real implementation
+export type ServerInfo = any;
+export type AgentMcpServerInfo = any;
+export type MCPViewState = any;
+export type StdioServerInfo = any;
+export type ClaudeAIServerInfo = any;
+export type HTTPServerInfo = any;
+export type SSEServerInfo = any;

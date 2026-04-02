@@ -1,1 +1,2 @@
-export type StatusLineItem = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type StatusLineCommandInput = any;

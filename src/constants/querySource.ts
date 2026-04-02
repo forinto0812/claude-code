@@ -1,1 +1,2 @@
-export type QuerySource = string
+// Auto-generated stub — replace with real implementation
+export type QuerySource = any;

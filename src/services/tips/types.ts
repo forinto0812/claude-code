@@ -1,2 +1,3 @@
-export type Tip = Record<string, unknown>
-export type TipContext = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type Tip = any;
+export type TipContext = any;

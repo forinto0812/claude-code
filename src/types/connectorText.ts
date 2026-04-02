@@ -1,9 +1,4 @@
-export type ConnectorTextBlock = {
-  type?: string
-  text?: string
-  [key: string]: unknown
-}
-
-export function isConnectorTextBlock(value: unknown): value is ConnectorTextBlock {
-  return !!value && typeof value === 'object' && 'text' in (value as Record<string, unknown>)
-}
+// Auto-generated stub — replace with real implementation
+export type ConnectorTextBlock = { type: string; connector_text: string; signature?: string; [key: string]: unknown };
+export type ConnectorTextDelta = { type: string; connector_text: string; text?: string; thinking?: string; signature?: string; [key: string]: unknown };
+export const isConnectorTextBlock: (block: unknown) => block is ConnectorTextBlock = (_block): _block is ConnectorTextBlock => false;

@@ -1,22 +1,63 @@
-export type EffortLevel = 'low' | 'medium' | 'high' | string
-export type SDKSession = Record<string, unknown>
-export type SDKSessionOptions = Record<string, unknown>
-export type SDKSessionInfo = Record<string, unknown>
-export type SessionMessage = Record<string, unknown>
-export type ListSessionsOptions = Record<string, unknown>
-export type GetSessionInfoOptions = Record<string, unknown>
-export type GetSessionMessagesOptions = Record<string, unknown>
-export type SessionMutationOptions = Record<string, unknown>
-export type ForkSessionOptions = Record<string, unknown>
-export type ForkSessionResult = Record<string, unknown>
-export type Options = Record<string, unknown>
-export type InternalOptions = Record<string, unknown>
-export type Query = Record<string, unknown>
-export type InternalQuery = Record<string, unknown>
-export type McpSdkServerConfigWithInstance = Record<string, unknown>
+/**
+ * Stub: SDK Runtime Types (not yet published in open-source).
+ * Non-serializable types: callbacks, interfaces with methods.
+ */
+
 export type AnyZodRawShape = Record<string, unknown>
-export type InferShape<T> = T
-export type SdkMcpToolDefinition<Schema> = {
-  schema?: Schema
+export type InferShape<T extends AnyZodRawShape> = { [K in keyof T]: unknown }
+
+export type ForkSessionOptions = { dir?: string; upToMessageId?: string; title?: string }
+export type ForkSessionResult = { sessionId: string }
+export type GetSessionInfoOptions = { dir?: string }
+export type GetSessionMessagesOptions = { dir?: string; limit?: number; offset?: number; includeSystemMessages?: boolean }
+export type ListSessionsOptions = { dir?: string; limit?: number; offset?: number }
+export type SessionMutationOptions = { dir?: string }
+export type SessionMessage = { role: string; content: unknown; [key: string]: unknown }
+
+export interface SDKSession {
+  sessionId: string
+  prompt(input: string | AsyncIterable<unknown>): Promise<unknown>
+  abort(): void
   [key: string]: unknown
 }
+
+export type SDKSessionOptions = {
+  model?: string
+  systemPrompt?: string
+  [key: string]: unknown
+}
+
+export interface SdkMcpToolDefinition<T extends AnyZodRawShape = AnyZodRawShape> {
+  name: string
+  description: string
+  inputSchema: T
+  handler: (args: InferShape<T>, extra: unknown) => Promise<unknown>
+  [key: string]: unknown
+}
+
+export type McpSdkServerConfigWithInstance = {
+  name: string
+  version?: string
+  tools?: SdkMcpToolDefinition[]
+  [key: string]: unknown
+}
+
+export interface Options {
+  model?: string
+  systemPrompt?: string
+  [key: string]: unknown
+}
+
+export interface InternalOptions extends Options {
+  [key: string]: unknown
+}
+
+export interface Query {
+  [Symbol.asyncIterator](): AsyncIterator<unknown>
+  [key: string]: unknown
+}
+
+export interface InternalQuery extends Query {
+  [key: string]: unknown
+}
+export type EffortLevel = 'low' | 'medium' | 'high' | 'max';

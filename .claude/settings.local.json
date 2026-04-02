@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lscpu)",
+      "Bash(lspci)",
+      "Bash(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader)",
+      "Bash(lsblk -d -o NAME,SIZE,MODEL)",
+      "Bash(git:*)"
+    ]
+  }
+}

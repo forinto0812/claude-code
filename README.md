@@ -1,315 +1,436 @@
-# Claude Code 源码还原
+# Claude Code Best V3 (CCB)
 
-> 从 `@anthropic-ai/claude-code` npm 包的 source map 中还原的完整 TypeScript 源码，**可本地运行**
+牢 A (Anthropic) 官方 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 工具的源码反编译/逆向还原项目。目标是将 Claude Code 大部分功能及工程化能力复现。虽然很难绷, 但是它叫做 CCB(踩踩背)...
 
-<p align="center">
-  <img src="preview.png?raw=true" alt="Claude Code CLI" width="700">
-</p>
+[文档在这里, 支持投稿 PR](https://ccb.agent-aura.top/)
 
-> [!WARNING]
-> 本仓库为**非官方**版本，基于公开 npm 发布包 source map 还原，**仅供研究学习**。源码版权归 [Anthropic](https://www.anthropic.com) 所有。
+赞助商占位符
 
----
+- [x] v1 会完成跑通及基本的类型检查通过;
+- [x] V2 会完整实现工程化配套设施;
+  - [ ] Biome 格式化可能不会先实施, 避免代码冲突
+  - [x] 构建流水线完成, 产物 Node/Bun 都可以运行
+- [x] V3 会写大量文档, 完善文档站点
+- [ ] V4 会完成大量的测试文件, 以提高稳定性
+
+> 我不知道这个项目还会存在多久, Star + Fork + git clone + .zip 包最稳健;
+>
+> 这个项目更新很快, 后台有 Opus 持续优化, 所以你可以提 issues, 但是 PR 暂时不会接受;
+>
+> Claude 已经烧了 800$ 以上, 如果你个人想赞助, 请随便找个机构捐款, 然后截图在 issues, 大家的力量是温暖的;
+>
+> 某些模型提供商想要赞助, 那么请私发一个 1w 额度以上的账号到 <claude-code-best@proton.me>; 我们会在赞助商栏直接给你最亮的位置
+
+存活记录:
+
+1. 开源后 24 小时: 突破 6k Star, 感谢各位支持. 完成 docs 文档的站点构建, 达到 v3 版本, 后续开始进行测试用例维护, 完成之后可以接受 PR; 看来牢 A 是不想理我们了;
+2. 开源后 15 小时: 完成了构建产物的 node 支持, 现在是完全体了; star 快到 3k 了; 等待牢 A 的邮件
+3. 开源后 12 小时: 愚人节, star 破 1k, 并且牢 A 没有发邮件搞这个项目
+4. 如果你想要私人咨询服务, 那么可以发送邮件到 <claude-code-best@proton.me>, 备注咨询与联系方式即可; 由于后续工作非常多, 可能会忽略邮件, 半天没回复, 可以多发;
 
 ## 快速开始
 
+### 环境要求
+
+一定要最新版本的 bun 啊, 不然一堆奇奇怪怪的 BUG!!! bun upgrade!!!
+
+- [Bun](https://bun.sh/) >= 1.3.11
+- 常规的配置 CC 的方式, 各大提供商都有自己的配置方式
+
+### 安装
+
 ```bash
-bun install       # 安装依赖（需要 Bun ≥ 1.3.5、Node.js ≥ 24）
-bun run dev       # 启动 CLI
-bun run version   # 验证版本
+bun install
 ```
 
----
+### 运行
 
-## 开发基线
+```bash
+# 开发模式, 看到版本号 888 说明就是对了
+bun run dev
 
-后续如果要真正继续开发这个 CLI，先看这两份文档：
+# 构建
+bun run build
+```
 
-- [CLI 架构基线](docs/08-cli-architecture.md)
-- [开发计划](PLANS.md)
+构建采用 code splitting 多文件打包（`build.ts`），产物输出到 `dist/` 目录（入口 `dist/cli.js` + 约 450 个 chunk 文件）。
 
----
+构建出的版本 bun 和 node 都可以启动, 你 publish 到私有源可以直接启动
 
-## 从源码中发现的 7 大隐藏功能
+如果遇到 bug 请直接提一个 issues, 我们优先解决
 
-通过阅读还原后的 1,987 个 TypeScript 源文件，我们发现了大量未公开的隐藏功能。这些功能通过**编译开关**（`feature()`）和**用户类型**（`USER_TYPE`）进行门控，外部发布版中大部分被裁剪。
+## 相关文档及网站
 
----
+<https://deepwiki.com/claude-code-best/claude-code>
 
-### 1. [BUDDY — AI 电子宠物](docs/01-buddy.md)
+## Star History
 
-> 源码位置：`src/buddy/` · [查看完整分析 →](docs/01-buddy.md)
+<a href="https://www.star-history.com/?repos=claude-code-best%2Fclaude-code&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=claude-code-best/claude-code&type=date&legend=top-left" />
+ </picture>
+</a>
 
-终端里的拓麻歌子！一个完整的虚拟宠物系统。
+## 能力清单
 
-- **18 种物种**：鸭子、鹅、猫、龙、章鱼、猫头鹰、企鹅、乌龟、蜗牛、幽灵、六角恐龙、水豚、仙人掌、机器人、兔子、蘑菇、果冻、胖猫
-- **5 级稀有度**：普通(60%) → 非凡(25%) → 稀有(10%) → 史诗(4%) → 传说(1%)
-- **1% 闪光概率**：独立于稀有度，任何宠物都有 1% 概率成为闪光个体
-- **确定性生成**：使用账号 UUID + 固定盐值 `'friend-2026-401'` 经 FNV-1a 哈希 → Mulberry32 PRNG，每人只会得到一只固定的宠物，改配置也没用
-- **外观系统**：6 种眼睛样式 + 8 种帽子（皇冠、巫师帽、光环等），common 稀有度没有帽子
-- **交互**：`/buddy pet` 抚摸（爱心动画）、`/buddy hatch` 孵化、`/buddy card` 查看卡片
-- **动画**：500ms 帧率的 ASCII 精灵动画，气泡对话，窄终端自动退化为表情文字脸（如 `=·ω·=`）
-- **编译开关**：`feature('BUDDY')`
+> ✅ = 已实现  ⚠️ = 部分实现 / 条件启用  ❌ = stub / 移除 / feature flag 关闭
 
----
+### 核心系统
 
-### 2. [KAIROS — 永不关机的 Claude](docs/02-kairos.md)
-
-> 源码位置：`src/assistant/`、`src/proactive/`、`src/services/autoDream/` · [查看完整分析 →](docs/02-kairos.md)
-
-关掉终端 Claude 还在运行的持久助手模式。
-
-- **跨会话持久运行**：通过 `.claude/settings.json` 的 `assistant: true` 激活，会话状态持久化到磁盘
-- **每日日志**：自动在 `<autoMemPath>/logs/YYYY/MM/YYYY-MM-DD.md` 记录工作日志
-- **自动做梦（Dream）**：距上次整合超 24 小时且有 5+ 新会话时，后台自动启动记忆整合子代理，分四阶段运行：Orient → Gather → Consolidate → Prune
-- **锁机制**：`.consolidate-lock` 文件 + PID 存活检查，防止多进程同时做梦
-- **主动模式（Proactive）**：没人说话时自己找活干，没活就调用 `SleepTool` 等着。接收周期性 `<tick>` 提示来检查是否有事可做
-- **后台任务**：命令超 15 秒自动丢后台，支持持久 cron 任务（`permanent: true` 不受 7 天过期限制）
-- **编译开关**：`feature('KAIROS')`、`feature('KAIROS_BRIEF')`、`feature('KAIROS_CHANNELS')`
-- **远程开关**：GrowthBook `tengu_kairos`、`tengu_onyx_plover`（Dream 阈值配置）
-
----
-
-### 3. [ULTRAPLAN — 云端深度规划](docs/03-ultraplan.md)
-
-> 源码位置：`src/commands/ultraplan.tsx`、`src/utils/ultraplan/` · [查看完整分析 →](docs/03-ultraplan.md)
-
-把难题甩给云端 Opus 独立研究最长 30 分钟。
-
-- **流程**：`/ultraplan <prompt>` → 创建远程 CCR 会话 → Opus 模型独立研究 → 后台轮询等待（30 分钟超时）→ 浏览器查看/修改方案 → 批准执行或传送回本地
-- **关键词触发**：消息中包含 "ultraplan" 自动触发，智能排除引号/路径/标识符中的误触发
-- **传送（Teleport）**：`src/utils/teleport.tsx` 实现本地 ↔ 远程会话传输，支持 Git Bundle 打包代码上下文
-- **完全内部限定**：`isEnabled: () => "external" === 'ant'`，外部版永远不可用
-- **编译开关**：`feature('ULTRAPLAN')`
-- **远程开关**：`tengu_ultraplan_model`（控制使用的模型）
-
----
-
-### 4. [Coordinator — 多 Agent 编排模式](docs/04-coordinator.md)
-
-> 源码位置：`src/coordinator/` · [查看完整分析 →](docs/04-coordinator.md)
-
-主 Claude 变成纯指挥官，Worker 并行执行任务。
-
-- **角色分离**：Coordinator 只有三个工具——派活（Agent）、通信（SendMessage）、停工（Shutdown）
-- **Worker 机制**：Worker 在独立子进程中运行，各自拥有完整工具集
-- **核心铁律**：系统提示中明确规定"禁止甩锅式委派"——不能把不清楚的需求直接丢给 Worker
-- **任务追踪**：基于文件的共享任务列表（`~/.claude/tasks/`），Coordinator 和 Worker 共同读写
-- **编译开关**：`feature('COORDINATOR_MODE')`
-- **环境变量**：`CLAUDE_CODE_COORDINATOR_MODE`
-
----
-
-### 5. [26+ 隐藏命令 & 秘密开关](docs/05-hidden-commands.md)
-
-> 源码位置：`src/commands.ts`、`src/commands/` · [查看完整分析 →](docs/05-hidden-commands.md)
-
-#### Feature-gated 命令（编译开关控制）
-
-| 命令 | 功能 | 开关 |
+| 能力 | 状态 | 说明 |
 |------|------|------|
-| `/buddy` | 宠物系统 | `BUDDY` |
-| `/proactive` | 主动自主模式 | `PROACTIVE` / `KAIROS` |
-| `/assistant` | 助手模式 | `KAIROS` |
-| `/brief` | 简报模式 | `KAIROS` / `KAIROS_BRIEF` |
-| `/bridge` | 远程控制桥接 | `BRIDGE_MODE` |
-| `/voice` | 语音模式 | `VOICE_MODE` |
-| `/ultraplan` | 云端深度规划 | `ULTRAPLAN` |
-| `/fork` | 子代理分叉 | `FORK_SUBAGENT` |
-| `/peers` | 对等通信 | `UDS_INBOX` |
-| `/workflows` | 工作流脚本 | `WORKFLOW_SCRIPTS` |
-| `/torch` | Torch 功能 | `TORCH` |
-| `/force-snip` | 强制历史截断 | `HISTORY_SNIP` |
+| REPL 交互界面（Ink 终端渲染） | ✅ | 主屏幕 5000+ 行，完整交互 |
+| API 通信 — Anthropic Direct | ✅ | 支持 API Key + OAuth |
+| API 通信 — AWS Bedrock | ✅ | 支持凭据刷新、Bearer Token |
+| API 通信 — Google Vertex | ✅ | 支持 GCP 凭据刷新 |
+| API 通信 — Azure Foundry | ✅ | 支持 API Key + Azure AD |
+| 流式对话与工具调用循环 (`query.ts`) | ✅ | 1700+ 行，含自动压缩、token 追踪 |
+| 会话引擎 (`QueryEngine.ts`) | ✅ | 1300+ 行，管理对话状态与归因 |
+| 上下文构建（git status / CLAUDE.md / memory） | ✅ | `context.ts` 完整实现 |
+| 权限系统（plan/auto/manual 模式） | ✅ | 6300+ 行，含 YOLO 分类器、路径验证、规则匹配 |
+| Hook 系统（pre/post tool use） | ✅ | 支持 settings.json 配置 |
+| 会话恢复 (`/resume`) | ✅ | 独立 ResumeConversation 屏幕 |
+| Doctor 诊断 (`/doctor`) | ✅ | 版本、API、插件、沙箱检查 |
+| 自动压缩 (compaction) | ✅ | auto-compact / micro-compact / API compact |
 
-#### 仅内部用户（`USER_TYPE === 'ant'`）命令
+### 工具 — 始终可用
 
-| 命令 | 功能 |
+| 工具 | 状态 | 说明 |
+|------|------|------|
+| BashTool | ✅ | Shell 执行，沙箱，权限检查 |
+| FileReadTool | ✅ | 文件 / PDF / 图片 / Notebook 读取 |
+| FileEditTool | ✅ | 字符串替换式编辑 + diff 追踪 |
+| FileWriteTool | ✅ | 文件创建 / 覆写 + diff 生成 |
+| NotebookEditTool | ✅ | Jupyter Notebook 单元格编辑 |
+| AgentTool | ✅ | 子代理派生（fork / async / background / remote） |
+| WebFetchTool | ✅ | URL 抓取 → Markdown → AI 摘要 |
+| WebSearchTool | ✅ | 网页搜索 + 域名过滤 |
+| AskUserQuestionTool | ✅ | 多问题交互提示 + 预览 |
+| SendMessageTool | ✅ | 消息发送（peers / teammates / mailbox） |
+| SkillTool | ✅ | 斜杠命令 / Skill 调用 |
+| EnterPlanModeTool | ✅ | 进入计划模式 |
+| ExitPlanModeTool (V2) | ✅ | 退出计划模式 |
+| TodoWriteTool | ✅ | Todo 列表 v1 |
+| BriefTool | ✅ | 简短消息 + 附件发送 |
+| TaskOutputTool | ✅ | 后台任务输出读取 |
+| TaskStopTool | ✅ | 后台任务停止 |
+| ListMcpResourcesTool | ⚠️ | MCP 资源列表（被 specialTools 过滤，特定条件下加入） |
+| ReadMcpResourceTool | ⚠️ | MCP 资源读取（同上） |
+| SyntheticOutputTool | ⚠️ | 仅在非交互会话（SDK/pipe 模式）下创建 |
+| CronCreateTool | ✅ | 定时任务创建（已移除 AGENT_TRIGGERS gate） |
+| CronDeleteTool | ✅ | 定时任务删除 |
+| CronListTool | ✅ | 定时任务列表 |
+| EnterWorktreeTool | ✅ | 进入 Git Worktree（`isWorktreeModeEnabled()` 已硬编码为 true） |
+| ExitWorktreeTool | ✅ | 退出 Git Worktree |
+
+### 工具 — 条件启用
+
+| 工具 | 状态 | 启用条件 |
+|------|------|----------|
+| GlobTool | ✅ | 未嵌入 bfs/ugrep 时启用（默认启用） |
+| GrepTool | ✅ | 同上 |
+| TaskCreateTool | ⚠️ | `isTodoV2Enabled()` 为 true 时 |
+| TaskGetTool | ⚠️ | 同上 |
+| TaskUpdateTool | ⚠️ | 同上 |
+| TaskListTool | ⚠️ | 同上 |
+| TeamCreateTool | ⚠️ | `isAgentSwarmsEnabled()` |
+| TeamDeleteTool | ⚠️ | 同上 |
+| ToolSearchTool | ⚠️ | `isToolSearchEnabledOptimistic()` |
+| PowerShellTool | ⚠️ | Windows 平台检测 |
+| LSPTool | ⚠️ | `ENABLE_LSP_TOOL` 环境变量 |
+| ConfigTool | ❌ | `USER_TYPE === 'ant'`（永远为 false） |
+
+### 工具 — Feature Flag 关闭（全部不可用）
+
+| 工具 | Feature Flag |
+|------|-------------|
+| SleepTool | `PROACTIVE` / `KAIROS` |
+| RemoteTriggerTool | `AGENT_TRIGGERS_REMOTE` |
+| MonitorTool | `MONITOR_TOOL` |
+| SendUserFileTool | `KAIROS` |
+| OverflowTestTool | `OVERFLOW_TEST_TOOL` |
+| TerminalCaptureTool | `TERMINAL_PANEL` |
+| WebBrowserTool | `WEB_BROWSER_TOOL` |
+| SnipTool | `HISTORY_SNIP` |
+| WorkflowTool | `WORKFLOW_SCRIPTS` |
+| PushNotificationTool | `KAIROS` / `KAIROS_PUSH_NOTIFICATION` |
+| SubscribePRTool | `KAIROS_GITHUB_WEBHOOKS` |
+| ListPeersTool | `UDS_INBOX` |
+| CtxInspectTool | `CONTEXT_COLLAPSE` |
+
+### 工具 — Stub / 不可用
+
+| 工具 | 说明 |
 |------|------|
-| `/teleport` | 传送会话到远程/本地 |
-| `/bughunter` | 内部 Bug 猎人 |
-| `/mock-limits` | 模拟速率限制 |
-| `/ctx_viz` | 上下文可视化 |
-| `/break-cache` | 强制缓存清除 |
-| `/ant-trace` | 内部追踪工具 |
-| `/good-claude` | 内部反馈 |
-| `/agents-platform` | 智能体平台 |
-| `/autofix-pr` | 自动修复 PR |
-| `/debug-tool-call` | 调试工具调用 |
-| `/reset-limits` | 重置速率限制 |
+| TungstenTool | ANT-ONLY stub |
+| REPLTool | ANT-ONLY，`isEnabled: () => false` |
+| SuggestBackgroundPRTool | ANT-ONLY，`isEnabled: () => false` |
+| VerifyPlanExecutionTool | 需 `CLAUDE_CODE_VERIFY_PLAN=true` 环境变量，且为 stub |
+| ReviewArtifactTool | stub，未注册到 tools.ts |
+| DiscoverSkillsTool | stub，未注册到 tools.ts |
 
-#### 隐藏 CLI 参数
+### 斜杠命令 — 可用
 
-```
---teleport [session]    恢复传送会话
---remote [description]  创建远程会话
---proactive             主动模式
---assistant             助手模式
---brief                 简报模式
---remote-control        远程控制
---hard-fail             硬失败模式
---agent-teams           多代理团队
-```
+| 命令 | 状态 | 说明 |
+|------|------|------|
+| `/add-dir` | ✅ | 添加目录 |
+| `/advisor` | ✅ | Advisor 配置 |
+| `/agents` | ✅ | 代理列表/管理 |
+| `/branch` | ✅ | 分支管理 |
+| `/btw` | ✅ | 快速备注 |
+| `/chrome` | ✅ | Chrome 集成 |
+| `/clear` | ✅ | 清屏 |
+| `/color` | ✅ | Agent 颜色 |
+| `/compact` | ✅ | 压缩对话 |
+| `/config` (`/settings`) | ✅ | 配置管理 |
+| `/context` | ✅ | 上下文信息 |
+| `/copy` | ✅ | 复制最后消息 |
+| `/cost` | ✅ | 会话费用 |
+| `/desktop` | ✅ | Claude Desktop 集成 |
+| `/diff` | ✅ | 显示 diff |
+| `/doctor` | ✅ | 健康检查 |
+| `/effort` | ✅ | 设置 effort 等级 |
+| `/exit` | ✅ | 退出 |
+| `/export` | ✅ | 导出对话 |
+| `/extra-usage` | ✅ | 额外用量信息 |
+| `/fast` | ✅ | 切换 fast 模式 |
+| `/feedback` | ✅ | 反馈 |
+| `/loop` | ✅ | 定时循环执行（bundled skill，可通过 `CLAUDE_CODE_DISABLE_CRON` 关闭） |
+| `/heapdump` | ✅ | Heap dump（调试） |
+| `/help` | ✅ | 帮助 |
+| `/hooks` | ✅ | Hook 管理 |
+| `/ide` | ✅ | IDE 连接 |
+| `/init` | ✅ | 初始化项目 |
+| `/install-github-app` | ✅ | 安装 GitHub App |
+| `/install-slack-app` | ✅ | 安装 Slack App |
+| `/keybindings` | ✅ | 快捷键管理 |
+| `/login` / `/logout` | ✅ | 登录 / 登出 |
+| `/mcp` | ✅ | MCP 服务管理 |
+| `/memory` | ✅ | Memory / CLAUDE.md 管理 |
+| `/mobile` | ✅ | 移动端 QR 码 |
+| `/model` | ✅ | 模型选择 |
+| `/output-style` | ✅ | 输出风格 |
+| `/passes` | ✅ | 推荐码 |
+| `/permissions` | ✅ | 权限管理 |
+| `/plan` | ✅ | 计划模式 |
+| `/plugin` | ✅ | 插件管理 |
+| `/pr-comments` | ✅ | PR 评论 |
+| `/privacy-settings` | ✅ | 隐私设置 |
+| `/rate-limit-options` | ✅ | 限速选项 |
+| `/release-notes` | ✅ | 更新日志 |
+| `/reload-plugins` | ✅ | 重载插件 |
+| `/remote-env` | ✅ | 远程环境配置 |
+| `/rename` | ✅ | 重命名会话 |
+| `/resume` | ✅ | 恢复会话 |
+| `/review` | ✅ | 代码审查（本地） |
+| `/ultrareview` | ✅ | 云端审查 |
+| `/rewind` | ✅ | 回退对话 |
+| `/sandbox-toggle` | ✅ | 切换沙箱 |
+| `/security-review` | ✅ | 安全审查 |
+| `/session` | ✅ | 会话信息 |
+| `/skills` | ✅ | Skill 管理 |
+| `/stats` | ✅ | 会话统计 |
+| `/status` | ✅ | 状态信息 |
+| `/statusline` | ✅ | 状态栏 UI |
+| `/stickers` | ✅ | 贴纸 |
+| `/tasks` | ✅ | 任务管理 |
+| `/theme` | ✅ | 终端主题 |
+| `/think-back` | ✅ | 年度回顾 |
+| `/upgrade` | ✅ | 升级 CLI |
+| `/usage` | ✅ | 用量信息 |
+| `/insights` | ✅ | 使用分析报告 |
+| `/vim` | ✅ | Vim 模式 |
 
----
+### 斜杠命令 — Feature Flag 关闭
 
-### 6. [Bridge — 远程遥控终端](docs/06-bridge.md)
+| 命令 | Feature Flag |
+|------|-------------|
+| `/voice` | `VOICE_MODE` |
+| `/proactive` | `PROACTIVE` / `KAIROS` |
+| `/brief` | `KAIROS` / `KAIROS_BRIEF` |
+| `/assistant` | `KAIROS` |
+| `/remote-control` (alias `rc`) | `BRIDGE_MODE` |
+| `/remote-control-server` | `DAEMON` + `BRIDGE_MODE` |
+| `/force-snip` | `HISTORY_SNIP` |
+| `/workflows` | `WORKFLOW_SCRIPTS` |
+| `/web-setup` | `CCR_REMOTE_SETUP` |
+| `/subscribe-pr` | `KAIROS_GITHUB_WEBHOOKS` |
+| `/ultraplan` | `ULTRAPLAN` |
+| `/torch` | `TORCH` |
+| `/peers` | `UDS_INBOX` |
+| `/fork` | `FORK_SUBAGENT` |
+| `/buddy` | `BUDDY` |
 
-> 源码位置：`src/bridge/`（33 个文件） · [查看完整分析 →](docs/06-bridge.md)
+### 斜杠命令 — ANT-ONLY（不可用）
 
-从 claude.ai 或手机直接操控本地 CLI。
+`/files` `/tag` `/backfill-sessions` `/break-cache` `/bughunter` `/commit` `/commit-push-pr` `/ctx_viz` `/good-claude` `/issue` `/init-verifiers` `/mock-limits` `/bridge-kick` `/version` `/reset-limits` `/onboarding` `/share` `/summary` `/teleport` `/ant-trace` `/perf-issue` `/env` `/oauth-refresh` `/debug-tool-call` `/agents-platform` `/autofix-pr`
 
-- **WebSocket 实时连接**：本地 CLI 通过 WebSocket 与 claude.ai 建立双向通道
-- **完整远程控制**：远程端可以发送消息、批准权限、查看输出
-- **进程间通信**：跨 Claude 会话的消息传递机制
-- **状态同步**：`bridgeStatusUtil.ts` 实时同步运行状态
-- **权限回调**：`bridgePermissionCallbacks.ts` 远程权限审批
-- **编译开关**：`feature('BRIDGE_MODE')`、`feature('DAEMON')`
+### CLI 子命令
 
----
+| 子命令 | 状态 | 说明 |
+|--------|------|------|
+| `claude`（默认） | ✅ | 主 REPL / 交互 / print 模式 |
+| `claude mcp serve/add/remove/list/get/...` | ✅ | MCP 服务管理（7 个子命令） |
+| `claude auth login/status/logout` | ✅ | 认证管理 |
+| `claude plugin validate/list/install/...` | ✅ | 插件管理（7 个子命令） |
+| `claude setup-token` | ✅ | 长效 Token 配置 |
+| `claude agents` | ✅ | 代理列表 |
+| `claude doctor` | ✅ | 健康检查 |
+| `claude update` / `upgrade` | ✅ | 自动更新 |
+| `claude install [target]` | ✅ | Native 安装 |
+| `claude server` | ❌ | `DIRECT_CONNECT` flag |
+| `claude ssh <host>` | ❌ | `SSH_REMOTE` flag |
+| `claude open <cc-url>` | ❌ | `DIRECT_CONNECT` flag |
+| `claude auto-mode` | ❌ | `TRANSCRIPT_CLASSIFIER` flag |
+| `claude remote-control` | ❌ | `BRIDGE_MODE` + `DAEMON` flag |
+| `claude assistant` | ❌ | `KAIROS` flag |
+| `claude up/rollback/log/error/export/task/completion` | ❌ | ANT-ONLY |
 
-### 7. [50 个编译开关 + 远程门控](docs/07-feature-gates.md)
+### 服务层
 
-外部发布版是**阉割版**。Anthropic 通过三层门控控制功能。[查看完整分析 →](docs/07-feature-gates.md)
+| 服务 | 状态 | 说明 |
+|------|------|------|
+| API 客户端 (`services/api/`) | ✅ | 3400+ 行，4 个 provider |
+| MCP (`services/mcp/`) | ✅ | 34 个文件，12000+ 行 |
+| OAuth (`services/oauth/`) | ✅ | 完整 OAuth 流程 |
+| 插件 (`services/plugins/`) | ✅ | 基础设施完整，无内置插件 |
+| LSP (`services/lsp/`) | ⚠️ | 实现存在，默认关闭 |
+| 压缩 (`services/compact/`) | ✅ | auto / micro / API 压缩 |
+| Hook 系统 (`services/tools/toolHooks.ts`) | ✅ | pre/post tool use hooks |
+| 会话记忆 (`services/SessionMemory/`) | ✅ | 会话记忆管理 |
+| 记忆提取 (`services/extractMemories/`) | ✅ | 自动记忆提取 |
+| Skill 搜索 (`services/skillSearch/`) | ✅ | 本地/远程 skill 搜索 |
+| 策略限制 (`services/policyLimits/`) | ✅ | 策略限制执行 |
+| 分析 / GrowthBook / Sentry | ⚠️ | 框架存在，实际 sink 为空 |
+| Voice (`services/voice.ts`) | ❌ | `VOICE_MODE` flag 关闭 |
 
-#### 第一层：编译时开关（`feature()`，约 50 个）
+### 内部包 (`packages/`)
 
-构建时决定代码包含/排除，以下是完整列表：
+| 包 | 状态 | 说明 |
+|------|------|------|
+| `color-diff-napi` | ✅ | 1006 行完整 TypeScript 实现（语法高亮 diff） |
+| `audio-capture-napi` | ✅ | 151 行完整实现（跨平台音频录制，使用 SoX/arecord） |
+| `image-processor-napi` | ✅ | 125 行完整实现（macOS 剪贴板图片读取，使用 osascript + sharp） |
+| `modifiers-napi` | ✅ | 67 行完整实现（macOS 修饰键检测，bun:ffi + CoreGraphics） |
+| `url-handler-napi` | ❌ | stub，`waitForUrlEvent()` 返回 null |
+| `@ant/claude-for-chrome-mcp` | ❌ | stub，`createServer()` 返回 null |
+| `@ant/computer-use-mcp` | ⚠️ | 类型安全 stub（265 行，完整类型定义但函数返回空值） |
+| `@ant/computer-use-input` | ✅ | 183 行完整实现（macOS 键鼠模拟，AppleScript/JXA/CGEvent） |
+| `@ant/computer-use-swift` | ✅ | 388 行完整实现（macOS 显示器/应用管理/截图，JXA/screencapture） |
 
-<details>
-<summary>点击展开全部 50 个编译开关</summary>
+### Feature Flags（31 个，全部返回 `false`）
 
-| 开关 | 说明 |
-|------|------|
-| `BUDDY` | 宠物伴侣系统 |
-| `KAIROS` | 持久助手模式 |
-| `KAIROS_BRIEF` | 简报模式 |
-| `KAIROS_CHANNELS` | 通道通知 |
-| `KAIROS_GITHUB_WEBHOOKS` | GitHub Webhook |
-| `ULTRAPLAN` | 云端深度规划 |
-| `COORDINATOR_MODE` | 多 Agent 编排 |
-| `BRIDGE_MODE` | 远程控制桥接 |
-| `VOICE_MODE` | 语音交互 |
-| `PROACTIVE` | 主动自主模式 |
-| `FORK_SUBAGENT` | 子代理分叉 |
-| `DAEMON` | 守护进程模式 |
-| `UDS_INBOX` | Unix Socket 收件箱 |
-| `WORKFLOW_SCRIPTS` | 工作流脚本 |
-| `TORCH` | Torch 功能 |
-| `MONITOR_TOOL` | 监控工具 |
-| `HISTORY_SNIP` | 历史截断 |
-| `ANTI_DISTILLATION_CC` | 反蒸馏保护 |
-| `BASH_CLASSIFIER` | Bash 命令分类器 |
-| `BG_SESSIONS` | 后台会话 |
-| `CACHED_MICROCOMPACT` | 缓存微压缩 |
-| `CCR_REMOTE_SETUP` | Web 远程设置 |
-| `CHICAGO_MCP` | MCP 扩展（Computer Use） |
-| `COMMIT_ATTRIBUTION` | 提交归属标注 |
-| `CONNECTOR_TEXT` | 连接器文本 |
-| `CONTEXT_COLLAPSE` | 上下文折叠 |
-| `COWORKER_TYPE_TELEMETRY` | 协作者遥测 |
-| `DOWNLOAD_USER_SETTINGS` | 下载用户设置 |
-| `EXPERIMENTAL_SKILL_SEARCH` | 实验性技能搜索 |
-| `EXTRACT_MEMORIES` | 自动提取记忆 |
-| `FILE_PERSISTENCE` | 文件持久化 |
-| `HARD_FAIL` | 硬失败模式 |
-| `LODESTONE` | Lodestone 功能 |
-| `MCP_SKILLS` | MCP 技能系统 |
-| `MEMORY_SHAPE_TELEMETRY` | 记忆形状遥测 |
-| `MESSAGE_ACTIONS` | 消息操作 |
-| `NATIVE_CLIENT_ATTESTATION` | 客户端证明 |
-| `PROMPT_CACHE_BREAK_DETECTION` | 缓存中断检测 |
-| `QUICK_SEARCH` | 快速搜索 |
-| `REACTIVE_COMPACT` | 响应式压缩 |
-| `SLOW_OPERATION_LOGGING` | 慢操作日志 |
-| `STREAMLINED_OUTPUT` | 精简输出 |
-| `TEAMMEM` | 团队记忆同步 |
-| `TEMPLATES` | 模板/分类器 |
-| `TERMINAL_PANEL` | 终端面板 |
-| `TOKEN_BUDGET` | Token 预算 |
-| `TRANSCRIPT_CLASSIFIER` | 转录分类器 |
-| `UNATTENDED_RETRY` | 无人值守重试 |
-| `UPLOAD_USER_SETTINGS` | 上传用户设置 |
-| `BREAK_CACHE_COMMAND` | 缓存清除注入 |
-
-</details>
-
-#### 第二层：用户类型（`USER_TYPE`）
-
-- **`ant`**（Anthropic 内部）— 解锁全部功能、20 分钟 GrowthBook 刷新、调试工具、200+ 处专属检查
-- **`external`**（外部用户）— 裁剪版，6 小时 GrowthBook 刷新
-
-#### 第三层：GrowthBook 远程 A/B 测试
-
-| 开关 | 控制内容 |
-|------|---------|
-| `tengu_kairos` | KAIROS 助手模式开关 |
-| `tengu_onyx_plover` | 自动做梦阈值（间隔/会话数） |
-| `tengu_cobalt_frost` | 语音识别（Nova 3）开关 |
-| `tengu_ultraplan_model` | Ultraplan 使用的模型 |
-| `tengu_ant_model_override` | 内部用户模型覆盖 |
-| `tengu_session_memory` | 会话记忆功能 |
-| `tengu_max_version_config` | 自动更新 Kill Switch |
-| `tengu_frond_boric` | 数据接收器 Kill Switch |
-| `tengu_herring_clock` | 团队记忆路径 |
-| `tengu_sm_config` | 会话记忆配置 |
-
----
-
-## 隐藏环境变量速查
-
-<details>
-<summary>点击展开完整环境变量列表</summary>
-
-| 环境变量 | 说明 |
-|----------|------|
-| `ANTHROPIC_MODEL` | 模型覆盖 |
-| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | 最大输出 token |
-| `CLAUDE_CODE_DISABLE_THINKING` | 禁用思考 |
-| `CLAUDE_CODE_PROACTIVE` | 主动模式 |
-| `CLAUDE_CODE_COORDINATOR_MODE` | 协调器模式 |
-| `CLAUDE_CODE_BRIEF` | 简报模式 |
-| `CLAUDE_CODE_USE_BEDROCK` | 使用 AWS Bedrock |
-| `CLAUDE_CODE_USE_VERTEX` | 使用 Google Vertex |
-| `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | 禁用自动记忆 |
-| `CLAUDE_CODE_EXTRA_BODY` | API 附加 JSON |
-| `CLAUDE_CODE_SYNTAX_HIGHLIGHT` | 语法高亮主题 |
-| `CLAUDE_CODE_IDLE_THRESHOLD_MINUTES` | 空闲阈值（默认 75 分钟） |
-| `CLAUDE_INTERNAL_FC_OVERRIDES` | GrowthBook 覆盖（仅 ant） |
-
-</details>
-
----
+`ABLATION_BASELINE` `AGENT_MEMORY_SNAPSHOT` `BG_SESSIONS` `BRIDGE_MODE` `BUDDY` `CCR_MIRROR` `CCR_REMOTE_SETUP` `CHICAGO_MCP` `COORDINATOR_MODE` `DAEMON` `DIRECT_CONNECT` `EXPERIMENTAL_SKILL_SEARCH` `FORK_SUBAGENT` `HARD_FAIL` `HISTORY_SNIP` `KAIROS` `KAIROS_BRIEF` `KAIROS_CHANNELS` `KAIROS_GITHUB_WEBHOOKS` `LODESTONE` `MCP_SKILLS` `PROACTIVE` `SSH_REMOTE` `TORCH` `TRANSCRIPT_CLASSIFIER` `UDS_INBOX` `ULTRAPLAN` `UPLOAD_USER_SETTINGS` `VOICE_MODE` `WEB_BROWSER_TOOL` `WORKFLOW_SCRIPTS`
 
 ## 项目结构
 
 ```
-src/                    # 核心源码（1,987 个 TS/TSX）
-├── tools/              # 53 个工具（Bash/FileEdit/Agent/MCP...）
-├── commands/           # 87 个斜杠命令
-├── services/           # API / MCP / analytics / autoDream
-├── components/         # 148 个终端 UI 组件（React + Ink）
-├── hooks/              # 87 个自定义 Hooks
-├── buddy/              # 宠物伴侣系统
-├── assistant/          # KAIROS 助手模式
-├── coordinator/        # 多 Agent 协调器
-├── bridge/             # 远程控制桥接（31 文件）
-├── proactive/          # 主动模式
-├── vim/                # Vim 模式引擎
-├── voice/              # 语音交互
-└── ...
-shims/                  # 原生模块兼容替代
-vendor/                 # 原生绑定源码
+claude-code/
+├── src/
+│   ├── entrypoints/
+│   │   ├── cli.tsx          # 入口文件（含 MACRO/feature polyfill）
+│   │   └── sdk/             # SDK 子模块 stub
+│   ├── main.tsx             # 主 CLI 逻辑（Commander 定义）
+│   └── types/
+│       ├── global.d.ts      # 全局变量/宏声明
+│       └── internal-modules.d.ts  # 内部 npm 包类型声明
+├── packages/                # Monorepo workspace 包
+│   ├── color-diff-napi/     # 完整实现（终端 color diff）
+│   ├── modifiers-napi/      # stub（macOS 修饰键检测）
+│   ├── audio-capture-napi/  # stub
+│   ├── image-processor-napi/# stub
+│   ├── url-handler-napi/    # stub
+│   └── @ant/               # Anthropic 内部包 stub
+│       ├── claude-for-chrome-mcp/
+│       ├── computer-use-mcp/
+│       ├── computer-use-input/
+│       └── computer-use-swift/
+├── scripts/                 # 自动化 stub 生成脚本
+├── build.ts                 # 构建脚本（Bun.build + code splitting + Node.js 兼容后处理）
+├── dist/                    # 构建输出（入口 cli.js + ~450 chunk 文件）
+└── package.json             # Bun workspaces monorepo 配置
 ```
 
----
+## 技术说明
 
-## 数据来源
+### 运行时 Polyfill
 
-- npm 包：[@anthropic-ai/claude-code](https://www.npmjs.com/package/@anthropic-ai/claude-code)
-- 还原方式：提取 `cli.js.map` 中的 `sourcesContent`
+入口文件 `src/entrypoints/cli.tsx` 顶部注入了必要的 polyfill：
 
-## 声明
+- `feature()` — 所有 feature flag 返回 `false`，跳过未实现分支
+- `globalThis.MACRO` — 模拟构建时宏注入（VERSION 等）
 
-- 源码版权归 [Anthropic](https://www.anthropic.com) 所有
-- 仅用于技术研究与学习，请勿用于商业用途
-- 如有侵权，请联系删除
+### Monorepo
+
+项目采用 Bun workspaces 管理内部包。原先手工放在 `node_modules/` 下的 stub 已统一迁入 `packages/`，通过 `workspace:*` 解析。
+
+## Feature Flags 详解
+
+原版 Claude Code 通过 `bun:bundle` 的 `feature()` 在构建时注入 feature flag，由 GrowthBook 等 A/B 实验平台控制灰度发布。本项目中 `feature()` 被 polyfill 为始终返回 `false`，因此以下 30 个 flag 全部关闭。
+
+### 自主 Agent
+
+| Flag | 用途 |
+|------|------|
+| `KAIROS` | Assistant 模式 — 长期运行的自主 Agent（含 brief、push 通知、文件发送） |
+| `KAIROS_BRIEF` | Kairos Brief — 向用户发送简报摘要 |
+| `KAIROS_CHANNELS` | Kairos 频道 — 多频道通信 |
+| `KAIROS_GITHUB_WEBHOOKS` | GitHub Webhook 订阅 — PR 事件实时推送给 Agent |
+| `PROACTIVE` | 主动模式 — Agent 主动执行任务，含 SleepTool 定时唤醒 |
+| `COORDINATOR_MODE` | 协调器模式 — 多 Agent 编排调度 |
+| `BUDDY` | Buddy 配对编程功能 |
+| `FORK_SUBAGENT` | Fork 子代理 — 从当前会话分叉出独立子代理 |
+
+### 远程 / 分布式
+
+| Flag | 用途 |
+|------|------|
+| `BRIDGE_MODE` | 远程控制桥接 — 允许外部客户端远程操控 Claude Code |
+| `DAEMON` | 守护进程 — 后台常驻服务，支持 worker 和 supervisor |
+| `BG_SESSIONS` | 后台会话 — `ps`/`logs`/`attach`/`kill`/`--bg` 等后台进程管理 |
+| `SSH_REMOTE` | SSH 远程 — `claude ssh <host>` 连接远程主机 |
+| `DIRECT_CONNECT` | 直连模式 — `cc://` URL 协议、server 命令、`open` 命令 |
+| `CCR_REMOTE_SETUP` | 网页端远程配置 — 通过浏览器配置 Claude Code |
+| `CCR_MIRROR` | Claude Code Runtime 镜像 — 会话状态同步/复制 |
+
+### 通信
+
+| Flag | 用途 |
+|------|------|
+| `UDS_INBOX` | Unix Domain Socket 收件箱 — Agent 间本地通信（`/peers`） |
+
+### 增强工具
+
+| Flag | 用途 |
+|------|------|
+| `CHICAGO_MCP` | Computer Use MCP — 计算机操作（屏幕截图、鼠标键盘控制） |
+| `WEB_BROWSER_TOOL` | 网页浏览器工具 — 在终端内嵌浏览器交互 |
+| `VOICE_MODE` | 语音模式 — 语音输入输出，麦克风 push-to-talk |
+| `WORKFLOW_SCRIPTS` | 工作流脚本 — 用户自定义自动化工作流 |
+| `MCP_SKILLS` | 基于 MCP 的 Skill 加载机制 |
+
+### 对话管理
+
+| Flag | 用途 |
+|------|------|
+| `HISTORY_SNIP` | 历史裁剪 — 手动裁剪对话历史中的片段（`/force-snip`） |
+| `ULTRAPLAN` | 超级计划 — 远程 Agent 协作的大规模规划功能 |
+| `AGENT_MEMORY_SNAPSHOT` | Agent 运行时的记忆快照功能 |
+
+### 基础设施 / 实验
+
+| Flag | 用途 |
+|------|------|
+| `ABLATION_BASELINE` | 科学实验 — 基线消融测试，用于 A/B 实验对照组 |
+| `HARD_FAIL` | 硬失败模式 — 遇错直接中断而非降级 |
+| `TRANSCRIPT_CLASSIFIER` | 对话分类器 — `auto-mode` 命令，自动分析和分类对话记录 |
+| `UPLOAD_USER_SETTINGS` | 设置同步上传 — 将本地配置同步到云端 |
+| `LODESTONE` | 深度链接协议处理器 — 从外部应用跳转到 Claude Code 指定位置 |
+| `EXPERIMENTAL_SKILL_SEARCH` | 实验性 Skill 搜索索引 |
+| `TORCH` | Torch 功能（具体用途未知，可能是某种高亮/追踪机制） |
+
+## 许可证
+
+本项目仅供学习研究用途。Claude Code 的所有权利归 [Anthropic](https://www.anthropic.com/) 所有。

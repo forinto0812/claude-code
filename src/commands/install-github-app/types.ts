@@ -1,3 +1,4 @@
-export type Workflow = Record<string, unknown>
-export type Warning = Record<string, unknown>
-export type State = Record<string, unknown>
+// Auto-generated stub — replace with real implementation
+export type Workflow = any;
+export type State = any;
+export type Warning = any;
