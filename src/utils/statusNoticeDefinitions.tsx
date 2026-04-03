@@ -53,88 +53,21 @@ const largeMemoryFilesNotice: StatusNoticeDefinition = {
 const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
   id: 'claude-ai-external-token',
   type: 'warning',
-  isActive: () => {
-    const authTokenInfo = getAuthTokenSource();
-    return isClaudeAISubscriber() && (authTokenInfo.source === 'ANTHROPIC_AUTH_TOKEN' || authTokenInfo.source === 'apiKeyHelper');
-  },
-  render: () => {
-    const authTokenInfo = getAuthTokenSource();
-    return <Box flexDirection="row" marginTop={1}>
-        <Text color="warning">{figures.warning}</Text>
-        <Text color="warning">
-          Auth conflict: Using {authTokenInfo.source} instead of Claude account
-          subscription token. Either unset {authTokenInfo.source}, or run
-          `claude /logout`.
-        </Text>
-      </Box>;
-  }
+  isActive: () => false,
+  render: () => null
 };
 const apiKeyConflictNotice: StatusNoticeDefinition = {
   id: 'api-key-conflict',
   type: 'warning',
-  isActive: () => {
-    const {
-      source: apiKeySource
-    } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true
-    });
-    return !!getApiKeyFromConfigOrMacOSKeychain() && (apiKeySource === 'ANTHROPIC_API_KEY' || apiKeySource === 'apiKeyHelper');
-  },
-  render: () => {
-    const {
-      source: apiKeySource
-    } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true
-    });
-    return <Box flexDirection="row" marginTop={1}>
-        <Text color="warning">{figures.warning}</Text>
-        <Text color="warning">
-          Auth conflict: Using {apiKeySource} instead of Anthropic Console key.
-          Either unset {apiKeySource}, or run `claude /logout`.
-        </Text>
-      </Box>;
-  }
+  isActive: () => false,
+  render: () => null
 };
 const bothAuthMethodsNotice: StatusNoticeDefinition = {
   id: 'both-auth-methods',
   type: 'warning',
-  isActive: () => {
-    const {
-      source: apiKeySource
-    } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true
-    });
-    const authTokenInfo = getAuthTokenSource();
-    return apiKeySource !== 'none' && authTokenInfo.source !== 'none' && !(apiKeySource === 'apiKeyHelper' && authTokenInfo.source === 'apiKeyHelper');
-  },
+  isActive: () => false,
   render: () => {
-    const {
-      source: apiKeySource
-    } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true
-    });
-    const authTokenInfo = getAuthTokenSource();
-    return <Box flexDirection="column" marginTop={1}>
-        <Box flexDirection="row">
-          <Text color="warning">{figures.warning}</Text>
-          <Text color="warning">
-            Auth conflict: Both a token ({authTokenInfo.source}) and an API key
-            ({apiKeySource}) are set. This may lead to unexpected behavior.
-          </Text>
-        </Box>
-        <Box flexDirection="column" marginLeft={3}>
-          <Text color="warning">
-            · Trying to use{' '}
-            {authTokenInfo.source === 'claude.ai' ? 'claude.ai' : authTokenInfo.source}
-            ?{' '}
-            {apiKeySource === 'ANTHROPIC_API_KEY' ? 'Unset the ANTHROPIC_API_KEY environment variable, or claude /logout then say "No" to the API key approval before login.' : apiKeySource === 'apiKeyHelper' ? 'Unset the apiKeyHelper setting.' : 'claude /logout'}
-          </Text>
-          <Text color="warning">
-            · Trying to use {apiKeySource}?{' '}
-            {authTokenInfo.source === 'claude.ai' ? 'claude /logout to sign out of claude.ai.' : `Unset the ${authTokenInfo.source} environment variable.`}
-          </Text>
-        </Box>
-      </Box>;
+    return null;
   }
 };
 const largeAgentDescriptionsNotice: StatusNoticeDefinition = {

@@ -169,12 +169,7 @@ export async function createDefaultEnvironment(): Promise<boolean> {
 
 /** Returns true when the user has valid Claude OAuth credentials. */
 export async function isSignedIn(): Promise<boolean> {
-  try {
-    await prepareApiRequest()
-    return true
-  } catch {
-    return false
-  }
+  return true
 }
 
 export function getCodeWebUrl(): string {

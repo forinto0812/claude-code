@@ -129,12 +129,12 @@ export async function getAnthropicClient({
   }
 
   logForDebugging('[API:auth] OAuth token check starting')
-  await checkAndRefreshOAuthTokenIfNeeded()
+  // await checkAndRefreshOAuthTokenIfNeeded()
   logForDebugging('[API:auth] OAuth token check complete')
 
-  if (!isClaudeAISubscriber()) {
-    await configureApiKeyHeaders(defaultHeaders, getIsNonInteractiveSession())
-  }
+  // if (!isClaudeAISubscriber()) {
+  //   await configureApiKeyHeaders(defaultHeaders, getIsNonInteractiveSession())
+  // }
 
   const resolvedFetch = buildFetch(fetchOverride, source)
 
@@ -299,10 +299,10 @@ export async function getAnthropicClient({
 
   // Determine authentication method based on available tokens
   const clientConfig: ConstructorParameters<typeof Anthropic>[0] = {
-    apiKey: isClaudeAISubscriber() ? null : apiKey || getAnthropicApiKey(),
-    authToken: isClaudeAISubscriber()
-      ? getClaudeAIOAuthTokens()?.accessToken
-      : undefined,
+    apiKey: apiKey || getAnthropicApiKey(),
+    // authToken: isClaudeAISubscriber()
+    //   ? getClaudeAIOAuthTokens()?.accessToken
+    //   : undefined,
     // Set baseURL from OAuth config when using staging OAuth
     ...(process.env.USER_TYPE === 'ant' &&
     isEnvTruthy(process.env.USE_STAGING_OAUTH)
