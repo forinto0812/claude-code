@@ -1,5 +1,39 @@
 # DEV-LOG
 
+## Enable Computer Use with Windows support (2026-04-03)
+
+恢复 Computer Use 屏幕操控功能，并新增 Windows 支持（参考项目仅 macOS）。
+
+**Phase 1 — MCP server stub 替换：**
+
+从参考项目复制 `@ant/computer-use-mcp` 完整实现（12 文件，6517 行），替换原 stub。
+
+**Phase 2 — input 包平台架构：**
+
+将 `@ant/computer-use-input` 从单文件拆为 dispatcher + backends 架构：
+- `index.ts` → dispatcher（按 platform 选后端）
+- `types.ts` → 共享 InputBackend 接口
+- `backends/darwin.ts` → 原有 macOS AppleScript 实现（原样拆出）
+- `backends/win32.ts` → 新增 Windows PowerShell 实现（SetCursorPos/SendInput/keybd_event）
+
+**Phase 3 — swift 包平台架构：**
+
+将 `@ant/computer-use-swift` 同样拆为 dispatcher + backends：
+- `backends/darwin.ts` → 原有 macOS screencapture 实现
+- `backends/win32.ts` → 新增 Windows PowerShell 实现（CopyFromScreen/GetProcess/Win32 API）
+
+**编译开关：** `DEFAULT_FEATURES` + `DEFAULT_BUILD_FEATURES` 加 `"CHICAGO_MCP"`
+
+**验证结果（Windows x64）：**
+- `isSupported: true`
+- 鼠标移动/画圆 ✅
+- 前台窗口信息 ✅
+- 双显示器检测 ✅
+- 全屏截图 2560x1440 ✅
+- 运行中应用列表 ✅
+
+---
+
 ## Enable Remote Control / BRIDGE_MODE (2026-04-03)
 
 **PR**: [claude-code-best/claude-code#60](https://github.com/claude-code-best/claude-code/pull/60)
