@@ -44,6 +44,7 @@ export function initI18n(localeData: Record<Locale, Record<string, string>>, det
  * Set the current locale
  */
 export function setLocale(locale: Locale): void {
+  if (locale === currentLocale) return;
   currentLocale = locale;
   localeListeners.forEach((cb) => cb());
 }
@@ -94,7 +95,8 @@ export function t(key: TranslationKey, params?: Record<string, string>): string 
   // Interpolate parameters
   if (params) {
     for (const [param, replacement] of Object.entries(params)) {
-      value = value.replace(new RegExp(`\\{${param}\\}`, 'g'), replacement);
+      const safeParam = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      value = value.replace(new RegExp(`\\{${safeParam}\\}`, 'g'), replacement);
     }
   }
 
@@ -105,7 +107,10 @@ export function t(key: TranslationKey, params?: Record<string, string>): string 
  * Check if a translation key exists
  */
 export function has(key: TranslationKey): boolean {
-  return !!(translations[currentLocale]?.[key] || translations[DEFAULT_LOCALE]?.[key]);
+  const localeData = translations[currentLocale] || translations[DEFAULT_LOCALE];
+  if (key in localeData) return true;
+  if (currentLocale !== DEFAULT_LOCALE && key in translations[DEFAULT_LOCALE]) return true;
+  return false;
 }
 
 // Re-export types (they are already exported above)
