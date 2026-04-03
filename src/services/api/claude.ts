@@ -1784,6 +1784,27 @@ async function* queryModel(
         const params = paramsFromContext(context)
         captureAPIRequest(params, options.querySource) // Capture for bug reports
 
+        // Log the full API request to debug log file
+        logForDebugging(`[API_REQUEST] model=${params.model} max_tokens=${params.max_tokens}`)
+        // Set CLAUDE_CODE_LOG_FULL_PROMPT=1 to log full system prompt and messages
+        if (isEnvTruthy(process.env.CLAUDE_CODE_LOG_FULL_PROMPT)) {
+          logForDebugging(`[API_REQUEST_SYSTEM_FULL] ${jsonStringify(params.system)}`)
+          logForDebugging(`[API_REQUEST_MESSAGES_FULL] ${jsonStringify(params.messages)}`)
+        } else {
+          logForDebugging(`[API_REQUEST_SYSTEM] ${jsonStringify(params.system).slice(0, 5000)}...`)
+          logForDebugging(`[API_REQUEST_MESSAGES] count=${params.messages.length}`)
+        }
+        logForDebugging(`[API_REQUEST_TOOLS] count=${params.tools?.length ?? 0}`)
+        if (params.tools && params.tools.length > 0) {
+          for (const tool of params.tools) {
+            if ('name' in tool) {
+              logForDebugging(`[API_REQUEST_TOOL] name=${tool.name}`)
+            } else if ('type' in tool) {
+              logForDebugging(`[API_REQUEST_TOOL] type=${tool.type}`)
+            }
+          }
+        }
+
         maxOutputTokens = params.max_tokens
 
         // Fire immediately before the fetch is dispatched. .withResponse() below
@@ -1986,12 +2007,14 @@ async function* queryModel(
                   ...part.content_block,
                   input: '',
                 }
+                logForDebugging(`[TOOL_USE] name=${part.content_block.name} id=${part.content_block.id}`)
                 break
               case 'server_tool_use':
                 contentBlocks[part.index] = {
                   ...part.content_block,
                   input: '' as unknown as { [key: string]: unknown },
                 }
+                logForDebugging(`[MCP_TOOL_USE] name=${part.content_block.name} id=${part.content_block.id}`)
                 if ((part.content_block.name as string) === 'advisor') {
                   isAdvisorInProgress = true
                   logForDebugging(`[AdvisorTool] Advisor tool called`)
@@ -2233,6 +2256,11 @@ async function* queryModel(
               lastMsg.message.usage = usage
               lastMsg.message.stop_reason = stopReason
             }
+
+            // Log the API response summary
+            logForDebugging(`[API_RESPONSE] stop_reason=${stopReason} usage=${jsonStringify(usage)}`)
+            logForDebugging(`[API_RESPONSE_MESSAGES] count=${newMessages.length}`)
+            logForDebugging(`[API_RESPONSE_CONTENT] ${jsonStringify(newMessages)}`)
 
             // Update cost
             const costUSDForPart = calculateUSDCost(resolvedModel, usage as unknown as BetaUsage)

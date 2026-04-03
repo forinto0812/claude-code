@@ -251,6 +251,19 @@ export const AgentTool = buildTool({
     const startTime = Date.now();
     const model = isCoordinatorMode() ? undefined : modelParam;
 
+    // Log Agent tool invocation details
+    logForDebugging(`[AGENT_TOOL] Invoking Agent with parameters:`);
+    logForDebugging(`[AGENT_TOOL]   description: ${description}`);
+    logForDebugging(`[AGENT_TOOL]   subagent_type: ${subagent_type ?? '(auto-select)'}`);
+    logForDebugging(`[AGENT_TOOL]   model: ${model ?? '(default)'}`);
+    logForDebugging(`[AGENT_TOOL]   run_in_background: ${run_in_background ?? false}`);
+    logForDebugging(`[AGENT_TOOL]   prompt length: ${prompt.length} chars`);
+    if (name) logForDebugging(`[AGENT_TOOL]   name: ${name}`);
+    if (team_name) logForDebugging(`[AGENT_TOOL]   team_name: ${team_name}`);
+    if (spawnMode) logForDebugging(`[AGENT_TOOL]   mode: ${spawnMode}`);
+    if (isolation) logForDebugging(`[AGENT_TOOL]   isolation: ${isolation}`);
+    if (cwd) logForDebugging(`[AGENT_TOOL]   cwd: ${cwd}`);
+
     // Get app state for permission mode and agent filtering
     const appState = toolUseContext.getAppState();
     const permissionMode = appState.toolPermissionContext.mode;
@@ -298,6 +311,12 @@ export const AgentTool = buildTool({
         agent_type: subagent_type,
         invokingRequestId: assistantMessage?.requestId as string | undefined
       }, toolUseContext);
+
+      // Log teammate spawn
+      logForDebugging(`[AGENT_TOOL] Teammate spawned: ${name}`);
+      logForDebugging(`[AGENT_TOOL]   team_name: ${teamName}`);
+      logForDebugging(`[AGENT_TOOL]   agent_type: ${subagent_type ?? '(default)'}`);
+      logForDebugging(`[AGENT_TOOL]   model: ${model ?? agentDef?.model ?? '(default)'}`);
 
       // Type assertion uses TeammateSpawnedOutput (defined above) instead of any.
       // This type is excluded from the exported outputSchema for dead code elimination.
@@ -354,6 +373,16 @@ export const AgentTool = buildTool({
       }
       selectedAgent = found;
     }
+
+    // Log selected agent definition details
+    logForDebugging(`[AGENT_TOOL] Selected agent: ${selectedAgent.agentType}`);
+    logForDebugging(`[AGENT_TOOL]   source: ${selectedAgent.source}`);
+    if (selectedAgent.model) logForDebugging(`[AGENT_TOOL]   agent model: ${selectedAgent.model}`);
+    if (selectedAgent.permissionMode) logForDebugging(`[AGENT_TOOL]   permissionMode: ${selectedAgent.permissionMode}`);
+    if (selectedAgent.maxTurns) logForDebugging(`[AGENT_TOOL]   maxTurns: ${selectedAgent.maxTurns}`);
+    if (selectedAgent.background) logForDebugging(`[AGENT_TOOL]   background: ${selectedAgent.background}`);
+    if (selectedAgent.effort !== undefined) logForDebugging(`[AGENT_TOOL]   effort: ${selectedAgent.effort}`);
+    if (selectedAgent.requiredMcpServers?.length) logForDebugging(`[AGENT_TOOL]   requiredMcpServers: ${selectedAgent.requiredMcpServers.join(', ')}`);
 
     // Same lifecycle constraint as the run_in_background guard above, but for
     // agent definitions that force background via `background: true`. Checked
@@ -466,6 +495,12 @@ export const AgentTool = buildTool({
       logEvent('tengu_agent_tool_remote_launched', {
         agent_type: selectedAgent.agentType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
+
+      // Log remote agent launch
+      logForDebugging(`[AGENT_TOOL] Remote agent launched: ${selectedAgent.agentType}`);
+      logForDebugging(`[AGENT_TOOL]   taskId: ${taskId}`);
+      logForDebugging(`[AGENT_TOOL]   sessionUrl: ${getRemoteTaskSessionUrl(sessionId)}`);
+
       const remoteResult: RemoteLaunchedOutput = {
         status: 'remote_launched',
         taskId,
@@ -751,6 +786,12 @@ export const AgentTool = buildTool({
         getWorktreeResult: cleanupWorktreeIfNeeded
       })));
       const canReadOutputFile = toolUseContext.options.tools.some(t => toolMatchesName(t, FILE_READ_TOOL_NAME) || toolMatchesName(t, BASH_TOOL_NAME));
+
+      // Log async agent launch
+      logForDebugging(`[AGENT_TOOL] Async agent launched: ${selectedAgent.agentType}`);
+      logForDebugging(`[AGENT_TOOL]   agentId: ${agentBackgroundTask.agentId}`);
+      logForDebugging(`[AGENT_TOOL]   outputFile: ${getTaskOutputPath(agentBackgroundTask.agentId)}`);
+
       return {
         data: {
           isAsync: true as const,
@@ -1233,6 +1274,16 @@ export const AgentTool = buildTool({
           logForDebugging(`Sync agent recovering from error with ${agentMessages.length} messages`);
         }
         const agentResult = finalizeAgentTool(agentMessages, syncAgentId, metadata);
+
+        // Log Agent completion with usage statistics
+        const duration = Date.now() - startTime;
+        logForDebugging(`[AGENT_TOOL] Agent completed: ${selectedAgent.agentType}`);
+        logForDebugging(`[AGENT_TOOL]   agentId: ${syncAgentId}`);
+        logForDebugging(`[AGENT_TOOL]   totalTokens: ${agentResult.totalTokens}`);
+        logForDebugging(`[AGENT_TOOL]   totalToolUseCount: ${agentResult.totalToolUseCount}`);
+        logForDebugging(`[AGENT_TOOL]   duration_ms: ${duration}`);
+        logForDebugging(`[AGENT_TOOL]   content items: ${agentResult.content.length}`);
+
         if (feature('TRANSCRIPT_CLASSIFIER')) {
           const currentAppState = toolUseContext.getAppState();
           const handoffWarning = await classifyHandoffIfNeeded({
