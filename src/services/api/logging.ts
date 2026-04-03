@@ -108,13 +108,19 @@ function detectGateway({
   headers,
   baseUrl,
 }: {
-  headers?: globalThis.Headers
+  headers?: globalThis.Headers | Record<string, string>
   baseUrl?: string
 }): KnownGateway | undefined {
   if (headers) {
-    // Header names are already lowercase from the Headers API
+    // Handle both Headers instances (with forEach) and plain objects
+    // Third-party APIs may return headers as plain objects
     const headerNames: string[] = []
-    headers.forEach((_, key) => headerNames.push(key))
+    if (headers instanceof Headers) {
+      headers.forEach((_, key) => headerNames.push(key))
+    } else if (typeof headers === 'object' && headers !== null) {
+      // Plain object - get all keys (some APIs normalize to lowercase)
+      headerNames.push(...Object.keys(headers))
+    }
     for (const [gw, { prefixes }] of Object.entries(GATEWAY_FINGERPRINTS)) {
       if (prefixes.some(p => headerNames.some(h => h.startsWith(p)))) {
         return gw as KnownGateway
@@ -263,7 +269,7 @@ export function logAPIError({
   clientRequestId?: string
   didFallBackToNonStreaming?: boolean
   promptCategory?: string
-  headers?: globalThis.Headers
+  headers?: globalThis.Headers | Record<string, string>
   queryTracking?: QueryChainTracking
   querySource?: string
   /** The span from startLLMRequestSpan - pass this to correctly match responses to requests */
@@ -618,7 +624,7 @@ export function logAPISuccessAndDuration({
   stopReason: BetaStopReason | null
   didFallBackToNonStreaming: boolean
   querySource: string
-  headers?: globalThis.Headers
+  headers?: globalThis.Headers | Record<string, string>
   costUSD: number
   queryTracking?: QueryChainTracking
   permissionMode?: PermissionMode

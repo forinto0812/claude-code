@@ -11,6 +11,7 @@ import { getSSLErrorHint } from '../services/api/errorUtils.js';
 import { sendNotification } from '../services/notifier.js';
 import { OAuthService } from '../services/oauth/index.js';
 import { getOauthAccountInfo, validateForceLoginOrg } from '../utils/auth.js';
+import { t } from '../i18n/index.js';
 import { logError } from '../utils/log.js';
 import { getSettings_DEPRECATED, updateSettingsForSource } from '../utils/settings/settings.js';
 import { Select } from './CustomSelect/select.js';
@@ -59,7 +60,6 @@ type OAuthStatus = {
   message: string;
   toRetry?: OAuthStatus;
 };
-const PASTE_HERE_MSG = 'Paste code here if prompted > ';
 export function ConsoleOAuthFlow({
   onDone,
   startingMessage,
@@ -69,7 +69,8 @@ export function ConsoleOAuthFlow({
   const settings = getSettings_DEPRECATED() || {};
   const forceLoginMethod = forceLoginMethodProp ?? settings.forceLoginMethod;
   const orgUUID = settings.forceLoginOrgUUID;
-  const forcedMethodMessage = forceLoginMethod === 'claudeai' ? 'Login method pre-selected: Subscription Plan (Claude Pro/Max)' : forceLoginMethod === 'console' ? 'Login method pre-selected: API Usage Billing (Anthropic Console)' : null;
+  const PASTE_HERE_MSG = t('auth.pasteCodePrompt');
+  const forcedMethodMessage = forceLoginMethod === 'claudeai' ? t('auth.preSelectedClaude') : forceLoginMethod === 'console' ? t('auth.preSelectedConsole') : null;
   const terminal = useTerminalNotification();
   const [oauthStatus, setOAuthStatus] = useState<OAuthStatus>(() => {
     if (mode === 'setup-token') {
@@ -168,7 +169,7 @@ export function ConsoleOAuthFlow({
       if (!authorizationCode || !state) {
         setOAuthStatus({
           state: 'error',
-          message: 'Invalid code. Please make sure the full code was copied',
+          message: t('auth.invalidCode'),
           toRetry: {
             state: 'waiting_for_login',
             url
@@ -220,7 +221,7 @@ export function ConsoleOAuthFlow({
         const sslHint_0 = getSSLErrorHint(err_1);
         setOAuthStatus({
           state: 'error',
-          message: sslHint_0 ?? (isTokenExchangeError ? 'Failed to exchange authorization code for access token. Please try again.' : err_1.message),
+          message: sslHint_0 ?? (isTokenExchangeError ? t('auth.tokenExchangeFailed') : err_1.message),
           toRetry: mode === 'setup-token' ? {
             state: 'ready_to_start'
           } : {
@@ -250,7 +251,7 @@ export function ConsoleOAuthFlow({
           state: 'success'
         });
         void sendNotification({
-          message: 'Claude Code login successful',
+          message: t('auth.loginSuccess'),
           notificationType: 'auth_success'
         }, terminal);
       }
@@ -306,9 +307,9 @@ export function ConsoleOAuthFlow({
       {oauthStatus.state === 'waiting_for_login' && showPastePrompt && <Box flexDirection="column" key="urlToCopy" gap={1} paddingBottom={1}>
           <Box paddingX={1}>
             <Text dimColor>
-              Browser didn&apos;t open? Use the url below to sign in{' '}
+              {t('auth.browserNotOpened')}{' '}
             </Text>
-            {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+            {urlCopied ? <Text color="success">({t('auth.copied')})</Text> : <Text dimColor>
                 <KeyboardShortcutHint shortcut="c" action="copy" parens />
               </Text>}
           </Box>
@@ -318,18 +319,16 @@ export function ConsoleOAuthFlow({
         </Box>}
       {mode === 'setup-token' && oauthStatus.state === 'success' && oauthStatus.token && <Box key="tokenOutput" flexDirection="column" gap={1} paddingTop={1}>
             <Text color="success">
-              ✓ Long-lived authentication token created successfully!
+              {t('auth.tokenCreated')}
             </Text>
             <Box flexDirection="column" gap={1}>
-              <Text>Your OAuth token (valid for 1 year):</Text>
+              <Text>{t('auth.tokenLabel')}</Text>
               <Text color="warning">{oauthStatus.token}</Text>
               <Text dimColor>
-                Store this token securely. You won&apos;t be able to see it
-                again.
+                {t('auth.tokenSecure')}
               </Text>
               <Text dimColor>
-                Use this token by setting: export
-                CLAUDE_CODE_OAUTH_TOKEN=&lt;token&gt;
+                {t('auth.tokenUsage')}
               </Text>
             </Box>
           </Box>}
@@ -375,7 +374,7 @@ function OAuthStatusMessage(t0) {
   switch (oauthStatus.state) {
     case "idle":
       {
-        const t1 = startingMessage ? startingMessage : "Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.";
+        const t1 = startingMessage ? startingMessage : t('auth.description');
         let t2;
         if ($[0] !== t1) {
           t2 = <Text bold={true}>{t1}</Text>;
@@ -386,7 +385,7 @@ function OAuthStatusMessage(t0) {
         }
         let t3;
         if ($[2] === Symbol.for("react.memo_cache_sentinel")) {
-          t3 = <Text>Select login method:</Text>;
+          t3 = <Text>{t('auth.selectMethod')}</Text>;
           $[2] = t3;
         } else {
           t3 = $[2];
@@ -394,7 +393,7 @@ function OAuthStatusMessage(t0) {
         let t4;
         if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
           t4 = {
-            label: <Text>Claude account with subscription ·{" "}<Text dimColor={true}>Pro, Max, Team, or Enterprise</Text>{false && <Text>{"\n"}<Text color="warning">[ANT-ONLY]</Text>{" "}<Text dimColor={true}>Please use this option unless you need to login to a special org for accessing sensitive data (e.g. customer data, HIPI data) with the Console option</Text></Text>}{"\n"}</Text>,
+            label: <Text>{t('ui.accountWithSubscription')} ·{" "}<Text dimColor={true}>{t('auth.claudeAccountDesc')}</Text>{false && <Text>{"\n"}<Text color="warning">[ANT-ONLY]</Text>{" "}<Text dimColor={true}>Please use this option unless you need to login to a special org for accessing sensitive data (e.g. customer data, HIPI data) with the Console option</Text></Text>}{"\n"}</Text>,
             value: "claudeai"
           };
           $[3] = t4;
@@ -404,7 +403,7 @@ function OAuthStatusMessage(t0) {
         let t5;
         if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
           t5 = {
-            label: <Text>Anthropic Console account ·{" "}<Text dimColor={true}>API usage billing</Text>{"\n"}</Text>,
+            label: <Text>{t('ui.consoleAccount')} ·{" "}<Text dimColor={true}>{t('auth.consoleAccountDesc')}</Text>{"\n"}</Text>,
             value: "console"
           };
           $[4] = t5;
@@ -417,7 +416,7 @@ function OAuthStatusMessage(t0) {
             label: <Text>Custom Platform ·{" "}<Text dimColor={true}>Configure your own API endpoint</Text>{"\n"}</Text>,
             value: "custom_platform"
           }, t4, t5, {
-            label: <Text>3rd-party platform ·{" "}<Text dimColor={true}>Amazon Bedrock, Microsoft Foundry, or Vertex AI</Text>{"\n"}</Text>,
+            label: <Text>{t('auth.platform')} ·{" "}<Text dimColor={true}>{t('auth.platformDesc')}</Text>{"\n"}</Text>,
             value: "platform"
           }];
           $[5] = t6;
@@ -477,7 +476,7 @@ function OAuthStatusMessage(t0) {
       {
         let t1;
         if ($[12] === Symbol.for("react.memo_cache_sentinel")) {
-          t1 = <Text bold={true}>Using 3rd-party platforms</Text>;
+          t1 = <Text bold={true}>{t('auth.platformTitle')}</Text>;
           $[12] = t1;
         } else {
           t1 = $[12];
@@ -485,8 +484,8 @@ function OAuthStatusMessage(t0) {
         let t2;
         let t3;
         if ($[13] === Symbol.for("react.memo_cache_sentinel")) {
-          t2 = <Text>Claude Code supports Amazon Bedrock, Microsoft Foundry, and Vertex AI. Set the required environment variables, then restart Claude Code.</Text>;
-          t3 = <Text>If you are part of an enterprise organization, contact your administrator for setup instructions.</Text>;
+          t2 = <Text>{t('auth.platformDoc')}</Text>;
+          t3 = <Text>{t('auth.platformEnterprise')}</Text>;
           $[13] = t2;
           $[14] = t3;
         } else {
@@ -495,7 +494,7 @@ function OAuthStatusMessage(t0) {
         }
         let t4;
         if ($[15] === Symbol.for("react.memo_cache_sentinel")) {
-          t4 = <Text bold={true}>Documentation:</Text>;
+          t4 = <Text bold={true}>{t('auth.documentation')}</Text>;
           $[15] = t4;
         } else {
           t4 = $[15];
@@ -523,7 +522,7 @@ function OAuthStatusMessage(t0) {
         }
         let t8;
         if ($[19] === Symbol.for("react.memo_cache_sentinel")) {
-          t8 = <Box flexDirection="column" gap={1} marginTop={1}>{t1}<Box flexDirection="column" gap={1}>{t2}{t3}{t7}<Box marginTop={1}><Text dimColor={true}>Press <Text bold={true}>Enter</Text> to go back to login options.</Text></Box></Box></Box>;
+          t8 = <Box flexDirection="column" gap={1} marginTop={1}>{t1}<Box flexDirection="column" gap={1}>{t2}{t3}{t7}<Box marginTop={1}><Text dimColor={true}>{t('ui.pressEnterToGoBack')}</Text></Box></Box></Box>;
           $[19] = t8;
         } else {
           t8 = $[19];
@@ -651,7 +650,7 @@ function OAuthStatusMessage(t0) {
         }
         let t2;
         if ($[22] !== showPastePrompt) {
-          t2 = !showPastePrompt && <Box><Spinner /><Text>Opening browser to sign in…</Text></Box>;
+          t2 = !showPastePrompt && <Box><Spinner /><Text>{t('auth.openingBrowser')}</Text></Box>;
           $[22] = showPastePrompt;
           $[23] = t2;
         } else {
@@ -659,7 +658,7 @@ function OAuthStatusMessage(t0) {
         }
         let t3;
         if ($[24] !== cursorOffset || $[25] !== handleSubmitCode || $[26] !== oauthStatus.url || $[27] !== pastedCode || $[28] !== setCursorOffset || $[29] !== setPastedCode || $[30] !== showPastePrompt || $[31] !== textInputColumns) {
-          t3 = showPastePrompt && <Box><Text>{PASTE_HERE_MSG}</Text><TextInput value={pastedCode} onChange={setPastedCode} onSubmit={value => handleSubmitCode(value, oauthStatus.url)} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} columns={textInputColumns} mask="*" /></Box>;
+          t3 = showPastePrompt && <Box><Text>{t('auth.pasteCodePrompt')}</Text><TextInput value={pastedCode} onChange={setPastedCode} onSubmit={value => handleSubmitCode(value, oauthStatus.url)} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} columns={textInputColumns} mask="*" /></Box>;
           $[24] = cursorOffset;
           $[25] = handleSubmitCode;
           $[26] = oauthStatus.url;
@@ -688,7 +687,7 @@ function OAuthStatusMessage(t0) {
       {
         let t1;
         if ($[37] === Symbol.for("react.memo_cache_sentinel")) {
-          t1 = <Box flexDirection="column" gap={1}><Box><Spinner /><Text>Creating API key for Claude Code…</Text></Box></Box>;
+          t1 = <Box flexDirection="column" gap={1}><Box><Spinner /><Text>{t('auth.creatingApiKey')}</Text></Box></Box>;
           $[37] = t1;
         } else {
           t1 = $[37];
@@ -699,7 +698,7 @@ function OAuthStatusMessage(t0) {
       {
         let t1;
         if ($[38] === Symbol.for("react.memo_cache_sentinel")) {
-          t1 = <Box flexDirection="column" gap={1}><Text color="permission">Retrying…</Text></Box>;
+          t1 = <Box flexDirection="column" gap={1}><Text color="permission">{t('auth.retrying')}</Text></Box>;
           $[38] = t1;
         } else {
           t1 = $[38];
@@ -710,7 +709,7 @@ function OAuthStatusMessage(t0) {
       {
         let t1;
         if ($[39] !== mode || $[40] !== oauthStatus.token) {
-          t1 = mode === "setup-token" && oauthStatus.token ? null : <>{getOauthAccountInfo()?.emailAddress ? <Text dimColor={true}>Logged in as{" "}<Text>{getOauthAccountInfo()?.emailAddress}</Text></Text> : null}<Text color="success">Login successful. Press <Text bold={true}>Enter</Text> to continue…</Text></>;
+          t1 = mode === "setup-token" && oauthStatus.token ? null : <>{getOauthAccountInfo()?.emailAddress ? <Text dimColor={true}>{t('auth.loggedInAs')}{" "}<Text>{getOauthAccountInfo()?.emailAddress}</Text></Text> : null}<Text color="success">{t('auth.loginSuccess')}</Text></>;
           $[39] = mode;
           $[40] = oauthStatus.token;
           $[41] = t1;

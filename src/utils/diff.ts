@@ -1,4 +1,4 @@
-import { type StructuredPatchHunk, structuredPatch } from 'diff'
+import { type StructuredPatchHunk, createPatch, structuredPatch } from 'diff'
 import { logEvent } from 'src/services/analytics/index.js'
 import { getLocCounter } from '../bootstrap/state.js'
 import { addToTotalLinesChanged } from '../cost-tracker.js'
@@ -7,7 +7,7 @@ import { count } from './array.js'
 import { convertLeadingTabsToSpaces } from './file.js'
 
 export const CONTEXT_LINES = 3
-export const DIFF_TIMEOUT_MS = 5_000
+export const DIFF_TIMEOUT_MS = 5_000 // 5 second timeout for diff computation
 
 /**
  * Shifts hunk line numbers by offset. Use when getPatchForDisplay received
@@ -174,4 +174,19 @@ export function getPatchForDisplay({
     ..._,
     lines: _.lines.map(unescapeFromDiff),
   }))
+}
+
+/**
+ * Generate a standard unified diff string for external consumption (e.g., IDE diff display).
+ * Unlike getPatchFromContents which returns structured hunks, this returns a renderable string.
+ */
+export function getUnifiedDiffString(
+  filePath: string,
+  oldContent: string | null,
+  newContent: string | null,
+): string {
+  const oldStr = oldContent ?? ''
+  const newStr = newContent ?? ''
+  if (oldStr === newStr) return ''
+  return createPatch(filePath, oldStr, newStr)
 }

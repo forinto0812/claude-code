@@ -1,5 +1,9 @@
+import { basename } from 'path'
+import { randomUUID } from 'crypto'
 import { logForDebugging } from 'src/utils/debug.js'
 import { z } from 'zod/v4'
+import { callIdeRpc } from './client.js'
+import { getUnifiedDiffString } from '../../utils/diff.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
@@ -33,22 +37,59 @@ export const LogEventNotificationSchema = lazySchema(() =>
 let vscodeMcpClient: ConnectedMCPServer | null = null
 
 /**
- * Sends a file_updated notification to the VSCode MCP server. This is used to
- * notify VSCode when files are edited or written by Claude.
+ * Opens a diff tab in VSCode showing the changes made to a file.
+ * Uses the IDE's openDiff RPC method to show a side-by-side diff.
+ */
+async function openDiffInVSCode(
+  filePath: string,
+  oldContent: string | null,
+  newContent: string | null,
+): Promise<void> {
+  if (!vscodeMcpClient || vscodeMcpClient.type !== 'connected') {
+    return
+  }
+
+  const sha = randomUUID().slice(0, 6)
+  const tabName = `✻ [Claude Code] ${basename(filePath)} (${sha}) ⧉`
+
+  try {
+    await callIdeRpc(
+      'openDiff',
+      {
+        old_file_path: filePath,
+        new_file_path: filePath,
+        new_file_contents: newContent ?? oldContent ?? '',
+        tab_name: tabName,
+      },
+      vscodeMcpClient,
+    )
+    logEvent('tengu_vscode_diff_opened', {})
+  } catch (error) {
+    logForDebugging(
+      `[VSCode] Failed to open diff for ${filePath}: ${(error as Error).message}`,
+    )
+  }
+}
+
+/**
+ * Sends a file_updated notification to the VSCode MCP server and opens a
+ * diff tab in the IDE. This is used to notify VSCode when files are edited
+ * or written by Claude, and automatically shows the diff to the user.
  */
 export function notifyVscodeFileUpdated(
   filePath: string,
   oldContent: string | null,
   newContent: string | null,
 ): void {
-  if (process.env.USER_TYPE !== 'ant' || !vscodeMcpClient) {
+  if (!vscodeMcpClient) {
     return
   }
 
+  const diff = getUnifiedDiffString(filePath, oldContent, newContent)
   void vscodeMcpClient.client
     .notification({
       method: 'file_updated',
-      params: { filePath, oldContent, newContent },
+      params: { filePath, oldContent, newContent, diff },
     })
     .catch((error: Error) => {
       // Do not throw if the notification failed
@@ -56,6 +97,9 @@ export function notifyVscodeFileUpdated(
         `[VSCode] Failed to send file_updated notification: ${error.message}`,
       )
     })
+
+  // Also open a diff tab in VSCode so the user can see the changes
+  void openDiffInVSCode(filePath, oldContent, newContent)
 }
 
 /**
