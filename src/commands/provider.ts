@@ -45,13 +45,19 @@ const call: LocalCommandCall = async (args, context) => {
     delete process.env.CLAUDE_CODE_USE_VERTEX
     delete process.env.CLAUDE_CODE_USE_FOUNDRY
     delete process.env.CLAUDE_CODE_USE_OPENAI
-    return { type: 'text', value: 'API provider cleared (will use environment variables).' }
+    return {
+      type: 'text',
+      value: 'API provider cleared (will use environment variables).',
+    }
   }
 
   // Validate provider
   const validProviders = ['anthropic', 'openai', 'bedrock', 'vertex', 'foundry']
   if (!validProviders.includes(arg)) {
-    return { type: 'text', value: `Invalid provider: ${arg}\nValid: ${validProviders.join(', ')}` }
+    return {
+      type: 'text',
+      value: `Invalid provider: ${arg}\nValid: ${validProviders.join(', ')}`,
+    }
   }
 
   // Check env vars when switching to openai (including settings.env)
@@ -92,7 +98,10 @@ const call: LocalCommandCall = async (args, context) => {
     process.env[getEnvVarForProvider(arg)] = '1'
     // Do not modify settings.json - cloud providers controlled solely by env vars
     applyConfigEnvironmentVariables()
-    return { type: 'text', value: `API provider set to ${arg} (via environment variable).` }
+    return {
+      type: 'text',
+      value: `API provider set to ${arg} (via environment variable).`,
+    }
   }
 }
 

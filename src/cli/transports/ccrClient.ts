@@ -427,7 +427,10 @@ export class CCRClient {
           'delivery batch',
         )
         if (!result.ok) {
-          throw new RetryableError('delivery POST failed', (result as any).retryAfterMs)
+          throw new RetryableError(
+            'delivery POST failed',
+            (result as any).retryAfterMs,
+          )
         }
       },
       baseDelayMs: 500,

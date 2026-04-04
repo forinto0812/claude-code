@@ -59,7 +59,13 @@ public class WinEnum {
  */
 export function listWindows(): WindowInfo[] {
   const result = Bun.spawnSync({
-    cmd: ['powershell', '-NoProfile', '-NonInteractive', '-Command', ENUM_WINDOWS_PS],
+    cmd: [
+      'powershell',
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      ENUM_WINDOWS_PS,
+    ],
     stdout: 'pipe',
     stderr: 'pipe',
   })

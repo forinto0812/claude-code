@@ -204,7 +204,10 @@ $obj | ConvertTo-Json -Compress
 /**
  * Click an element by its automationId using InvokePattern.
  */
-export function clickElement(windowTitle: string, automationId: string): boolean {
+export function clickElement(
+  windowTitle: string,
+  automationId: string,
+): boolean {
   const escapedTitle = windowTitle.replace(/'/g, "''")
   const escapedId = automationId.replace(/'/g, "''")
 
@@ -237,7 +240,11 @@ try {
 /**
  * Set the value of an element by its automationId using ValuePattern.
  */
-export function setValue(windowTitle: string, automationId: string, value: string): boolean {
+export function setValue(
+  windowTitle: string,
+  automationId: string,
+  value: string,
+): boolean {
   const escapedTitle = windowTitle.replace(/'/g, "''")
   const escapedId = automationId.replace(/'/g, "''")
   const escapedValue = value.replace(/'/g, "''")

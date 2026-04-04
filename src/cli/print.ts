@@ -362,9 +362,12 @@ const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
     ? (require('../proactive/index.js') as typeof import('../proactive/index.js'))
     : null
-const cronSchedulerModule = require('../utils/cronScheduler.js') as typeof import('../utils/cronScheduler.js')
-const cronJitterConfigModule = require('../utils/cronJitterConfig.js') as typeof import('../utils/cronJitterConfig.js')
-const cronGate = require('../tools/ScheduleCronTool/prompt.js') as typeof import('../tools/ScheduleCronTool/prompt.js')
+const cronSchedulerModule =
+  require('../utils/cronScheduler.js') as typeof import('../utils/cronScheduler.js')
+const cronJitterConfigModule =
+  require('../utils/cronJitterConfig.js') as typeof import('../utils/cronJitterConfig.js')
+const cronGate =
+  require('../tools/ScheduleCronTool/prompt.js') as typeof import('../tools/ScheduleCronTool/prompt.js')
 const extractMemoriesModule = feature('EXTRACT_MEMORIES')
   ? (require('../services/extractMemories/extractMemories.js') as typeof import('../services/extractMemories/extractMemories.js'))
   : null
@@ -1642,7 +1645,10 @@ function runHeadlessStreaming(
         connection.config.type === 'stdio' ||
         connection.config.type === undefined
       ) {
-        const stdioConfig = connection.config as { command: string; args: string[] }
+        const stdioConfig = connection.config as {
+          command: string
+          args: string[]
+        }
         config = {
           type: 'stdio' as const,
           command: stdioConfig.command,
@@ -1804,7 +1810,8 @@ function runHeadlessStreaming(
     }
     for (const [name, config] of Object.entries(sdkMcpConfigs)) {
       if (config.type === 'sdk' && !(name in supportedConfigs)) {
-        supportedConfigs[name] = config as unknown as McpServerConfigForProcessTransport
+        supportedConfigs[name] =
+          config as unknown as McpServerConfigForProcessTransport
       }
     }
     const { response, sdkServersChanged } =
@@ -2253,7 +2260,9 @@ function runHeadlessStreaming(
 
           if (feature('FILE_PERSISTENCE') && turnStartTime !== undefined) {
             void executeFilePersistence(
-              { turnStartTime } as import('src/utils/filePersistence/types.js').TurnStartTime,
+              {
+                turnStartTime,
+              } as import('src/utils/filePersistence/types.js').TurnStartTime,
               abortController.signal,
               result => {
                 output.enqueue({
@@ -2699,9 +2708,7 @@ function runHeadlessStreaming(
   // the end of run() picks up the queued command.
   let cronScheduler: import('../utils/cronScheduler.js').CronScheduler | null =
     null
-  if (
-    cronGate.isKairosCronEnabled()
-  ) {
+  if (cronGate.isKairosCronEnabled()) {
     cronScheduler = cronSchedulerModule.createCronScheduler({
       onFire: prompt => {
         if (inputClosed) return
@@ -4431,7 +4438,10 @@ async function handleInitializeRequest(
   const accountInfo = getAccountInformation()
   if (request.hooks) {
     const hooks: Partial<Record<HookEvent, HookCallbackMatcher[]>> = {}
-    for (const [event, matchers] of Object.entries(request.hooks) as [string, Array<{ hookCallbackIds: string[]; timeout?: number; matcher?: string }>][]) {
+    for (const [event, matchers] of Object.entries(request.hooks) as [
+      string,
+      Array<{ hookCallbackIds: string[]; timeout?: number; matcher?: string }>,
+    ][]) {
       hooks[event as HookEvent] = matchers.map(matcher => {
         const callbacks = matcher.hookCallbackIds.map(callbackId => {
           return structuredIO.createHookCallback(callbackId, matcher.timeout)
@@ -4521,7 +4531,11 @@ async function handleRewindFiles(
   dryRun: boolean,
 ): Promise<RewindFilesResult> {
   if (!fileHistoryEnabled()) {
-    return { canRewind: false, error: 'File rewinding is not enabled.', filesChanged: [] }
+    return {
+      canRewind: false,
+      error: 'File rewinding is not enabled.',
+      filesChanged: [],
+    }
   }
   if (!fileHistoryCanRestore(appState.fileHistory, userMessageId)) {
     return {
@@ -4826,7 +4840,10 @@ function reregisterChannelHandlerAfterReconnect(
         value: wrapChannelMessage(connection.name, content, meta),
         priority: 'next',
         isMeta: true,
-        origin: { kind: 'channel', server: connection.name } as unknown as string,
+        origin: {
+          kind: 'channel',
+          server: connection.name,
+        } as unknown as string,
         skipSlashCommands: true,
       })
     },
@@ -5250,13 +5267,21 @@ export async function handleOrphanedPermissionResponse({
   onEnqueued?: () => void
   handledToolUseIds: Set<string>
 }): Promise<boolean> {
-  const responseInner = message.response as { subtype?: string; response?: Record<string, unknown>; request_id?: string } | undefined
+  const responseInner = message.response as
+    | {
+        subtype?: string
+        response?: Record<string, unknown>
+        request_id?: string
+      }
+    | undefined
   if (
     responseInner?.subtype === 'success' &&
     responseInner.response?.toolUseID &&
     typeof responseInner.response.toolUseID === 'string'
   ) {
-    const permissionResult = responseInner.response as PermissionResult & { toolUseID?: string }
+    const permissionResult = responseInner.response as PermissionResult & {
+      toolUseID?: string
+    }
     const toolUseID = permissionResult.toolUseID
     if (!toolUseID) {
       return false

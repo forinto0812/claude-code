@@ -829,7 +829,10 @@ export async function initEnvLessBridgeCore(
         return
       }
       const event = { ...request, session_id: sessionId }
-      if ((request as { request?: { subtype?: string } }).request?.subtype === 'can_use_tool') {
+      if (
+        (request as { request?: { subtype?: string } }).request?.subtype ===
+        'can_use_tool'
+      ) {
         transport.reportState('requires_action')
       }
       void transport.write(event)

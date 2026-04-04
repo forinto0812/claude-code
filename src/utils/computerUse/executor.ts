@@ -69,18 +69,26 @@ function computeTargetDims(
 
 async function readClipboardViaPbpaste(): Promise<string> {
   if (process.platform === 'win32') {
-    const { stdout, code } = await execFileNoThrow('powershell', ['-NoProfile', '-Command', 'Get-Clipboard'], {
-      useCwd: false,
-    })
+    const { stdout, code } = await execFileNoThrow(
+      'powershell',
+      ['-NoProfile', '-Command', 'Get-Clipboard'],
+      {
+        useCwd: false,
+      },
+    )
     if (code !== 0) {
       throw new Error(`PowerShell Get-Clipboard exited with code ${code}`)
     }
     return stdout
   }
   if (process.platform === 'linux') {
-    const { stdout, code } = await execFileNoThrow('xclip', ['-selection', 'clipboard', '-o'], {
-      useCwd: false,
-    })
+    const { stdout, code } = await execFileNoThrow(
+      'xclip',
+      ['-selection', 'clipboard', '-o'],
+      {
+        useCwd: false,
+      },
+    )
     if (code !== 0) {
       throw new Error(`xclip exited with code ${code}`)
     }
@@ -97,19 +105,31 @@ async function readClipboardViaPbpaste(): Promise<string> {
 
 async function writeClipboardViaPbcopy(text: string): Promise<void> {
   if (process.platform === 'win32') {
-    const { code } = await execFileNoThrow('powershell', ['-NoProfile', '-Command', `Set-Clipboard -Value '${text.replace(/'/g, "''")}'`], {
-      useCwd: false,
-    })
+    const { code } = await execFileNoThrow(
+      'powershell',
+      [
+        '-NoProfile',
+        '-Command',
+        `Set-Clipboard -Value '${text.replace(/'/g, "''")}'`,
+      ],
+      {
+        useCwd: false,
+      },
+    )
     if (code !== 0) {
       throw new Error(`PowerShell Set-Clipboard exited with code ${code}`)
     }
     return
   }
   if (process.platform === 'linux') {
-    const { code } = await execFileNoThrow('xclip', ['-selection', 'clipboard'], {
-      input: text,
-      useCwd: false,
-    })
+    const { code } = await execFileNoThrow(
+      'xclip',
+      ['-selection', 'clipboard'],
+      {
+        input: text,
+        useCwd: false,
+      },
+    )
     if (code !== 0) {
       throw new Error(`xclip exited with code ${code}`)
     }
@@ -297,7 +317,11 @@ export function createCliExecutor(opts: {
   getMouseAnimationEnabled: () => boolean
   getHideBeforeActionEnabled: () => boolean
 }): ComputerExecutor {
-  if (process.platform !== 'darwin' && process.platform !== 'win32' && process.platform !== 'linux') {
+  if (
+    process.platform !== 'darwin' &&
+    process.platform !== 'win32' &&
+    process.platform !== 'linux'
+  ) {
     throw new Error(
       `createCliExecutor called on ${process.platform}. Computer control requires macOS, Windows, or Linux.`,
     )
@@ -432,7 +456,8 @@ export function createCliExecutor(opts: {
       return {
         ...raw,
         hidden: (raw as any).hidden ?? [],
-        displayId: (raw as any).displayId ?? opts.preferredDisplayId ?? d.displayId,
+        displayId:
+          (raw as any).displayId ?? opts.preferredDisplayId ?? d.displayId,
       }
     },
 

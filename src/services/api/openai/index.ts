@@ -1,10 +1,18 @@
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { SystemPrompt } from '../../../utils/systemPromptType.js'
-import type { Message, StreamEvent, SystemAPIErrorMessage, AssistantMessage } from '../../../types/message.js'
+import type {
+  Message,
+  StreamEvent,
+  SystemAPIErrorMessage,
+  AssistantMessage,
+} from '../../../types/message.js'
 import type { Tools } from '../../../Tool.js'
 import { getOpenAIClient } from './client.js'
 import { anthropicMessagesToOpenAI } from './convertMessages.js'
-import { anthropicToolsToOpenAI, anthropicToolChoiceToOpenAI } from './convertTools.js'
+import {
+  anthropicToolsToOpenAI,
+  anthropicToolChoiceToOpenAI,
+} from './convertTools.js'
 import { adaptOpenAIStreamToAnthropic } from './streamAdapter.js'
 import { resolveOpenAIModel } from './modelMapping.js'
 import { normalizeMessagesForAPI } from '../../../utils/messages.js'
@@ -59,12 +67,17 @@ export async function* queryModelOpenAI(
     const standardTools = toolSchemas.filter(
       (t): t is BetaToolUnion & { type: string } => {
         const anyT = t as Record<string, unknown>
-        return anyT.type !== 'advisor_20260301' && anyT.type !== 'computer_20250124'
+        return (
+          anyT.type !== 'advisor_20260301' && anyT.type !== 'computer_20250124'
+        )
       },
     )
 
     // 4. Convert messages and tools to OpenAI format
-    const openaiMessages = anthropicMessagesToOpenAI(messagesForAPI, systemPrompt)
+    const openaiMessages = anthropicMessagesToOpenAI(
+      messagesForAPI,
+      systemPrompt,
+    )
     const openaiTools = anthropicToolsToOpenAI(standardTools)
     const openaiToolChoice = anthropicToolChoiceToOpenAI(options.toolChoice)
 
@@ -75,7 +88,9 @@ export async function* queryModelOpenAI(
       source: options.querySource,
     })
 
-    logForDebugging(`[OpenAI] Calling model=${openaiModel}, messages=${openaiMessages.length}, tools=${openaiTools.length}`)
+    logForDebugging(
+      `[OpenAI] Calling model=${openaiModel}, messages=${openaiMessages.length}, tools=${openaiTools.length}`,
+    )
 
     // 6. Call OpenAI API with streaming
     const stream = await client.chat.completions.create(
@@ -121,7 +136,7 @@ export async function* queryModelOpenAI(
           if ((event as any).message?.usage) {
             usage = {
               ...usage,
-              ...((event as any).message.usage),
+              ...(event as any).message.usage,
             }
           }
           break
@@ -164,11 +179,7 @@ export async function* queryModelOpenAI(
           const m: AssistantMessage = {
             message: {
               ...partialMessage,
-              content: normalizeContentFromAPI(
-                [block],
-                tools,
-                options.agentId,
-              ),
+              content: normalizeContentFromAPI([block], tools, options.agentId),
             },
             requestId: undefined,
             type: 'assistant',
@@ -192,7 +203,10 @@ export async function* queryModelOpenAI(
       }
 
       // Track cost and token usage (matching the Anthropic path in claude.ts)
-      if (event.type === 'message_stop' && usage.input_tokens + usage.output_tokens > 0) {
+      if (
+        event.type === 'message_stop' &&
+        usage.input_tokens + usage.output_tokens > 0
+      ) {
         const costUSD = calculateUSDCost(openaiModel, usage as any)
         addToTotalSessionCost(costUSD, usage as any, options.model)
       }

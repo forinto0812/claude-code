@@ -15,14 +15,18 @@ export function anthropicToolsToOpenAI(
   return tools
     .filter(tool => {
       // Only convert standard tools (skip server tools like computer_use, etc.)
-      return tool.type === 'custom' || !('type' in tool) || tool.type !== 'server'
+      return (
+        tool.type === 'custom' || !('type' in tool) || tool.type !== 'server'
+      )
     })
     .map(tool => {
       // Handle the various tool shapes from Anthropic SDK
       const anyTool = tool as Record<string, unknown>
       const name = (anyTool.name as string) || ''
       const description = (anyTool.description as string) || ''
-      const inputSchema = anyTool.input_schema as Record<string, unknown> | undefined
+      const inputSchema = anyTool.input_schema as
+        | Record<string, unknown>
+        | undefined
 
       return {
         type: 'function' as const,

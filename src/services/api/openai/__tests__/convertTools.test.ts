@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import { anthropicToolsToOpenAI, anthropicToolChoiceToOpenAI } from '../convertTools.js'
+import {
+  anthropicToolsToOpenAI,
+  anthropicToolChoiceToOpenAI,
+} from '../convertTools.js'
 
 describe('anthropicToolsToOpenAI', () => {
   test('converts basic tool', () => {
@@ -18,25 +21,30 @@ describe('anthropicToolsToOpenAI', () => {
 
     const result = anthropicToolsToOpenAI(tools as any)
 
-    expect(result).toEqual([{
-      type: 'function',
-      function: {
-        name: 'bash',
-        description: 'Run a bash command',
-        parameters: {
-          type: 'object',
-          properties: { command: { type: 'string' } },
-          required: ['command'],
+    expect(result).toEqual([
+      {
+        type: 'function',
+        function: {
+          name: 'bash',
+          description: 'Run a bash command',
+          parameters: {
+            type: 'object',
+            properties: { command: { type: 'string' } },
+            required: ['command'],
+          },
         },
       },
-    }])
+    ])
   })
 
   test('uses empty schema when input_schema missing', () => {
     const tools = [{ type: 'custom', name: 'noop', description: 'no-op' }]
     const result = anthropicToolsToOpenAI(tools as any)
 
-    expect(result[0].function.parameters).toEqual({ type: 'object', properties: {} })
+    expect(result[0].function.parameters).toEqual({
+      type: 'object',
+      properties: {},
+    })
   })
 
   test('strips Anthropic-specific fields', () => {

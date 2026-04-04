@@ -36,7 +36,10 @@ if (process.env.NODE_ENV === 'development') {
     void import('./devtools.js')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: unknown) {
-    if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND') {
+    if (
+      error instanceof Error &&
+      (error as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND'
+    ) {
       // biome-ignore lint/suspicious/noConsole: intentional warning
       console.warn(
         `

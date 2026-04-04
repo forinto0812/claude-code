@@ -7,6 +7,9 @@ describe('resolveOpenAIModel', () => {
     ANTHROPIC_DEFAULT_HAIKU_MODEL: process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL,
     ANTHROPIC_DEFAULT_SONNET_MODEL: process.env.ANTHROPIC_DEFAULT_SONNET_MODEL,
     ANTHROPIC_DEFAULT_OPUS_MODEL: process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+    OPENAI_DEFAULT_HAIKU_MODEL: process.env.OPENAI_DEFAULT_HAIKU_MODEL,
+    OPENAI_DEFAULT_SONNET_MODEL: process.env.OPENAI_DEFAULT_SONNET_MODEL,
+    OPENAI_DEFAULT_OPUS_MODEL: process.env.OPENAI_DEFAULT_OPUS_MODEL,
   }
 
   beforeEach(() => {
@@ -14,6 +17,9 @@ describe('resolveOpenAIModel', () => {
     delete process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL
     delete process.env.ANTHROPIC_DEFAULT_SONNET_MODEL
     delete process.env.ANTHROPIC_DEFAULT_OPUS_MODEL
+    delete process.env.OPENAI_DEFAULT_HAIKU_MODEL
+    delete process.env.OPENAI_DEFAULT_SONNET_MODEL
+    delete process.env.OPENAI_DEFAULT_OPUS_MODEL
   })
 
   afterEach(() => {
@@ -58,5 +64,40 @@ describe('resolveOpenAIModel', () => {
 
   test('strips [1m] suffix', () => {
     expect(resolveOpenAIModel('claude-sonnet-4-6[1m]')).toBe('gpt-4o')
+  })
+
+  test('OPENAI_DEFAULT_SONNET_MODEL overrides ANTHROPIC_DEFAULT_SONNET_MODEL', () => {
+    process.env.OPENAI_DEFAULT_SONNET_MODEL = 'gpt-4.1'
+    process.env.ANTHROPIC_DEFAULT_SONNET_MODEL = 'claude-sonnet-4-6'
+    try {
+      expect(resolveOpenAIModel('claude-sonnet-4-6')).toBe('gpt-4.1')
+    } finally {
+      delete process.env.OPENAI_DEFAULT_SONNET_MODEL
+      delete process.env.ANTHROPIC_DEFAULT_SONNET_MODEL
+    }
+  })
+
+  test('OPENAI_DEFAULT_HAIKU_MODEL overrides ANTHROPIC_DEFAULT_HAIKU_MODEL', () => {
+    process.env.OPENAI_DEFAULT_HAIKU_MODEL = 'gpt-4.0-mini'
+    process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL = 'claude-haiku-4-5'
+    try {
+      expect(resolveOpenAIModel('claude-haiku-4-5-20251001')).toBe(
+        'gpt-4.0-mini',
+      )
+    } finally {
+      delete process.env.OPENAI_DEFAULT_HAIKU_MODEL
+      delete process.env.ANTHROPIC_DEFAULT_HAIKU_MODEL
+    }
+  })
+
+  test('OPENAI_DEFAULT_OPUS_MODEL overrides ANTHROPIC_DEFAULT_OPUS_MODEL', () => {
+    process.env.OPENAI_DEFAULT_OPUS_MODEL = 'o1-pro'
+    process.env.ANTHROPIC_DEFAULT_OPUS_MODEL = 'claude-opus-4-6'
+    try {
+      expect(resolveOpenAIModel('claude-opus-4-6')).toBe('o1-pro')
+    } finally {
+      delete process.env.OPENAI_DEFAULT_OPUS_MODEL
+      delete process.env.ANTHROPIC_DEFAULT_OPUS_MODEL
+    }
   })
 })

@@ -267,7 +267,9 @@ export class StructuredIO {
   getPendingPermissionRequests() {
     return Array.from(this.pendingRequests.values())
       .map(entry => entry.request)
-      .filter(pr => (pr.request as { subtype?: string }).subtype === 'can_use_tool')
+      .filter(
+        pr => (pr.request as { subtype?: string }).subtype === 'can_use_tool',
+      )
   }
 
   setUnexpectedResponseCallback(
@@ -285,7 +287,14 @@ export class StructuredIO {
    * callback is aborted via the signal — otherwise the callback hangs.
    */
   injectControlResponse(response: SDKControlResponse): void {
-    const responseInner = response.response as { request_id?: string; subtype?: string; error?: string; response?: unknown } | undefined
+    const responseInner = response.response as
+      | {
+          request_id?: string
+          subtype?: string
+          error?: string
+          response?: unknown
+        }
+      | undefined
     const requestId = responseInner?.request_id
     if (!requestId) return
     const request = this.pendingRequests.get(requestId as string)
@@ -408,7 +417,8 @@ export class StructuredIO {
         // Notify the bridge when the SDK consumer resolves a can_use_tool
         // request, so it can cancel the stale permission prompt on claude.ai.
         if (
-          (request.request.request as { subtype?: string }).subtype === 'can_use_tool' &&
+          (request.request.request as { subtype?: string }).subtype ===
+            'can_use_tool' &&
           this.onControlRequestResolved
         ) {
           this.onControlRequestResolved(message.response.request_id)
@@ -490,7 +500,10 @@ export class StructuredIO {
       throw new Error('Request aborted')
     }
     this.outbound.enqueue(message)
-    if ((request as { subtype?: string }).subtype === 'can_use_tool' && this.onControlRequestSent) {
+    if (
+      (request as { subtype?: string }).subtype === 'can_use_tool' &&
+      this.onControlRequestSent
+    ) {
       this.onControlRequestSent(message)
     }
     const aborted = () => {
@@ -822,7 +835,8 @@ async function executePermissionRequestHooksForSDK(
         const finalInput = decision.updatedInput || input
 
         // Apply permission updates if provided by hook ("always allow")
-        const permissionUpdates = (decision.updatedPermissions ?? []) as unknown as InternalPermissionUpdate[]
+        const permissionUpdates = (decision.updatedPermissions ??
+          []) as unknown as InternalPermissionUpdate[]
         if (permissionUpdates.length > 0) {
           persistPermissionUpdates(permissionUpdates)
           const currentAppState = toolUseContext.getAppState()

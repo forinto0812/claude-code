@@ -56,9 +56,7 @@ export function anthropicMessagesToOpenAI(
 
 function systemPromptToText(systemPrompt: SystemPrompt): string {
   if (!systemPrompt || systemPrompt.length === 0) return ''
-  return systemPrompt
-    .filter(Boolean)
-    .join('\n\n')
+  return systemPrompt.filter(Boolean).join('\n\n')
 }
 
 function convertInternalUserMessage(
@@ -152,7 +150,9 @@ function convertInternalAssistantMessage(
   }
 
   const textParts: string[] = []
-  const toolCalls: NonNullable<ChatCompletionAssistantMessageParam['tool_calls']> = []
+  const toolCalls: NonNullable<
+    ChatCompletionAssistantMessageParam['tool_calls']
+  > = []
 
   for (const block of content) {
     if (typeof block === 'string') {

@@ -2,7 +2,12 @@ import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 
 import { getInitialSettings } from '../settings/settings.js'
 import { isEnvTruthy } from '../envUtils.js'
 
-export type APIProvider = 'firstParty' | 'bedrock' | 'vertex' | 'foundry' | 'openai'
+export type APIProvider =
+  | 'firstParty'
+  | 'bedrock'
+  | 'vertex'
+  | 'foundry'
+  | 'openai'
 
 export function getAPIProvider(): APIProvider {
   // Cloud provider env vars have highest priority (they are explicit switches)
