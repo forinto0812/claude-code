@@ -4,7 +4,9 @@ import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'os'
 import * as path from 'path'
 import { logEvent } from 'src/services/analytics/index.js'
+import { fileURLToPath } from 'url'
 import { isInBundledMode } from './bundledMode.js'
+import { getRipgrepBinaryPath } from './ripgrepAsset.js'
 import { logForDebugging } from './debug.js'
 import { isEnvDefinedFalsy } from './envUtils.js'
 import { execFileNoThrow } from './execFileNoThrow.js'
@@ -12,7 +14,13 @@ import { findExecutable } from './findExecutable.js'
 import { logError } from './log.js'
 import { getPlatform } from './platform.js'
 import { countCharInString } from './stringUtils.js'
-import { getRipgrepBinaryPath } from './ripgrepAsset.js'
+
+const __filename = fileURLToPath(import.meta.url)
+// we use node:path.join instead of node:url.resolve because the former doesn't encode spaces
+const __dirname = path.join(
+  __filename,
+  process.env.NODE_ENV === 'test' ? '../../../' : '../',
+)
 
 type RipgrepConfig = {
   mode: 'system' | 'builtin' | 'embedded'
@@ -21,12 +29,7 @@ type RipgrepConfig = {
   argv0?: string
 }
 
-// Lazy async init: ripgrep binary is decoded from base64 to a temp file on first use.
-// The promise resolves to the config, which is then cached synchronously.
-let ripgrepConfigCache: RipgrepConfig | null = null
-let ripgrepConfigPromise: Promise<RipgrepConfig> | null = null
-
-async function initRipgrepConfig(): Promise<RipgrepConfig> {
+const getRipgrepConfig = memoize((): RipgrepConfig => {
   const userWantsSystemRipgrep = isEnvDefinedFalsy(
     process.env.USE_BUILTIN_RIPGREP,
   )
@@ -42,47 +45,28 @@ async function initRipgrepConfig(): Promise<RipgrepConfig> {
     }
   }
 
-  // In bundled (native) mode, ripgrep is statically compiled into bun-internal
-  // and dispatches based on argv[0]. We spawn ourselves with argv0='rg'.
+  // In bundled mode (compiled exe), ripgrep is embedded via base64.
+  // Extract to temp and execute from there.
   if (isInBundledMode()) {
-    const binaryPath = await getRipgrepBinaryPath()
-    return {
-      mode: 'embedded',
-      command: binaryPath,
-      args: [],
-      argv0: 'rg',
-    }
+    const rgPath = getRipgrepBinaryPath()
+    return { mode: 'builtin', command: rgPath, args: [] }
   }
 
-  const binaryPath = await getRipgrepBinaryPath()
-  return { mode: 'builtin', command: binaryPath, args: [] }
-}
+  const rgRoot = path.resolve(__dirname, 'vendor', 'ripgrep')
+  const command =
+    process.platform === 'win32'
+      ? path.resolve(rgRoot, `${process.arch}-win32`, 'rg.exe')
+      : path.resolve(rgRoot, `${process.arch}-${process.platform}`, 'rg')
 
-async function getRipgrepConfigAsync(): Promise<RipgrepConfig> {
-  if (ripgrepConfigCache) {
-    return ripgrepConfigCache
-  }
-  if (!ripgrepConfigPromise) {
-    ripgrepConfigPromise = initRipgrepConfig().then(config => {
-      ripgrepConfigCache = config
-      return config
-    })
-  }
-  return ripgrepConfigPromise
-}
+  return { mode: 'builtin', command, args: [] }
+})
 
-// Synchronous version — only valid after first async init has resolved.
-// Use this only when you're certain the module has been initialized (e.g., after REPL startup).
-function getRipgrepConfigSync(): RipgrepConfig | null {
-  return ripgrepConfigCache
-}
-
-export async function ripgrepCommand(): Promise<{
+export function ripgrepCommand(): {
   rgPath: string
   rgArgs: string[]
   argv0?: string
-}> {
-  const config = await getRipgrepConfigAsync()
+} {
+  const config = getRipgrepConfig()
   return {
     rgPath: config.command,
     rgArgs: config.args,
@@ -118,7 +102,7 @@ export class RipgrepTimeoutError extends Error {
   }
 }
 
-async function ripGrepRaw(
+function ripGrepRaw(
   args: string[],
   target: string,
   abortSignal: AbortSignal,
@@ -128,12 +112,12 @@ async function ripGrepRaw(
     stderr: string,
   ) => void,
   singleThread = false,
-): Promise<ChildProcess> {
+): ChildProcess {
   // NB: When running interactively, ripgrep does not require a path as its last
   // argument, but when run non-interactively, it will hang unless a path or file
   // pattern is provided
 
-  const { rgPath, rgArgs, argv0 } = await ripgrepCommand()
+  const { rgPath, rgArgs, argv0 } = ripgrepCommand()
 
   // Use single-threaded mode only if explicitly requested for this call's retry
   const threadArgs = singleThread ? ['-j', '1'] : []
@@ -241,7 +225,7 @@ async function ripGrepRaw(
       killSignal: process.platform === 'win32' ? undefined : 'SIGKILL',
     },
     callback,
-  ) as unknown as ChildProcess
+  )
 }
 
 /**
@@ -262,7 +246,7 @@ async function ripGrepFileCount(
   abortSignal: AbortSignal,
 ): Promise<number> {
   await codesignRipgrepIfNecessary()
-  const { rgPath, rgArgs, argv0 } = await ripgrepCommand()
+  const { rgPath, rgArgs, argv0 } = ripgrepCommand()
 
   return new Promise<number>((resolve, reject) => {
     const child = spawn(rgPath, [...rgArgs, ...args, target], {
@@ -312,7 +296,7 @@ export async function ripGrepStream(
   onLines: (lines: string[]) => void,
 ): Promise<void> {
   await codesignRipgrepIfNecessary()
-  const { rgPath, rgArgs, argv0 } = await ripgrepCommand()
+  const { rgPath, rgArgs, argv0 } = ripgrepCommand()
 
   return new Promise<void>((resolve, reject) => {
     const child = spawn(rgPath, [...rgArgs, ...args, target], {
@@ -367,7 +351,7 @@ export async function ripGrep(
     logError(error)
   })
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const handleResult = (
       error: ExecFileException | null,
       stdout: string,
@@ -481,7 +465,7 @@ export async function ripGrep(
  * This is much more efficient than using native Node.js methods for counting files
  * in large directories since it uses ripgrep's highly optimized file traversal.
  *
- * @param dirPath Directory path to count files in
+ * @param path Directory path to count files in
  * @param abortSignal AbortSignal to cancel the operation
  * @param ignorePatterns Optional additional patterns to ignore (beyond .gitignore)
  * @returns Approximate file count rounded to the nearest power of 10
@@ -542,15 +526,15 @@ let ripgrepStatus: {
 } | null = null
 
 /**
- * Get ripgrep status and configuration info.
- * The path may be null if ripgrep hasn't been initialized yet.
+ * Get ripgrep status and configuration info
+ * Returns current configuration immediately, with working status if available
  */
-export async function getRipgrepStatus(): Promise<{
+export function getRipgrepStatus(): {
   mode: 'system' | 'builtin' | 'embedded'
   path: string
   working: boolean | null // null if not yet tested
-}> {
-  const config = await getRipgrepConfigAsync()
+} {
+  const config = getRipgrepConfig()
   return {
     mode: config.mode,
     path: config.command,
@@ -567,13 +551,14 @@ const testRipgrepOnFirstUse = memoize(async (): Promise<void> => {
     return
   }
 
-  const config = await getRipgrepConfigAsync()
+  const config = getRipgrepConfig()
 
   try {
     let test: { code: number; stdout: string }
 
-    // For embedded ripgrep, use Bun.spawn with argv0 so Bun dispatches to the embedded binary.
-    if (config.mode === 'embedded' && config.argv0) {
+    // For embedded ripgrep, use Bun.spawn with argv0
+    if (config.argv0) {
+      // Only Bun embeds ripgrep.
       // eslint-disable-next-line custom-rules/require-bun-typeof-guard
       const proc = Bun.spawn([config.command, '--version'], {
         argv0: config.argv0,
@@ -637,7 +622,7 @@ async function codesignRipgrepIfNecessary() {
   alreadyDoneSignCheck = true
 
   // Only sign the standalone vendored rg binary (npm builds)
-  const config = await getRipgrepConfigAsync()
+  const config = getRipgrepConfig()
   if (config.mode !== 'builtin') {
     return
   }

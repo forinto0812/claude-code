@@ -28,6 +28,13 @@ const defineArgs = Object.entries(defines).flatMap(([k, v]) => [
     `${k}:${v}`,
 ]);
 
+// Pass BUNDLED_MODE flag so ripgrepAsset.ts knows we're in compiled mode
+const defineArgsWithBundled = [
+    ...defineArgs,
+    "--define",
+    `BUNDLED_MODE:"true"`,
+];
+
 // Build --feature flags
 const featureArgs = features.flatMap(f => ["--feature", f]);
 
@@ -80,7 +87,7 @@ async function generateRipgrepAsset() {
     const ripgrepBinaries: Record<string, string> = {}
 
     // Map platform+arch to filename
-    const platforms: Array<{ key: string; subdir: string; file: string }> = [
+    const allPlatforms: Array<{ key: string; subdir: string; file: string }> = [
         { key: 'windows_x64',    subdir: 'x64-win32',     file: 'rg.exe' },
         { key: 'darwin_x64',    subdir: 'x64-darwin',    file: 'rg'     },
         { key: 'darwin_arm64',  subdir: 'arm64-darwin',  file: 'rg'     },
@@ -88,7 +95,16 @@ async function generateRipgrepAsset() {
         { key: 'linux_arm64',   subdir: 'arm64-linux',   file: 'rg'     },
     ];
 
-    for (const { key, subdir, file } of platforms) {
+    // Only embed the current platform's binary to minimize exe size.
+    // The other platforms are available in the SDK for dev-mode fallback.
+    const currentPlatformKey = (() => {
+        if (process.platform === 'win32') return 'windows_x64'
+        if (process.platform === 'darwin') return process.arch === 'arm64' ? 'darwin_arm64' : 'darwin_x64'
+        return process.arch === 'arm64' ? 'linux_arm64' : 'linux_x64'
+    })()
+
+    for (const { key, subdir, file } of allPlatforms) {
+        if (key !== currentPlatformKey) continue  // Skip other platforms
         const binPath = join(rgCache, subdir, file);
         try {
             const data = await readFile(binPath);
@@ -158,7 +174,7 @@ async function run() {
             "build",
             "--compile",
             "--outfile=" + outfile,
-            ...defineArgs,
+            ...defineArgsWithBundled,
             ...featureArgs,
             "src/entrypoints/cli.tsx",
         ],

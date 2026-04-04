@@ -1,76 +1,122 @@
 /**
- * Ripgrep binary decoded from base64 at runtime.
+ * Gets the ripgrep binary path for the current platform/arch.
  *
- * Bun's bundler does not support embedding non-.node binary files via ?url imports
- * or new URL(). The only reliable way to embed a binary into the compiled exe
- * is to base64-encode it and store it as a JS string constant (compile.ts generates
- * ripgrepAssetBase64.ts at build time). Decoded binaries are cached in temp files
- * for the lifetime of the process.
+ * In compiled mode: decodes base64 from ripgrepAssetBase64.ts, writes to temp,
+ * and caches on disk so subsequent starts skip the decode.
  *
- * Dev mode fallback: reads from SDK's bundled ripgrep if the base64 module is
- * not available (i.e., running via `bun run dev` without a prior `bun run compile`).
+ * In dev mode: falls back to SDK's bundled ripgrep path.
+ *
+ * BUNDLED_MODE is a compile-time constant injected by compile.ts --define flag.
  */
-import { writeFile, mkdir, readFile } from 'fs/promises'
+import { writeFileSync, readFileSync } from 'fs'
+import { mkdirSync } from 'fs'
 import { tmpdir } from 'os'
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { getPlatform } from './platform.js'
-import { fileURLToPath } from 'url'
 
-// Cache: platform+arch -> absolute path to decoded temp file
-const decodedPaths: Record<string, string> = {}
+// In-memory cache: platform+arch -> absolute path to extracted temp file
+const extractedPaths: Record<string, string> = {}
+
+// Global base64 data — loaded once on first access
+let globalBase64: Record<string, string> | null = null
 
 // SDK's bundled ripgrep path (used as fallback in dev mode)
 function getSdkRipgrepPath(): string {
   const p = getPlatform()
   const arch = process.arch
-  const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-  if (p === 'windows') return join(repoRoot, 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-win32/rg.exe')
-  if (p === 'macos') return join(repoRoot, 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep', arch === 'arm64' ? 'arm64-darwin/rg' : 'x64-darwin/rg')
-  return join(repoRoot, 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep', arch === 'arm64' ? 'arm64-linux/rg' : 'x64-linux/rg')
+  if (p === 'windows') return join(process.cwd(), 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-win32/rg.exe')
+  if (p === 'macos') return join(process.cwd(), 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep', arch === 'arm64' ? 'arm64-darwin/rg' : 'x64-darwin/rg')
+  return join(process.cwd(), 'node_modules/.bun/@anthropic-ai+claude-agent-sdk@0.2.87+3c5d820c62823f0b/node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep', arch === 'arm64' ? 'arm64-linux/rg' : 'x64-linux/rg')
 }
 
-async function tryGetFromBase64(key: string): Promise<string | null> {
-  try {
-    const { RIPGREP_BINARIES } = await import('./ripgrepAssetBase64.js')
-    const base64 = RIPGREP_BINARIES[key]
-    if (!base64) return null
-    const buffer = Buffer.from(base64, 'base64')
-    const tmpDir = join(tmpdir(), 'claude-code-ripgrep')
-    const isWindows = key === 'windows_x64'
-    const filename = isWindows ? 'rg.exe' : 'rg'
-    const filePath = join(tmpDir, filename)
-    await mkdir(tmpDir, { recursive: true })
-    await writeFile(filePath, buffer)
-    return filePath
-  } catch {
-    return null
-  }
+function getPlatformKey(): string {
+  const platform = getPlatform()
+  const arch = process.arch
+  if (platform === 'windows') return 'windows_x64'
+  if (platform === 'macos') return arch === 'arm64' ? 'darwin_arm64' : 'darwin_x64'
+  return arch === 'arm64' ? 'linux_arm64' : 'linux_x64'
+}
+
+// BUNDLED_MODE is injected at compile time by compile.ts --define flag.
+// In dev mode, this variable is undefined.
+declare const BUNDLED_MODE: string | undefined
+
+/**
+ * Load base64 data asynchronously (first call only).
+ * Subsequent calls use the cached global.
+ */
+async function ensureBase64Loaded(): Promise<Record<string, string>> {
+  if (globalBase64 !== null) return globalBase64
+  // Dynamic import so the 6.9MB base64 string isn't loaded in dev mode
+  const mod = await import('./ripgrepAssetBase64.js')
+  globalBase64 = mod.RIPGREP_BINARIES ?? {}
+  return globalBase64
 }
 
 /**
  * Get the ripgrep binary path for the current platform/arch.
- * Decodes from base64 (compiled mode) or falls back to SDK's ripgrep (dev mode).
+ * In compiled mode: decodes base64, extracts to temp, caches by version fingerprint.
+ * In dev mode: returns SDK path directly.
  */
-export async function getRipgrepBinaryPath(): Promise<string> {
-  const platform = getPlatform()
-  const arch = process.arch
+export function getRipgrepBinaryPath(): string {
+  const key = getPlatformKey()
+  if (extractedPaths[key]) return extractedPaths[key]
 
-  let key: string
-  if (platform === 'windows') key = 'windows_x64'
-  else if (platform === 'macos') key = arch === 'arm64' ? 'darwin_arm64' : 'darwin_x64'
-  else key = arch === 'arm64' ? 'linux_arm64' : 'linux_x64'
+  const tmpDir = join(tmpdir(), 'claude-code-ripgrep')
+  const filename = key === 'windows_x64' ? 'rg.exe' : 'rg'
+  const filePath = join(tmpDir, filename)
+  const versionPath = join(tmpDir, `${key}.version`)
 
-  if (decodedPaths[key]) return decodedPaths[key]
-
-  // Try base64 decoding first (compiled mode)
-  const base64Path = await tryGetFromBase64(key)
-  if (base64Path) {
-    decodedPaths[key] = base64Path
-    return base64Path
+  // Dev mode: use SDK path directly
+  if (typeof BUNDLED_MODE === 'undefined') {
+    const sdkPath = getSdkRipgrepPath()
+    extractedPaths[key] = sdkPath
+    return sdkPath
   }
 
-  // Fallback: use SDK's bundled ripgrep (dev mode)
-  const sdkPath = getSdkRipgrepPath()
-  decodedPaths[key] = sdkPath
-  return sdkPath
+  // Compiled mode: must use base64 decode (synchronous path — loaded eagerly from embedded module)
+  // In the compiled exe, require() resolves to the embedded ripgrepAssetBase64.js
+  let base64Data: string | undefined
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const RIPGREP_BINARIES: Record<string, string> = require('./ripgrepAssetBase64.js').RIPGREP_BINARIES
+    base64Data = RIPGREP_BINARIES[key]
+  } catch {
+    // require failed — fall back to SDK path
+  }
+
+  if (!base64Data) {
+    const sdkPath = getSdkRipgrepPath()
+    extractedPaths[key] = sdkPath
+    return sdkPath
+  }
+
+  const versionTag = `b64:${base64Data.length}:${base64Data.slice(0, 16)}:${base64Data.slice(-16)}`
+
+  // Fast cache check: read only the version tag (~50 bytes)
+  try {
+    const storedTag = readFileSync(versionPath, 'utf8')
+    if (storedTag === versionTag && readFileSync(filePath)) {
+      extractedPaths[key] = filePath
+      return filePath
+    }
+  } catch {
+    // Cache miss or stale
+  }
+
+  // Decode and extract
+  mkdirSync(tmpDir, { recursive: true })
+  const buffer = Buffer.from(base64Data, 'base64')
+  writeFileSync(filePath, buffer)
+  writeFileSync(versionPath, versionTag, 'utf8')
+  extractedPaths[key] = filePath
+  return filePath
+}
+
+/**
+ * Async version — preloads base64 data before extracting.
+ * Call this early (e.g., during startup) to avoid decode delay on first grep.
+ */
+export async function preloadRipgrepBinary(): Promise<void> {
+  getRipgrepBinaryPath()
 }
