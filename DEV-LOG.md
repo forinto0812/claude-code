@@ -1,5 +1,216 @@
 # DEV-LOG
 
+## Computer Use Windows 增强：窗口绑定截图 + UI Automation + OCR (2026-04-03)
+
+在三平台基础实现之上，利用 Windows 原生 API 增强 Computer Use 的 Windows 专属能力。
+
+**新增文件：**
+
+| 文件 | 行数 | 说明 |
+|------|------|------|
+| `src/utils/computerUse/win32/windowCapture.ts` | — | `PrintWindow` 窗口绑定截图，支持被遮挡/后台窗口 |
+| `src/utils/computerUse/win32/windowEnum.ts` | — | `EnumWindows` 精确窗口枚举（HWND + PID + 标题） |
+| `src/utils/computerUse/win32/uiAutomation.ts` | — | `IUIAutomation` UI 元素树读取、按钮点击、文本写入、坐标识别 |
+| `src/utils/computerUse/win32/ocr.ts` | — | `Windows.Media.Ocr` 截图+文字识别（英语+中文） |
+
+**修改文件：**
+
+| 文件 | 变更 |
+|------|------|
+| `packages/@ant/computer-use-swift/src/backends/win32.ts` | `listRunning` 改用 EnumWindows；新增 `captureWindowTarget` 窗口级截图 |
+
+**验证结果（Windows x64）：**
+- 窗口枚举：38 个可见窗口 ✅
+- 窗口截图：VS Code 2575x1415, 444KB ✅（PrintWindow, 即使被遮挡）
+- UI Automation：坐标元素识别 ✅
+- OCR：识别 VS Code 界面文字，34 行 ✅
+
+---
+
+## Enable Computer Use — macOS + Windows + Linux (2026-04-03)
+
+恢复 Computer Use 屏幕操控功能。参考项目仅 macOS，本次扩展为三平台支持。
+
+**Phase 1 — MCP server stub 替换：**
+从参考项目复制 `@ant/computer-use-mcp` 完整实现（12 文件，6517 行）。
+
+**Phase 2 — 移除 src/ 中 8 处 macOS 硬编码：**
+
+| 文件 | 改动 |
+|------|------|
+| `src/main.tsx:1605` | 去掉 `getPlatform() === 'macos'` |
+| `src/utils/computerUse/swiftLoader.ts` | 移除 darwin-only throw |
+| `src/utils/computerUse/executor.ts` | 平台守卫扩展为 darwin+win32+linux；剪贴板按平台分发（pbcopy→PowerShell→xclip）；paste 快捷键 command→ctrl |
+| `src/utils/computerUse/drainRunLoop.ts` | 非 darwin 直接执行 fn() |
+| `src/utils/computerUse/escHotkey.ts` | 非 darwin 返回 false（Ctrl+C fallback） |
+| `src/utils/computerUse/hostAdapter.ts` | 非 darwin 权限检查返回 granted |
+| `src/utils/computerUse/common.ts` | platform + screenshotFiltering 动态化 |
+| `src/utils/computerUse/gates.ts` | enabled:true + hasRequiredSubscription→true |
+
+**Phase 3 — input/swift 包 dispatcher + backends 三平台架构：**
+
+```
+packages/@ant/computer-use-{input,swift}/src/
+├── index.ts          ← dispatcher
+├── types.ts          ← 共享接口
+└── backends/
+    ├── darwin.ts      ← macOS AppleScript（原样拆出，不改逻辑）
+    ├── win32.ts       ← Windows PowerShell
+    └── linux.ts       ← Linux xdotool/scrot/xrandr/wmctrl
+```
+
+**编译开关：** `CHICAGO_MCP` 加入 DEFAULT_FEATURES + DEFAULT_BUILD_FEATURES
+
+**验证结果（Windows x64）：**
+- `isSupported: true` ✅
+- 鼠标定位 + 前台窗口信息 ✅
+- 双显示器检测 2560x1440 × 2 ✅
+- 全屏截图 3MB base64 ✅
+- `bun run build` 463 files ✅
+
+---
+
+## Enable Voice Mode / VOICE_MODE (2026-04-03)
+
+恢复 `/voice` 语音输入功能。`src/` 下所有 voice 相关源码已与官方一致（0 行差异），问题出在：① `VOICE_MODE` 编译开关未开，命令不显示；② `audio-capture-napi` 是 SoX 子进程 stub（Windows 不支持），缺少官方原生 `.node` 二进制。
+
+**新增文件：**
+
+| 文件 | 说明 |
+|------|------|
+| `vendor/audio-capture/{platform}/audio-capture.node` | 6 个平台的原生音频二进制（cpal，来自参考项目） |
+| `vendor/audio-capture-src/index.ts` | 原生模块加载器（按 `${arch}-${platform}` 动态 require `.node`） |
+
+**修改文件：**
+
+| 文件 | 变更 |
+|------|------|
+| `packages/audio-capture-napi/src/index.ts` | SoX 子进程 stub → 原生 `.node` 加载器（含 `process.cwd()` workspace 路径 fallback） |
+| `scripts/dev.ts` | `DEFAULT_FEATURES` 加 `"VOICE_MODE"` |
+| `build.ts` | `DEFAULT_BUILD_FEATURES` 加 `"VOICE_MODE"` |
+| `docs/features/voice-mode.md` | 追加恢复计划章节（第八节） |
+
+**验证结果：**
+
+- `isNativeAudioAvailable()` → `true`（Windows x64 原生 `.node` 加载成功）
+- `feature('VOICE_MODE')` → `ENABLED`
+- `bun run build` → voice 代码编入产物
+
+**运行时前置条件：** claude.ai OAuth 登录 + 麦克风权限
+
+---
+
+## Enable Claude in Chrome MCP (2026-04-03)
+
+恢复 Chrome 浏览器控制功能。`src/` 下所有 claudeInChrome 相关源码已与官方一致（0 行差异），问题出在 `@ant/claude-for-chrome-mcp` 包是 6 行 stub（返回空工具列表和 null server）。
+
+**替换文件：**
+
+| 文件 | 变更 |
+|------|------|
+| `packages/@ant/claude-for-chrome-mcp/src/index.ts` | 6 行 stub → 15 行完整导出 |
+
+**新增文件：**
+
+| 文件 | 行数 | 说明 |
+|------|------|------|
+| `packages/@ant/claude-for-chrome-mcp/src/types.ts` | 134 | 类型定义 |
+| `packages/@ant/claude-for-chrome-mcp/src/browserTools.ts` | 546 | 17 个浏览器工具定义 |
+| `packages/@ant/claude-for-chrome-mcp/src/mcpServer.ts` | 96 | MCP Server |
+| `packages/@ant/claude-for-chrome-mcp/src/mcpSocketClient.ts` | 493 | Unix Socket 客户端 |
+| `packages/@ant/claude-for-chrome-mcp/src/mcpSocketPool.ts` | 327 | 多 Profile 连接池 |
+| `packages/@ant/claude-for-chrome-mcp/src/bridgeClient.ts` | 1126 | Bridge WebSocket 客户端 |
+| `packages/@ant/claude-for-chrome-mcp/src/toolCalls.ts` | 301 | 工具调用路由 |
+
+**不需要 feature flag，不需要改 dev.ts/build.ts，不改 src/ 下任何文件。**
+
+**运行时依赖：** Chrome 浏览器 + Claude in Chrome 扩展（https://claude.ai/chrome）
+
+---
+
+## OpenAI 接口兼容 (2026-04-03)
+
+**分支**: `feature/openai`
+
+在 `/login` 流程中新增 "OpenAI Compatible" 选项，支持 Ollama、DeepSeek、vLLM、One API 等兼容 OpenAI Chat Completions API 的第三方服务。用户通过 `/login` 配置后，所有 API 请求自动走 OpenAI 路径。
+
+**改动文件（10 个，+384 / -134）：**
+
+| 文件 | 变更 |
+|------|------|
+| `.github/workflows/ci.yml` | CI runner 从 `ubuntu-latest` 改为 `macos-latest` |
+| `README.md` | TODO 列表新增 "OpenAI 接口兼容" 条目 |
+| `src/components/ConsoleOAuthFlow.tsx` | 新增 `openai_chat_api` OAuth state（含 Base URL / API Key / 3 个模型映射字段）；idle 选择列表新增 "OpenAI Compatible" 选项；完整表单 UI（Tab 切换、Enter 保存）；保存时写入 `modelType: 'openai'` + env 到 settings.json；OAuth 登录时重置 `modelType` 为 `anthropic` |
+| `src/services/api/openai/index.ts` | 从直接 `yield* adaptOpenAIStreamToAnthropic()` 改为完整流处理循环：累积 content blocks（text/tool_use/thinking）、按 `content_block_stop` yield `AssistantMessage`、同时 yield `StreamEvent` 用于实时显示；错误处理改用新签名 `createAssistantAPIErrorMessage({ content, apiError, error })` |
+| `src/services/api/openai/convertMessages.ts` | 输入类型从 Anthropic SDK `BetaMessageParam[]` 改为内部 `(UserMessage \| AssistantMessage)[]`；通过 `msg.type` 而非 `msg.role` 判断角色；从 `msg.message.content` 读取内容；跳过 `cache_edits` / `server_tool_use` 等内部 block 类型 |
+| `src/services/api/openai/modelMapping.ts` | 移除 `OPENAI_MODEL_MAP` JSON 环境变量 + 缓存机制；新增 `getModelFamily()` 按 haiku/sonnet/opus 分类；解析优先级改为：`OPENAI_MODEL` → `ANTHROPIC_DEFAULT_{FAMILY}_MODEL` → `DEFAULT_MODEL_MAP` → 原名透传 |
+| `src/services/api/openai/__tests__/convertMessages.test.ts` | 测试输入从裸 `{ role, content }` 改为 `makeUserMsg()` / `makeAssistantMsg()` 包装的内部格式 |
+| `src/services/api/openai/__tests__/modelMapping.test.ts` | 测试从 `OPENAI_MODEL_MAP` 改为 `ANTHROPIC_DEFAULT_{HAIKU,SONNET,OPUS}_MODEL`；新增 3 个 env var override 测试 |
+| `src/utils/model/providers.ts` | `getAPIProvider()` 新增最高优先级：从 settings.json `modelType` 字段判断；环境变量 `CLAUDE_CODE_USE_OPENAI` 降为次优先 |
+| `src/utils/settings/types.ts` | `SettingsSchema` 新增 `modelType` 字段：`z.enum(['anthropic', 'openai']).optional()` |
+
+**关键设计决策：**
+
+1. **`modelType` 存入 settings.json** — 而非纯环境变量，使 `/login` 配置持久化，重启后仍然生效
+2. **复用 `ANTHROPIC_DEFAULT_*_MODEL` 环境变量** — 而非新增 `OPENAI_MODEL_MAP`，与 Custom Platform 共用同一套模型映射配置，减少用户认知负担
+3. **流处理双 yield** — 同时 yield `AssistantMessage`（给消费方处理工具调用）和 `StreamEvent`（给 REPL 实时渲染），与 Anthropic 路径行为对齐
+4. **OAuth 登录重置 modelType** — 用户切换回官方 Anthropic 登录时自动重置为 `anthropic`，避免残留配置导致请求走错误路径
+
+**配置方式：**
+
+```
+/login → 选择 "OpenAI Compatible" → 填写 Base URL / API Key / 模型名称
+```
+
+或手动编辑 `~/.claude/settings.json`：
+
+```json
+{
+  "modelType": "openai",
+  "env": {
+    "OPENAI_BASE_URL": "http://localhost:11434/v1",
+    "OPENAI_API_KEY": "ollama",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3:32b"
+  }
+}
+```
+
+---
+
+## Enable Remote Control / BRIDGE_MODE (2026-04-03)
+
+**PR**: [claude-code-best/claude-code#60](https://github.com/claude-code-best/claude-code/pull/60)
+
+Remote Control 功能将本地 CLI 注册为 bridge 环境，生成可分享的 URL（`https://claude.ai/code/session_xxx`），允许从浏览器、手机或其他设备远程查看输出、发送消息、审批工具调用。
+
+**改动文件：**
+
+| 文件 | 变更 |
+|------|------|
+| `scripts/dev.ts` | `DEFAULT_FEATURES` 加入 `"BRIDGE_MODE"`，dev 模式默认启用 |
+| `src/bridge/peerSessions.ts` | stub → 完整实现：通过 bridge API 发送跨会话消息，含三层安全防护（trim + validateBridgeId 白名单 + encodeURIComponent） |
+| `src/bridge/webhookSanitizer.ts` | stub → 完整实现：正则 redact 8 类 secret（GitHub/Anthropic/AWS/npm/Slack token），先 redact 再截断，失败返回安全占位符 |
+| `src/entrypoints/sdk/controlTypes.ts` | 12 个 `any` stub → `z.infer<ReturnType<typeof XxxSchema>>` 从现有 Zod schema 推导类型 |
+| `src/hooks/useReplBridge.tsx` | `tengu_bridge_system_init` 默认值 `false` → `true`，使 app 端显示 "active" 而非卡在 "connecting" |
+
+**关键设计决策：**
+
+1. **不改现有代码逻辑** — 只补全 stub、修正默认值、开启编译开关
+2. **`tengu_bridge_system_init`** — Anthropic 通过 GrowthBook 给订阅用户推送 `true`，但我们的 build 收不到推送；改默认值是唯一不侵入其他代码的方案
+3. **`peerSessions.ts` 认证** — 使用 `getBridgeAccessToken()` 获取 OAuth Bearer token，与 `bridgeApi.ts`/`codeSessionApi.ts` 认证模式一致
+4. **`webhookSanitizer.ts` 安全** — fail-closed（出错返回 `[webhook content redacted due to sanitization error]`），不泄露原始内容
+
+**验证结果：**
+
+- `/remote-control` 命令可见且可用
+- CLI 连接 Anthropic CCR，生成可分享 URL
+- App 端（claude.ai/code）显示 "Remote Control active"
+- 手机端（Claude iOS app）通过 URL 连接，双向消息正常
+
+![Remote Control on Mobile](docs/images/remote-control-mobile.png)
+
+---
+
 ## GrowthBook 自定义服务器适配器 (2026-04-03)
 
 GrowthBook 功能开关系统原为 Anthropic 内部构建设计，硬编码 SDK key 和 API 地址，外部构建因 `is1PEventLoggingEnabled()` 门控始终禁用。新增适配器模式，通过环境变量连接自定义 GrowthBook 服务器，无配置时所有 feature 读取返回代码默认值。

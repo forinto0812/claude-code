@@ -25,14 +25,16 @@
     "bun": ">=1.2.0"
   },
   "bin": {
-    "ccb": "dist/cli.js"
+    "ccb": "dist/cli.js",
+    "claude-code-best": "dist/cli.js"
   },
   "workspaces": [
     "packages/*",
     "packages/@ant/*"
   ],
   "files": [
-    "dist"
+    "dist",
+    "scripts/download-ripgrep.ts"
   ],
   "scripts": {
     "build": "bun run build.ts",
@@ -46,10 +48,12 @@
     "test": "bun test",
     "check:unused": "knip-bun",
     "health": "bun run scripts/health-check.ts",
+    "postinstall": "node dist/download-ripgrep.js || bun run scripts/download-ripgrep.ts || true",
     "docs:dev": "npx mintlify dev"
   },
   "dependencies": {},
   "devDependencies": {
+    "openai": "^4.73.0",
     "@alcalzone/ansi-tokenize": "^0.3.0",
     "@ant/claude-for-chrome-mcp": "workspace:*",
     "@ant/computer-use-input": "workspace:*",
