@@ -141,7 +141,7 @@ export function bashToolUseOptions({
       o => o.value === 'yes-prefix-edited',
     )
     if (
-      "external" === 'ant' &&
+      process.env.USER_TYPE === 'ant' &&
       !editablePrefixShown &&
       isClassifierPermissionsEnabled() &&
       onClassifierDescriptionChange &&

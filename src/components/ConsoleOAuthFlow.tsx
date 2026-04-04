@@ -436,7 +436,7 @@ function OAuthStatusMessage({
                     <Text>
                       Claude account with subscription ·{' '}
                       <Text dimColor>Pro, Max, Team, or Enterprise</Text>
-                      {"external" === 'ant' && (
+                      {process.env.USER_TYPE === 'ant' && (
                         <Text>
                           {'\n'}
                           <Text color="warning">[ANT-ONLY]</Text>{' '}

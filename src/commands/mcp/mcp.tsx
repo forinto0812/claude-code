@@ -91,7 +91,7 @@ export async function call(
   }
 
   // Redirect base /mcp command to /plugins installed tab for ant users
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     return (
       <PluginSettings
         onComplete={onDone}

@@ -44,7 +44,7 @@ export function HelpV2({ onClose, commands }: Props): React.ReactNode {
   let antOnlyCommands: Command[] = []
 
   // We have to do this in an `if` to help treeshaking
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     const internalOnlyNames = new Set(INTERNAL_ONLY_COMMANDS.map(_ => _.name))
     builtinCommands = builtinCommands.filter(
       cmd => !internalOnlyNames.has(cmd.name),
@@ -89,7 +89,7 @@ export function HelpV2({ onClose, commands }: Props): React.ReactNode {
     </Tab>,
   )
 
-  if ("external" === 'ant' && antOnlyCommands.length > 0) {
+  if (process.env.USER_TYPE === 'ant' && antOnlyCommands.length > 0) {
     tabs.push(
       <Tab key="ant-only" title="[ant-only]">
         <Commands
@@ -108,7 +108,7 @@ export function HelpV2({ onClose, commands }: Props): React.ReactNode {
       <Pane color="professionalBlue">
         <Tabs
           title={
-            "external" === 'ant'
+            process.env.USER_TYPE === 'ant'
               ? '/help'
               : `Claude Code v${MACRO.VERSION}`
           }

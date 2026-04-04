@@ -275,7 +275,7 @@ function SpinnerWithVerbInner({
   // re-render cadence, same as the old ApiMetricsLine did.
   let ttftText: string | null = null
   if (
-    "external" === 'ant' &&
+    process.env.USER_TYPE === 'ant' &&
     apiMetricsRef?.current &&
     apiMetricsRef.current.length > 0
   ) {

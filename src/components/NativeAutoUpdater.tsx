@@ -220,7 +220,7 @@ export function NativeAutoUpdater({
           ✗ Auto-update failed &middot; Try <Text bold>/status</Text>
         </Text>
       )}
-      {maxVersionIssue && "external" === 'ant' && (
+      {maxVersionIssue && process.env.USER_TYPE === 'ant' && (
         <Text color="warning">
           ⚠ Known issue: {maxVersionIssue} &middot; Run{' '}
           <Text bold>claude rollback --safe</Text> to downgrade

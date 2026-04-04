@@ -417,7 +417,7 @@ export function renderToolResultMessage(
 
   return (
     <Box flexDirection="column">
-      {"external" === 'ant' && (
+      {process.env.USER_TYPE === 'ant' && (
         <MessageResponse>
           <Text color="warning">
             [ANT-ONLY] API calls: {getDisplayPath(getDumpPromptsPath(agentId))}
@@ -745,7 +745,7 @@ export function renderToolUseRejectedMessage(
 
   return (
     <>
-      {"external" === 'ant' && agentId && (
+      {process.env.USER_TYPE === 'ant' && agentId && (
         <MessageResponse>
           <Text color="warning">
             [ANT-ONLY] API calls: {getDisplayPath(getDumpPromptsPath(agentId))}

@@ -52,7 +52,7 @@ function PromptChar({
 }: PromptCharProps): React.ReactNode {
   // Assign to original name for clarity within the function
   const teammateColor = themeColor
-  const isAnt = "external" === 'ant'
+  const isAnt = process.env.USER_TYPE === 'ant'
   const color = teammateColor ?? (isAnt ? 'subtle' : undefined)
 
   return (

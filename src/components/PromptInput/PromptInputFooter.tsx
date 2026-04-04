@@ -218,13 +218,13 @@ function PromptInputFooter({
               isNarrow={isNarrow}
             />
           )}
-          {"external" === 'ant' && isUndercover() && (
+          {process.env.USER_TYPE === 'ant' && isUndercover() && (
             <Text dimColor>undercover</Text>
           )}
           <BridgeStatusIndicator bridgeSelected={bridgeSelected} />
         </Box>
       </Box>
-      {"external" === 'ant' && <CoordinatorTaskPanel />}
+      {process.env.USER_TYPE === 'ant' && <CoordinatorTaskPanel />}
     </>
   )
 }

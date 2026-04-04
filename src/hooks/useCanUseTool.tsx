@@ -94,7 +94,7 @@ function useCanUseTool(
         return decisionPromise
           .then(async result => {
             // [ANT-ONLY] Log all tool permission decisions with tool name and args
-            if ("external" === 'ant') {
+            if (process.env.USER_TYPE === 'ant') {
               logEvent('tengu_internal_tool_permission_decision', {
                 toolName: sanitizeToolNameForAnalytics(tool.name),
                 behavior:

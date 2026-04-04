@@ -34,7 +34,7 @@ export function createRecentActivityFeed(activities: LogOption[]): FeedConfig {
 
 export function createWhatsNewFeed(releaseNotes: string[]): FeedConfig {
   const lines: FeedLine[] = releaseNotes.map(note => {
-    if ("external" === 'ant') {
+    if (process.env.USER_TYPE === 'ant') {
       const match = note.match(/^(\d+\s+\w+\s+ago)\s+(.+)$/)
       if (match) {
         return {
@@ -49,13 +49,13 @@ export function createWhatsNewFeed(releaseNotes: string[]): FeedConfig {
   })
 
   const emptyMessage =
-    "external" === 'ant'
+    process.env.USER_TYPE === 'ant'
       ? 'Unable to fetch latest claude-cli-internal commits'
       : 'Check the Claude Code changelog for updates'
 
   return {
     title:
-      "external" === 'ant'
+      process.env.USER_TYPE === 'ant'
         ? "What's new [ANT-ONLY: Latest CC commits]"
         : "What's new",
     lines,

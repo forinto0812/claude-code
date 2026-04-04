@@ -450,7 +450,7 @@ function OverviewTab({
       </Box>
 
       {/* Speculation time saved (ant-only) */}
-      {"external" === 'ant' &&
+      {process.env.USER_TYPE === 'ant' &&
         stats.totalSpeculationTimeSavedMs > 0 && (
           <Box flexDirection="row" gap={4}>
             <Box flexDirection="column" width={28}>
@@ -1059,7 +1059,7 @@ function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
 
   // Speculation time saved (ant-only)
   if (
-    "external" === 'ant' &&
+    process.env.USER_TYPE === 'ant' &&
     stats.totalSpeculationTimeSavedMs > 0
   ) {
     const label = 'Speculation saved:'.padEnd(COL1_LABEL_WIDTH)

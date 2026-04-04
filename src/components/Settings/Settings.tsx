@@ -101,7 +101,7 @@ export function Settings({
     <Tab key="usage" title="Usage">
       <Usage />
     </Tab>,
-    ...("external" === 'ant'
+    ...(process.env.USER_TYPE === 'ant'
       ? [
           <Tab key="gates" title="Gates">
             <Gates

@@ -32,7 +32,7 @@ export function renderToolResultMessage(
   _progressMessagesForMessage: unknown[],
   { verbose }: { verbose: boolean },
 ): React.ReactNode {
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     return null
   }
 

@@ -72,7 +72,7 @@ export function AssistantToolUseMessage({
   const isAutoClassifier =
     permissionMode === 'auto' || (permissionMode === 'plan' && hasStrippedRules)
   const isClassifierChecking =
-    "external" === 'ant' &&
+    process.env.USER_TYPE === 'ant' &&
     isClassifierCheckingRaw &&
     permissionMode !== 'auto'
 

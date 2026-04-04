@@ -108,7 +108,7 @@ export function shouldHideTasksFooter(
   for (const t of Object.values(tasks) as TaskState[]) {
     if (
       !isBackgroundTask(t) ||
-      ("external" === 'ant' && isPanelAgentTask(t))
+      (process.env.USER_TYPE === 'ant' && isPanelAgentTask(t))
     ) {
       continue
     }

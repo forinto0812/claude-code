@@ -424,10 +424,10 @@ function PromptInput({
   // Tmux pill (ant-only) — visible when there's an active tungsten session
   const hasTungstenSession = useAppState(
     s =>
-      "external" === 'ant' && s.tungstenActiveSession !== undefined,
+      process.env.USER_TYPE === 'ant' && s.tungstenActiveSession !== undefined,
   )
   const tmuxFooterVisible =
-    "external" === 'ant' && hasTungstenSession
+    process.env.USER_TYPE === 'ant' && hasTungstenSession
   // WebBrowser pill — visible when a browser is open
   const bagelFooterVisible = useAppState(s =>
         false,
@@ -550,7 +550,7 @@ function PromptInput({
       Object.values(tasks).some(
         t =>
           isBackgroundTask(t) &&
-          !("external" === 'ant' && isPanelAgentTask(t)),
+          !(process.env.USER_TYPE === 'ant' && isPanelAgentTask(t)),
       ),
     [tasks],
   )
@@ -631,7 +631,7 @@ function PromptInput({
   // something is running.
   const tasksFooterVisible =
     (runningTaskCount > 0 ||
-      ("external" === 'ant' && coordinatorTaskCount > 0)) &&
+      (process.env.USER_TYPE === 'ant' && coordinatorTaskCount > 0)) &&
     !shouldHideTasksFooter(tasks, showSpinnerTree)
   const teamsFooterVisible = cachedTeams.length > 0
 
@@ -2259,7 +2259,7 @@ function PromptInput({
         // ↑ scrolls within the coordinator task list before leaving the pill
         if (
           tasksSelected &&
-          "external" === 'ant' &&
+          process.env.USER_TYPE === 'ant' &&
           coordinatorTaskCount > 0 &&
           coordinatorTaskIndex > minCoordinatorIndex
         ) {
@@ -2272,7 +2272,7 @@ function PromptInput({
         // ↓ scrolls within the coordinator task list, never leaves the pill
         if (
           tasksSelected &&
-          "external" === 'ant' &&
+          process.env.USER_TYPE === 'ant' &&
           coordinatorTaskCount > 0
         ) {
           if (coordinatorTaskIndex < coordinatorTaskCount - 1) {
@@ -2338,7 +2338,7 @@ function PromptInput({
             }
             break
           case 'tmux':
-            if ("external" === 'ant') {
+            if (process.env.USER_TYPE === 'ant') {
               setAppState(prev =>
                 prev.tungstenPanelAutoHidden
                   ? { ...prev, tungstenPanelAutoHidden: false }

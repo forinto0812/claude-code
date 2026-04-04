@@ -145,7 +145,7 @@ export function AttachmentMessage({
         .join(', ')
       const firstId = attachment.skills[0]?.shortId
       const hint =
-        "external" === 'ant' && !isDemoEnv && firstId
+        process.env.USER_TYPE === 'ant' && !isDemoEnv && firstId
           ? ` · /skill-feedback ${firstId} 1=wrong 2=noisy 3=good [comment]`
           : ''
       return (
@@ -476,7 +476,7 @@ function TaskStatusMessage({
 }): React.ReactNode {
   // For ants, killed task status is shown in the CoordinatorTaskPanel.
   // Don't render it again in the chat.
-  if ("external" === 'ant' && attachment.status === 'killed') {
+  if (process.env.USER_TYPE === 'ant' && attachment.status === 'killed') {
     return null
   }
 

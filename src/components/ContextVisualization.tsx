@@ -298,7 +298,7 @@ export function ContextVisualization({ data }: Props): React.ReactNode {
 
         {/* Show builtin tools: always-loaded + deferred (ant-only) */}
         {((systemTools && systemTools.length > 0) || hasDeferredBuiltinTools) &&
-          "external" === 'ant' && (
+          process.env.USER_TYPE === 'ant' && (
             <Box flexDirection="column" marginTop={1}>
               <Box>
                 <Text bold>[ANT-ONLY] System tools</Text>
@@ -343,7 +343,7 @@ export function ContextVisualization({ data }: Props): React.ReactNode {
 
         {systemPromptSections &&
           systemPromptSections.length > 0 &&
-          "external" === 'ant' && (
+          process.env.USER_TYPE === 'ant' && (
             <Box flexDirection="column" marginTop={1}>
               <Text bold>[ANT-ONLY] System prompt sections</Text>
               {systemPromptSections.map((section, i) => (
@@ -414,7 +414,7 @@ export function ContextVisualization({ data }: Props): React.ReactNode {
           </Box>
         )}
 
-        {messageBreakdown && "external" === 'ant' && (
+        {messageBreakdown && process.env.USER_TYPE === 'ant' && (
           <Box flexDirection="column" marginTop={1}>
             <Text bold>[ANT-ONLY] Message breakdown</Text>
 

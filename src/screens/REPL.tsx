@@ -207,14 +207,14 @@ const VoiceKeybindingHandler: typeof import('../hooks/useVoiceIntegration.js').V
 // builds eliminate the module entirely (including its two O(n) useMemos that run
 // on every messages change, plus the GrowthBook fetch).
 const useFrustrationDetection: typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection =
-  "external" === 'ant'
+  process.env.USER_TYPE === 'ant'
     ? require('../components/FeedbackSurvey/useFrustrationDetection.js')
         .useFrustrationDetection
     : () => ({ state: 'closed', handleTranscriptSelect: () => {} })
 // Ant-only org warning. Conditional require so the org UUID list is
 // eliminated from external builds (one UUID is on excluded-strings).
 const useAntOrgWarningNotification: typeof import('../hooks/notifs/useAntOrgWarningNotification.js').useAntOrgWarningNotification =
-  "external" === 'ant'
+  process.env.USER_TYPE === 'ant'
     ? require('../hooks/notifs/useAntOrgWarningNotification.js')
         .useAntOrgWarningNotification
     : () => {}
@@ -461,16 +461,16 @@ import type { EffortValue } from '../utils/effort.js'
 import { RemoteCallout } from '../components/RemoteCallout.js'
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const AntModelSwitchCallout =
-  "external" === 'ant'
+  process.env.USER_TYPE === 'ant'
     ? require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout
     : null
 const shouldShowAntModelSwitch =
-  "external" === 'ant'
+  process.env.USER_TYPE === 'ant'
     ? require('../components/AntModelSwitchCallout.js')
         .shouldShowModelSwitchCallout
     : (): boolean => false
 const UndercoverAutoCallout =
-  "external" === 'ant'
+  process.env.USER_TYPE === 'ant'
     ? require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout
     : null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
@@ -942,7 +942,7 @@ export function REPL({
   )
   const moreRightEnabled = useMemo(
     () =>
-      "external" === 'ant' &&
+      process.env.USER_TYPE === 'ant' &&
       isEnvTruthy(process.env.CLAUDE_MORERIGHT),
     [],
   )
@@ -1118,7 +1118,7 @@ export function REPL({
   const [showIdeOnboarding, setShowIdeOnboarding] = useState(false)
   // Dead code elimination: model switch callout state (ant-only)
   const [showModelSwitchCallout, setShowModelSwitchCallout] = useState(() => {
-    if ("external" === 'ant') {
+    if (process.env.USER_TYPE === 'ant') {
       return shouldShowAntModelSwitch()
     }
     return false
@@ -1440,7 +1440,7 @@ export function REPL({
 
   const [showUndercoverCallout, setShowUndercoverCallout] = useState(false)
   useEffect(() => {
-    if ("external" === 'ant') {
+    if (process.env.USER_TYPE === 'ant') {
       void (async () => {
         // Wait for repo classification to settle (memoized, no-op if primed).
         const { isInternalModelRepo } = await import(
@@ -2728,7 +2728,7 @@ export function REPL({
 
     // Model switch callout (ant-only, eliminated from external builds)
     if (
-      "external" === 'ant' &&
+      process.env.USER_TYPE === 'ant' &&
       allowDialogsWithAnimation &&
       showModelSwitchCallout
     )
@@ -2736,7 +2736,7 @@ export function REPL({
 
     // Undercover auto-enable explainer (ant-only, eliminated from external builds)
     if (
-      "external" === 'ant' &&
+      process.env.USER_TYPE === 'ant' &&
       allowDialogsWithAnimation &&
       showUndercoverCallout
     )
@@ -3256,7 +3256,7 @@ export function REPL({
         discoveredSkillNames: discoveredSkillNamesRef.current,
         setResponseLength,
         pushApiMetricsEntry:
-          "external" === 'ant'
+          process.env.USER_TYPE === 'ant'
             ? (ttftMs: number) => {
                 const now = Date.now()
                 const baseline = responseLengthRef.current
@@ -3781,7 +3781,7 @@ export function REPL({
 
       // Capture ant-only API metrics before resetLoadingState clears the ref.
       // For multi-request turns (tool use loops), compute P50 across all requests.
-      if ("external" === 'ant' && apiMetricsRef.current.length > 0) {
+      if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
         const entries = apiMetricsRef.current
 
         const ttfts = entries.map(e => e.ttftMs)
@@ -3969,7 +3969,7 @@ export function REPL({
           // the user to re-invoke Tmux just to peek. Skip on abort so the panel
           // stays open for inspection (matches the turn-duration guard below).
           if (
-            "external" === 'ant' &&
+            process.env.USER_TYPE === 'ant' &&
             !abortController.signal.aborted
           ) {
             setAppState(prev => {
@@ -4130,7 +4130,7 @@ export function REPL({
       // Atomically: clear initial message, set permission mode and rules, and store plan for verification
       const shouldStorePlanForVerification =
         initialMsg.message.planContent &&
-        "external" === 'ant' &&
+        process.env.USER_TYPE === 'ant' &&
         isEnvTruthy(undefined)
 
       setAppState(prev => {
@@ -4830,7 +4830,7 @@ export function REPL({
 
   // Handler for when user presses 1 on survey thanks screen to share details
   const handleSurveyRequestFeedback = useCallback(() => {
-    const command = "external" === 'ant' ? '/issue' : '/feedback'
+    const command = process.env.USER_TYPE === 'ant' ? '/issue' : '/feedback'
     onSubmit(command, {
       setCursorOffset: () => {},
       clearBuffer: () => {},
@@ -5413,7 +5413,7 @@ export function REPL({
   // - Workers receive permission responses via mailbox messages
   // - Leaders receive permission requests via mailbox messages
 
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     // Tasks mode: watch for tasks and auto-process them
     // eslint-disable-next-line react-hooks/rules-of-hooks
     // biome-ignore lint/correctness/useHookAtTopLevel: conditional for dead code elimination in external builds
@@ -5547,7 +5547,7 @@ export function REPL({
         ? 'subagent stop'
         : 'stop'
 
-    if ("external" === 'ant') {
+    if (process.env.USER_TYPE === 'ant') {
       const cmd = currentHooks[completedCount]?.data.command
       const label = cmd ? ` '${truncateToWidth(cmd, 40)}'` : ''
       return total === 1
@@ -6208,7 +6208,7 @@ export function REPL({
                     {toolJSX.jsx}
                   </Box>
                 )}
-              {"external" === 'ant' && <TungstenLiveMonitor />}
+              {process.env.USER_TYPE === 'ant' && <TungstenLiveMonitor />}
               {feature('WEB_BROWSER_TOOL')
                 ? WebBrowserPanelModule && (
                     <WebBrowserPanelModule.WebBrowserPanel />
@@ -6567,7 +6567,7 @@ export function REPL({
                     installationStatus={ideInstallationStatus}
                   />
                 )}
-                {"external" === 'ant' &&
+                {process.env.USER_TYPE === 'ant' &&
                   focusedInputDialog === 'model-switch' &&
                   AntModelSwitchCallout && (
                     <AntModelSwitchCallout
@@ -6583,7 +6583,7 @@ export function REPL({
                       }}
                     />
                   )}
-                {"external" === 'ant' &&
+                {process.env.USER_TYPE === 'ant' &&
                   focusedInputDialog === 'undercover-callout' &&
                   UndercoverAutoCallout && (
                     <UndercoverAutoCallout
@@ -6795,7 +6795,7 @@ export function REPL({
                         />
                       )}
                       {/* Skill improvement survey - appears when improvements detected (ant-only) */}
-                      {"external" === 'ant' &&
+                      {process.env.USER_TYPE === 'ant' &&
                         skillImprovementSurvey.suggestion && (
                           <SkillImprovementSurvey
                             isOpen={skillImprovementSurvey.isOpen}
@@ -7025,7 +7025,7 @@ export function REPL({
                     }}
                   />
                 )}
-                {"external" === 'ant' && <DevBar />}
+                {process.env.USER_TYPE === 'ant' && <DevBar />}
               </Box>
               {feature('BUDDY') &&
               !(companionNarrow && isFullscreenEnvEnabled()) &&

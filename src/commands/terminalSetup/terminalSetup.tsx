@@ -146,7 +146,7 @@ export async function setupTerminal(theme: ThemeName): Promise<string> {
   maybeMarkProjectOnboardingComplete()
 
   // Install shell completions (ant-only, since the completion command is ant-only)
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     result += await setupShellCompletion(theme)
   }
 

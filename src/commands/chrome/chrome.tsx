@@ -50,7 +50,7 @@ function ClaudeInChromeMenu({
   const [showInstallHint, setShowInstallHint] = useState(false)
   const [isExtensionInstalled, setIsExtensionInstalled] = useState(installed)
 
-  const isHomespace = "external" === 'ant' && isRunningOnHomespace()
+  const isHomespace = process.env.USER_TYPE === 'ant' && isRunningOnHomespace()
 
   const chromeClient = mcpClients.find(
     c => c.name === CLAUDE_IN_CHROME_MCP_SERVER_NAME,

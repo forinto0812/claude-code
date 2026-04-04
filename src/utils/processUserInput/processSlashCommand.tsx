@@ -348,7 +348,7 @@ async function executeForkedSlashCommand(
   )
 
   // Prepend debug log for ant users so it appears inside the command output
-  if ("external" === 'ant') {
+  if (process.env.USER_TYPE === 'ant') {
     resultText = `[ANT-ONLY] API calls: ${getDisplayPath(getDumpPromptsPath(agentId))}\n${resultText}`
   }
 
@@ -555,7 +555,7 @@ export async function processSlashCommand(
       ...eventData,
       invocation_trigger:
         'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-      ...("external" === 'ant' && {
+      ...(process.env.USER_TYPE === 'ant' && {
         skill_name:
           commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         ...(returnedCommand.type === 'prompt' && {
@@ -648,7 +648,7 @@ export async function processSlashCommand(
     ...eventData,
     invocation_trigger:
       'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    ...("external" === 'ant' && {
+    ...(process.env.USER_TYPE === 'ant' && {
       skill_name:
         commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       ...(returnedCommand.type === 'prompt' && {

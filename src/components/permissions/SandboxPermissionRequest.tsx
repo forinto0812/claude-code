@@ -27,7 +27,7 @@ export function SandboxPermissionRequest({
     // We may want to better unify this dialog with other permission dialogs
     // and use their logging, but this is slightly different and we don't have
     // the tool context here. For now, just use basic logging for basic data.
-    if ("external" === 'ant') {
+    if (process.env.USER_TYPE === 'ant') {
       logEvent('tengu_sandbox_network_dialog_result', {
         host: host as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         result:
@@ -89,7 +89,7 @@ export function SandboxPermissionRequest({
             options={options}
             onChange={onSelect}
             onCancel={() => {
-              if ("external" === 'ant') {
+              if (process.env.USER_TYPE === 'ant') {
                 logEvent('tengu_sandbox_network_dialog_result', {
                   host: host as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
                   result:

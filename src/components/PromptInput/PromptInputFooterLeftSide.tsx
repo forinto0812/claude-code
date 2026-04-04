@@ -232,7 +232,7 @@ function ModeIndicator({
   const prStatus = usePrStatus(isLoading, isPrStatusEnabled())
   const hasTmuxSession = useAppState(
     s =>
-      "external" === 'ant' && s.tungstenActiveSession !== undefined,
+      process.env.USER_TYPE === 'ant' && s.tungstenActiveSession !== undefined,
   )
 
   const nextTickAt = useSyncExternalStore(
@@ -262,7 +262,7 @@ function ModeIndicator({
         Object.values(tasks),
         t =>
           isBackgroundTask(t) &&
-          !("external" === 'ant' && isPanelAgentTask(t)),
+          !(process.env.USER_TYPE === 'ant' && isPanelAgentTask(t)),
       ),
     [tasks],
   )
@@ -408,7 +408,7 @@ function ModeIndicator({
     // its click-target Box isn't nested inside the <Text wrap="truncate">
     // wrapper (reconciler throws on Box-in-Text).
     // Tmux pill (ant-only) — appears right after tasks in nav order
-    ...("external" === 'ant' && hasTmuxSession
+    ...(process.env.USER_TYPE === 'ant' && hasTmuxSession
       ? [<TungstenPill key="tmux" selected={tmuxSelected} />]
       : []),
     ...(isAgentSwarmsEnabled() && hasTeams
@@ -501,7 +501,7 @@ function ModeIndicator({
 
   // Add "↓ to manage tasks" hint when panel has visible rows
   const hasCoordinatorTasks =
-    "external" === 'ant' && getVisibleAgentTasks(tasks).length > 0
+    process.env.USER_TYPE === 'ant' && getVisibleAgentTasks(tasks).length > 0
 
   // Tasks pill renders as a Box sibling (not a parts entry) so its
   // click-target Box isn't nested inside <Text wrap="truncate"> — the

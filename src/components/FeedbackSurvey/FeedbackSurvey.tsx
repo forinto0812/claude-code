@@ -144,7 +144,7 @@ function FeedbackSurveyThanks({
   })
 
   const feedbackCommand =
-    "external" === 'ant' ? '/issue' : '/feedback'
+    process.env.USER_TYPE === 'ant' ? '/issue' : '/feedback'
 
   return (
     <Box marginTop={1} flexDirection="column">

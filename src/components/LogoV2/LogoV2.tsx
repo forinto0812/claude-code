@@ -219,12 +219,12 @@ export function LogoV2(): React.ReactNode {
             <Text>{announcement}</Text>
           </Box>
         )}
-        {"external" === 'ant' && !process.env.DEMO_VERSION && (
+        {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
           <Box paddingLeft={2} flexDirection="column">
             <Text dimColor>Use /issue to report model behavior issues</Text>
           </Box>
         )}
-        {"external" === 'ant' && !process.env.DEMO_VERSION && (
+        {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
           <Box paddingLeft={2} flexDirection="column">
             <Text color="warning">[ANT-ONLY] Logs:</Text>
             <Text dimColor>
@@ -240,8 +240,8 @@ export function LogoV2(): React.ReactNode {
             )}
           </Box>
         )}
-        {"external" === 'ant' && <GateOverridesWarning />}
-        {"external" === 'ant' && <ExperimentEnrollmentNotice />}
+        {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+        {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
       </>
     )
   }
@@ -314,8 +314,8 @@ export function LogoV2(): React.ReactNode {
             </Text>
           </Box>
         )}
-        {"external" === 'ant' && <GateOverridesWarning />}
-        {"external" === 'ant' && <ExperimentEnrollmentNotice />}
+        {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+        {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
       </>
     )
   }
@@ -473,12 +473,12 @@ export function LogoV2(): React.ReactNode {
           </Text>
         </Box>
       )}
-      {"external" === 'ant' && !process.env.DEMO_VERSION && (
+      {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
         <Box paddingLeft={2} flexDirection="column">
           <Text dimColor>Use /issue to report model behavior issues</Text>
         </Box>
       )}
-      {"external" === 'ant' && !process.env.DEMO_VERSION && (
+      {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
         <Box paddingLeft={2} flexDirection="column">
           <Text color="warning">[ANT-ONLY] Logs:</Text>
           <Text dimColor>
@@ -492,8 +492,8 @@ export function LogoV2(): React.ReactNode {
           )}
         </Box>
       )}
-      {"external" === 'ant' && <GateOverridesWarning />}
-      {"external" === 'ant' && <ExperimentEnrollmentNotice />}
+      {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+      {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
     </>
   )
 }
