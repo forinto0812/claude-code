@@ -62,7 +62,7 @@ import {
   getMergedBetas,
   getModelBetas,
 } from '../../utils/betas.js'
-import { getOrCreateUserID } from '../../utils/config.js'
+import { getOrCreateUserID } from '@anthropic/config'
 import {
   CAPPED_DEFAULT_MAX_TOKENS,
   getModelMaxOutputTokens,

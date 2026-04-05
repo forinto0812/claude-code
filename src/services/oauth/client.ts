@@ -17,8 +17,8 @@ import {
   isClaudeAISubscriber,
   saveApiKey,
 } from '../../utils/auth.js'
-import type { AccountInfo } from '../../utils/config.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
+import type { AccountInfo } from '@anthropic/config'
 import { logForDebugging } from '../../utils/debug.js'
 import { getOauthProfileFromOauthToken } from './getOauthProfile.js'
 import type {

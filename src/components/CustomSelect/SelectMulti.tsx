@@ -1,7 +1,7 @@
 import figures from 'figures'
 import React from 'react'
 import { Box, Text } from '../../ink.js'
-import type { PastedContent } from '../../utils/config.js'
+import type { PastedContent } from '@anthropic/config'
 import type { ImageDimensions } from '../../utils/imageResizer.js'
 import type { OptionWithDescription } from './select.js'
 import { SelectInputOption } from './select-input-option.js'

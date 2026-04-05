@@ -1,4 +1,4 @@
-import { getSettingsForSource } from '../settings/settings.js'
+import { getSettingsForSource } from '@anthropic/config'
 
 /**
  * Plugin names locked by org policy (policySettings.enabledPlugins).

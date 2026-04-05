@@ -36,7 +36,7 @@ import {
   getOriginalCwd,
   getMainThreadAgentType,
 } from '../bootstrap/state.js'
-import { checkHasTrustDialogAccepted } from './config.js'
+import { checkHasTrustDialogAccepted } from '@anthropic/config'
 import {
   getHooksConfigFromSnapshot,
   shouldAllowManagedHooksOnly,
@@ -50,7 +50,7 @@ import type { AgentId } from '../types/ids.js'
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import {
   logEvent,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -117,7 +117,7 @@ import type {
   HookCommand,
   PluginHookMatcher,
   SkillHookMatcher,
-} from './settings/types.js'
+} from '@anthropic/config'
 import { getHookDisplayText } from './hooks/hooksSettings.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'

@@ -30,7 +30,7 @@ import {
 } from '../../utils/fastMode.js'
 import { formatDuration } from '../../utils/format.js'
 import { formatModelPricing, getOpus46CostTier } from '../../utils/modelCost.js'
-import { updateSettingsForSource } from '../../utils/settings/settings.js'
+import { updateSettingsForSource } from '@anthropic/config'
 
 function applyFastMode(
   enable: boolean,

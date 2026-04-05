@@ -23,9 +23,8 @@ import {
   createProjectOnboardingFeed,
   createGuestPassesFeed,
 } from './feedConfigs.js'
-import { getGlobalConfig, saveGlobalConfig } from 'src/utils/config.js'
+import { getGlobalConfig, saveGlobalConfig, getInitialSettings } from '@anthropic/config'
 import { resolveThemeSetting } from 'src/utils/systemTheme.js'
-import { getInitialSettings } from 'src/utils/settings/settings.js'
 import {
   isDebugMode,
   isDebugToStdErr,

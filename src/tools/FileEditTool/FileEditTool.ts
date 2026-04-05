@@ -48,7 +48,7 @@ import {
 } from '../../utils/permissions/filesystem.js'
 import type { PermissionDecision } from '../../utils/permissions/PermissionResult.js'
 import { matchWildcardPattern } from '../../utils/permissions/shellRuleMatching.js'
-import { validateInputForSettingsFileEdit } from '../../utils/settings/validateEditTool.js'
+import { validateInputForSettingsFileEdit } from '@anthropic/config'
 import { NOTEBOOK_EDIT_TOOL_NAME } from '../NotebookEditTool/constants.js'
 import {
   FILE_EDIT_TOOL_NAME,

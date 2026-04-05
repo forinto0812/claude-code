@@ -1,12 +1,9 @@
 import { feature } from 'bun:bundle'
 import { logEvent } from 'src/services/analytics/index.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { logError } from '../utils/log.js'
 import { getAutoModeEnabledState } from '../utils/permissions/permissionSetup.js'
-import {
-  getSettingsForSource,
-  updateSettingsForSource,
-} from '../utils/settings/settings.js'
+import { getSettingsForSource, updateSettingsForSource } from '@anthropic/config'
 
 /**
  * One-shot migration: clear skipAutoPermissionPrompt for users who accepted

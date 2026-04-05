@@ -1,5 +1,5 @@
 import { homedir } from 'os'
-import { getGlobalConfig, saveGlobalConfig } from '../../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { logForDebugging } from '../../../utils/debug.js'
 import {
   execFileNoThrow,

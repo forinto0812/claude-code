@@ -14,7 +14,7 @@ import {
   isEffortLevel,
   toPersistableEffort,
 } from '../../utils/effort.js'
-import { updateSettingsForSource } from '../../utils/settings/settings.js'
+import { updateSettingsForSource } from '@anthropic/config'
 
 const COMMON_HELP_ARGS = ['help', '-h', '--help']
 

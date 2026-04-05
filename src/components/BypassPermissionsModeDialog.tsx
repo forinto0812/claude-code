@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { logEvent } from 'src/services/analytics/index.js'
 import { Box, Link, Newline, Text } from '../ink.js'
 import { gracefulShutdownSync } from '../utils/gracefulShutdown.js'
-import { updateSettingsForSource } from '../utils/settings/settings.js'
+import { updateSettingsForSource } from '@anthropic/config'
 import { Select } from './CustomSelect/index.js'
 import { Dialog } from './design-system/Dialog.js'
 

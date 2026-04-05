@@ -8,7 +8,7 @@
 // If you're tempted to add `import settings` to git.ts — don't. Put it here.
 
 import { isEnvDefinedFalsy, isEnvTruthy } from './envUtils.js'
-import { getInitialSettings } from './settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 
 export function shouldIncludeGitInstructions(): boolean {
   const envVal = process.env.CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS

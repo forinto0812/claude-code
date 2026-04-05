@@ -13,7 +13,7 @@ import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { Text } from '../../ink.js'
 import { refreshGrowthBookAfterAuthChange } from '../../services/analytics/growthbook.js'
 import { refreshPolicyLimits } from '../../services/policyLimits/index.js'
-import { refreshRemoteManagedSettings } from '../../services/remoteManagedSettings/index.js'
+import { refreshRemoteManagedSettings } from '@anthropic/config'
 import type { LocalJSXCommandOnDone } from '../../types/command.js'
 import { stripSignatureBlocks } from '../../utils/messages.js'
 import {

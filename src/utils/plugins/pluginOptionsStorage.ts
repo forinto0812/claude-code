@@ -20,7 +20,7 @@ import { getSecureStorage } from '../secureStorage/index.js'
 import {
   getSettings_DEPRECATED,
   updateSettingsForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import {
   type UserConfigSchema,
   type UserConfigValues,

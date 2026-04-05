@@ -1,4 +1,4 @@
-import type { SettingSource } from 'src/utils/settings/constants.js'
+import type { SettingSource } from '@anthropic/config'
 import type { AgentDefinition } from '../../tools/AgentTool/loadAgentsDir.js'
 
 export const AGENT_PATHS = {

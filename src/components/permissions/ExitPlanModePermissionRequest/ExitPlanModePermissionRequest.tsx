@@ -81,7 +81,8 @@ import {
   saveAgentName,
   saveCustomTitle,
 } from '../../../utils/sessionStorage.js'
-import { getSettings_DEPRECATED } from '../../../utils/settings/settings.js'
+import { getSettings_DEPRECATED } from '@anthropic/config'
+import type { PastedContent } from '@anthropic/config'
 import { type OptionWithDescription, Select } from '../../CustomSelect/index.js'
 import { Markdown } from '../../Markdown.js'
 import { PermissionDialog } from '../PermissionDialog.js'
@@ -98,7 +99,6 @@ import type {
   ImageBlockParam,
 } from '@anthropic-ai/sdk/resources/messages.mjs'
 /* eslint-enable @typescript-eslint/no-require-imports */
-import type { PastedContent } from '../../../utils/config.js'
 import type { ImageDimensions } from '../../../utils/imageResizer.js'
 import { maybeResizeAndDownsampleImageBlock } from '../../../utils/imageResizer.js'
 import { cacheImagePath, storeImage } from '../../../utils/imageStore.js'

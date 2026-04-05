@@ -6,7 +6,7 @@ import { getCwd } from '../utils/cwd.js'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { getCurrentWorktreeSession } from '../utils/worktree.js'
 import { getSessionStartDate } from './common.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import {
   AGENT_TOOL_NAME,
   VERIFICATION_AGENT_TYPE,

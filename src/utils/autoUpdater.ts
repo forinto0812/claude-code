@@ -8,7 +8,11 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from 'src/services/analytics/index.js'
-import { type ReleaseChannel, saveGlobalConfig } from './config.js'
+import {
+  getInitialSettings,
+  saveGlobalConfig,
+} from '@anthropic/config'
+import type { ReleaseChannel } from '@anthropic/config'
 import { logForDebugging } from './debug.js'
 import { env } from './env.js'
 import { getClaudeConfigHomeDir } from './envUtils.js'
@@ -18,7 +22,6 @@ import { getFsImplementation } from './fsOperations.js'
 import { gracefulShutdownSync } from './gracefulShutdown.js'
 import { logError } from './log.js'
 import { gte, lt } from './semver.js'
-import { getInitialSettings } from './settings/settings.js'
 import {
   filterClaudeAliases,
   getShellConfigPaths,

@@ -1,13 +1,7 @@
 import { logEvent } from 'src/services/analytics/index.js'
-import {
-  getCurrentProjectConfig,
-  saveCurrentProjectConfig,
-} from '../utils/config.js'
+import { getCurrentProjectConfig, saveCurrentProjectConfig } from '@anthropic/config'
 import { logError } from '../utils/log.js'
-import {
-  getSettingsForSource,
-  updateSettingsForSource,
-} from '../utils/settings/settings.js'
+import { getSettingsForSource, updateSettingsForSource } from '@anthropic/config'
 
 /**
  * Migration: Move MCP server approval fields from project config to local settings

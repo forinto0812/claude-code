@@ -3,7 +3,7 @@ import { use } from 'react'
 import { Box } from '../ink.js'
 import type { AgentDefinitionsResult } from '../tools/AgentTool/loadAgentsDir.js'
 import { getMemoryFiles } from '../utils/claudemd.js'
-import { getGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import {
   getActiveNotices,
   type StatusNoticeContext,
@@ -21,8 +21,15 @@ type Props = {
 export function StatusNotices({
   agentDefinitions,
 }: Props = {}): React.ReactNode {
+  let config: StatusNoticeContext['config']
+  try {
+    config = getGlobalConfig()
+  } catch {
+    // Config not yet available (enableConfigs() hasn't been called)
+    return null
+  }
   const context: StatusNoticeContext = {
-    config: getGlobalConfig(),
+    config,
     agentDefinitions,
     memoryFiles: use(getMemoryFiles()),
   }

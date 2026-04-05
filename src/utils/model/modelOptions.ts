@@ -13,7 +13,10 @@ import {
   COST_HAIKU_45,
   formatModelPricing,
 } from '../modelCost.js'
-import { getSettings_DEPRECATED } from '../settings/settings.js'
+import {
+  getGlobalConfig,
+  getSettings_DEPRECATED,
+} from '@anthropic/config'
 import { checkOpus1mAccess, checkSonnet1mAccess } from './check1mAccess.js'
 import { getAPIProvider } from './providers.js'
 import { isModelAllowed } from './modelAllowlist.js'
@@ -32,7 +35,6 @@ import {
   type ModelSetting,
 } from './model.js'
 import { has1mContext } from '../context.js'
-import { getGlobalConfig } from '../config.js'
 
 // @[MODEL LAUNCH]: Update all the available and default model option strings below.
 

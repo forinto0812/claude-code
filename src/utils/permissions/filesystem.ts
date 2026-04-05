@@ -31,11 +31,11 @@ import {
 import { getPlanSlug, getPlansDirectory } from '../plans.js'
 import { getPlatform } from '../platform.js'
 import { getProjectDir } from '../sessionStorage.js'
-import { SETTING_SOURCES } from '../settings/constants.js'
+import { SETTING_SOURCES } from '@anthropic/config'
 import {
   getSettingsFilePathForSource,
   getSettingsRootPathForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import { containsVulnerableUncPath } from '../shell/readOnlyCommandValidation.js'
 import { getToolResultsDir } from '../toolResultStorage.js'
 import { windowsPathToPosixPath } from '../windowsPaths.js'

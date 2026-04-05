@@ -7,12 +7,14 @@ import {
 } from '../../bootstrap/state.js'
 import type { LoadedPlugin } from '../../types/plugin.js'
 import { logForDebugging } from '../debug.js'
-import { settingsChangeDetector } from '../settings/changeDetector.js'
+import {
+  settingsChangeDetector,
+} from '@anthropic/config'
+import type { PluginHookMatcher } from '@anthropic/config'
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from '../settings/settings.js'
-import type { PluginHookMatcher } from '../settings/types.js'
+} from '@anthropic/config'
 import { jsonStringify } from '../slowOperations.js'
 import { clearPluginCache, loadAllPluginsCacheOnly } from './pluginLoader.js'
 

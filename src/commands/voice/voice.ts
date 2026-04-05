@@ -3,12 +3,8 @@ import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js'
 import { logEvent } from '../../services/analytics/index.js'
 import type { LocalCommandCall } from '../../types/command.js'
 import { isAnthropicAuthEnabled } from '../../utils/auth.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
-import { settingsChangeDetector } from '../../utils/settings/changeDetector.js'
-import {
-  getInitialSettings,
-  updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+import { getGlobalConfig, saveGlobalConfig, settingsChangeDetector } from '@anthropic/config'
+import { getInitialSettings, updateSettingsForSource } from '@anthropic/config'
 import { isVoiceModeEnabled } from '../../voice/voiceModeEnabled.js'
 
 const LANG_HINT_MAX_SHOWS = 2

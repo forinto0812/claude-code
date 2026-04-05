@@ -21,9 +21,11 @@ import { ripGrep } from './ripgrep.js'
 import {
   isSettingSourceEnabled,
   type SettingSource,
-} from './settings/constants.js'
-import { getManagedFilePath } from './settings/managedPath.js'
-import { isRestrictedToPluginOnly } from './settings/pluginOnlyPolicy.js'
+} from '@anthropic/config'
+import {
+  getManagedFilePath,
+  isRestrictedToPluginOnly,
+} from '@anthropic/config'
 
 // Claude configuration directory names
 export const CLAUDE_CONFIG_DIRECTORIES = [

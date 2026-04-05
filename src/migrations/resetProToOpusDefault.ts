@@ -1,8 +1,7 @@
 import { logEvent } from 'src/services/analytics/index.js'
 import { isProSubscriber } from '../utils/auth.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig, getSettings_DEPRECATED } from '@anthropic/config'
 import { getAPIProvider } from '../utils/model/providers.js'
-import { getSettings_DEPRECATED } from '../utils/settings/settings.js'
 
 export function resetProToOpusDefault(): void {
   const config = getGlobalConfig()

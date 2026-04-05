@@ -7,12 +7,12 @@ import {
   isProSubscriber,
   isTeamPremiumSubscriber,
 } from '../utils/auth.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { getAPIProvider } from '../utils/model/providers.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 
 /**
  * Migrate Pro/Max/Team Premium first-party users off explicit Sonnet 4.5

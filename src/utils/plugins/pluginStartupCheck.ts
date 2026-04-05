@@ -2,12 +2,12 @@ import { join } from 'path'
 import { getCwd } from '../cwd.js'
 import { logForDebugging } from '../debug.js'
 import { logError } from '../log.js'
-import type { SettingSource } from '../settings/constants.js'
+import type { SettingSource } from '@anthropic/config'
 import {
   getInitialSettings,
   getSettingsForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import { getAddDirEnabledPlugins } from './addDirPluginSettings.js'
 import {
   getInMemoryInstalledPlugins,

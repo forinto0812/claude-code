@@ -6,13 +6,13 @@ import {
   type EditableSettingSource,
   getEnabledSettingSources,
   type SettingSource,
-} from '../settings/constants.js'
+} from '@anthropic/config'
 import {
   getSettingsFilePathForSource,
   getSettingsForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
-import type { SettingsJson } from '../settings/types.js'
+} from '@anthropic/config'
+import type { SettingsJson } from '@anthropic/config'
 import type {
   PermissionBehavior,
   PermissionRule,

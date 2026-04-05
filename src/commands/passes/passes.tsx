@@ -3,7 +3,7 @@ import { Passes } from '../../components/Passes/Passes.js'
 import { logEvent } from '../../services/analytics/index.js'
 import { getCachedRemainingPasses } from '../../services/api/referral.js'
 import type { LocalJSXCommandOnDone } from '../../types/command.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,

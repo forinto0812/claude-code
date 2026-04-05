@@ -5,7 +5,7 @@ import { Box, Text } from '../ink.js'
 import {
   getSettings_DEPRECATED,
   updateSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { SelectMulti } from './CustomSelect/SelectMulti.js'
 import { Byline } from './design-system/Byline.js'

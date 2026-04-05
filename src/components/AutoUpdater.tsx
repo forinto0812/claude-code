@@ -15,7 +15,7 @@ import {
   installGlobalPackage,
   shouldSkipVersion,
 } from '../utils/autoUpdater.js'
-import { getGlobalConfig, isAutoUpdaterDisabled } from '../utils/config.js'
+import { getGlobalConfig, isAutoUpdaterDisabled, getInitialSettings } from '@anthropic/config'
 import { logForDebugging } from '../utils/debug.js'
 import { getCurrentInstallationType } from '../utils/doctorDiagnostic.js'
 import {
@@ -24,7 +24,6 @@ import {
 } from '../utils/localInstaller.js'
 import { removeInstalledSymlink } from '../utils/nativeInstaller/index.js'
 import { gt, gte } from '../utils/semver.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
 
 type Props = {
   isUpdating: boolean

@@ -13,14 +13,16 @@ import type {
 } from '../../Tool.js'
 import { getCwd } from '../cwd.js'
 import { isEnvTruthy } from '../envUtils.js'
-import type { SettingSource } from '../settings/constants.js'
-import { SETTING_SOURCES } from '../settings/constants.js'
+import {
+  SETTING_SOURCES,
+} from '@anthropic/config'
+import type { SettingSource } from '@anthropic/config'
 import {
   getSettings_DEPRECATED,
   getSettingsFilePathForSource,
   getUseAutoModeDuringPlan,
   hasAutoModeOptIn,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import {
   type PermissionMode,
   permissionModeFromString,

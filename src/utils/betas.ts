@@ -27,7 +27,7 @@ import { isEnvDefinedFalsy, isEnvTruthy } from './envUtils.js'
 import { getCanonicalName } from './model/model.js'
 import { get3PModelCapabilityOverride } from './model/modelSupportOverrides.js'
 import { getAPIProvider } from './model/providers.js'
-import { getInitialSettings } from './settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 
 /**
  * SDK-provided betas that are allowed for API key users.

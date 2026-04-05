@@ -9,7 +9,7 @@ import {
   getAutoUpdaterDisabledReason,
   getGlobalConfig,
   type InstallMethod,
-} from './config.js'
+} from '@anthropic/config'
 import { getCwd } from './cwd.js'
 import { isEnvTruthy } from './envUtils.js'
 import { execFileNoThrow } from './execFileNoThrow.js'
@@ -33,8 +33,10 @@ import {
 import { getPlatform } from './platform.js'
 import { getRipgrepStatus } from './ripgrep.js'
 import { SandboxManager } from './sandbox/sandbox-adapter.js'
-import { getManagedFilePath } from './settings/managedPath.js'
-import { CUSTOMIZATION_SURFACES } from './settings/types.js'
+import {
+  CUSTOMIZATION_SURFACES,
+  getManagedFilePath,
+} from '@anthropic/config'
 import {
   findClaudeAlias,
   findValidClaudeAlias,

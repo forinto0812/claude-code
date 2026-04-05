@@ -1,10 +1,7 @@
 import { logEvent } from 'src/services/analytics/index.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { logError } from '../utils/log.js'
-import {
-  hasSkipDangerousModePermissionPrompt,
-  updateSettingsForSource,
-} from '../utils/settings/settings.js'
+import { hasSkipDangerousModePermissionPrompt, updateSettingsForSource } from '@anthropic/config'
 
 /**
  * Migration: Move bypassPermissionsModeAccepted from global config to settings.json

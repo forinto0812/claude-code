@@ -2,7 +2,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from 'src/services/analytics/index.js'
-import { saveGlobalConfig } from 'src/utils/config.js'
+import { saveGlobalConfig } from '@anthropic/config'
 import {
   CODE_REVIEW_PLUGIN_WORKFLOW_CONTENT,
   PR_BODY,

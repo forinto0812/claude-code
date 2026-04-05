@@ -86,7 +86,7 @@ import {
   getSettings_DEPRECATED,
   getSettingsForSource,
   updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+} from '@anthropic/config'
 import { jsonParse } from '../../utils/slowOperations.js'
 import { plural } from '../../utils/stringUtils.js'
 import { formatErrorMessage, getErrorGuidance } from './PluginErrors.js'

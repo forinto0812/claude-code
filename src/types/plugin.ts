@@ -6,7 +6,7 @@ import type {
   PluginAuthor,
   PluginManifest,
 } from '../utils/plugins/schemas.js'
-import type { HooksSettings } from '../utils/settings/types.js'
+import type { HooksSettings } from '@anthropic/config'
 
 export type { PluginAuthor, PluginManifest, CommandMetadata }
 

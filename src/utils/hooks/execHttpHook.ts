@@ -5,8 +5,8 @@ import { logForDebugging } from '../debug.js'
 import { errorMessage } from '../errors.js'
 import { getProxyUrl, shouldBypassProxy } from '../proxy.js'
 // Import as namespace so spyOn works in tests (direct imports bypass spies)
-import * as settingsModule from '../settings/settings.js'
-import type { HttpHook } from '../settings/types.js'
+import * as settingsModule from '@anthropic/config'
+import type { HttpHook } from '@anthropic/config'
 import { ssrfGuardedLookup } from './ssrfGuard.js'
 
 const DEFAULT_HTTP_HOOK_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes (matches TOOL_HOOK_EXECUTION_TIMEOUT_MS)

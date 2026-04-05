@@ -10,7 +10,7 @@ import { stringWidth } from '../ink/stringWidth.js'
 import { wrapAnsi } from '../ink/wrapAnsi.js'
 import { Box, Text } from '../ink.js'
 import { logEvent } from '../services/analytics/index.js'
-import type { HistoryEntry } from '../utils/config.js'
+import type { HistoryEntry } from '@anthropic/config'
 import { formatRelativeTimeAgo, truncateToWidth } from '../utils/format.js'
 import { FuzzyPicker } from './design-system/FuzzyPicker.js'
 

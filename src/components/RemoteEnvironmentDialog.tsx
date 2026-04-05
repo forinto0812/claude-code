@@ -6,11 +6,9 @@ import { Text } from '../ink.js'
 import { useKeybinding } from '../keybindings/useKeybinding.js'
 import { toError } from '../utils/errors.js'
 import { logError } from '../utils/log.js'
-import {
-  getSettingSourceName,
-  type SettingSource,
-} from '../utils/settings/constants.js'
-import { updateSettingsForSource } from '../utils/settings/settings.js'
+import { getSettingSourceName } from '@anthropic/config'
+import type { SettingSource } from '@anthropic/config'
+import { updateSettingsForSource } from '@anthropic/config'
 import { getEnvironmentSelectionInfo } from '../utils/teleport/environmentSelection.js'
 import type { EnvironmentResource } from '../utils/teleport/environments.js'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'

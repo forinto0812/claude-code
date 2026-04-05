@@ -115,11 +115,9 @@ import { isAgentSwarmsEnabled } from '../../utils/agentSwarmsEnabled.js'
 import { count } from '../../utils/array.js'
 import type { AutoUpdaterResult } from '../../utils/autoUpdater.js'
 import { Cursor } from '../../utils/Cursor.js'
-import {
-  getGlobalConfig,
-  type PastedContent,
-  saveGlobalConfig,
-} from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
+import type { PastedContent } from '@anthropic/config'
+import { hasAutoModeOptIn } from '@anthropic/config'
 import { logForDebugging } from '../../utils/debug.js'
 import {
   parseDirectMemberMessage,
@@ -162,7 +160,6 @@ import { transitionPermissionMode } from '../../utils/permissions/permissionSetu
 import { getPlatform } from '../../utils/platform.js'
 import type { ProcessUserInputContext } from '../../utils/processUserInput/processUserInput.js'
 import { editPromptInEditor } from '../../utils/promptEditor.js'
-import { hasAutoModeOptIn } from '../../utils/settings/settings.js'
 import { findBtwTriggerPositions } from '../../utils/sideQuestion.js'
 import { findSlashCommandPositions } from '../../utils/suggestions/commandSuggestions.js'
 import {

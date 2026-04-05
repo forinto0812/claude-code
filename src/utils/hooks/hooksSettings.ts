@@ -2,13 +2,14 @@ import { resolve } from 'path'
 import type { HookEvent } from 'src/entrypoints/agentSdkTypes.js'
 import { getSessionId } from '../../bootstrap/state.js'
 import type { AppState } from '../../state/AppState.js'
-import type { EditableSettingSource } from '../settings/constants.js'
-import { SOURCES } from '../settings/constants.js'
+import {
+  SOURCES,
+} from '@anthropic/config'
+import type { EditableSettingSource, HookCommand, HookMatcher } from '@anthropic/config'
 import {
   getSettingsFilePathForSource,
   getSettingsForSource,
-} from '../settings/settings.js'
-import type { HookCommand, HookMatcher } from '../settings/types.js'
+} from '@anthropic/config'
 import { DEFAULT_HOOK_SHELL } from '../shell/shellProvider.js'
 import { getSessionHooks } from './sessionHooks.js'
 

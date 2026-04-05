@@ -12,7 +12,8 @@ import { KeybindingWarnings } from 'src/components/KeybindingWarnings.js'
 import { McpParsingWarnings } from 'src/components/mcp/McpParsingWarnings.js'
 import { getModelMaxOutputTokens } from 'src/utils/context.js'
 import { getClaudeConfigHomeDir } from 'src/utils/envUtils.js'
-import type { SettingSource } from 'src/utils/settings/constants.js'
+import { getInitialSettings } from '@anthropic/config'
+import type { SettingSource } from '@anthropic/config'
 import { getOriginalCwd } from '../bootstrap/state.js'
 import type { CommandResultDisplay } from '../commands.js'
 import { Pane } from '../components/design-system/Pane.js'
@@ -46,7 +47,6 @@ import {
   isPidBasedLockingEnabled,
   type LockInfo,
 } from '../utils/nativeInstaller/pidLock.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
 import {
   BASH_MAX_OUTPUT_DEFAULT,
   BASH_MAX_OUTPUT_UPPER_LIMIT,

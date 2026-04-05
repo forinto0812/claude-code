@@ -247,7 +247,7 @@ import {
   getGlobalConfig,
   saveGlobalConfig,
   getGlobalConfigWriteCount,
-} from '../utils/config.js'
+} from '@anthropic/config'
 import { hasConsoleBillingAccess } from '../utils/billing.js'
 import {
   logEvent,
@@ -332,7 +332,6 @@ import type {
   ImageBlockParam,
 } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { ProcessUserInputContext } from '../utils/processUserInput/processUserInput.js'
-import type { PastedContent } from '../utils/config.js'
 import {
   copyPlanForFork,
   copyPlanForResume,

@@ -32,16 +32,16 @@ import { getMTLSConfig } from './mtls.js'
 import { checkInstall } from './nativeInstaller/index.js'
 import { getProxyUrl } from './proxy.js'
 import { SandboxManager } from './sandbox/sandbox-adapter.js'
-import { getSettingsWithAllErrors } from './settings/allErrors.js'
+import { getSettingsWithAllErrors } from '@anthropic/config'
 import {
   getEnabledSettingSources,
   getSettingSourceDisplayNameCapitalized,
-} from './settings/constants.js'
+} from '@anthropic/config'
 import {
   getManagedFileSettingsPresence,
   getPolicySettingsOrigin,
   getSettingsForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import type { ThemeName } from './theme.js'
 
 export type Property = {

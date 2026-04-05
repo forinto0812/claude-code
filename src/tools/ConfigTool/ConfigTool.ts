@@ -5,19 +5,12 @@ import {
   logEvent,
 } from '../../services/analytics/index.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import {
-  type GlobalConfig,
-  getGlobalConfig,
-  getRemoteControlAtStartup,
-  saveGlobalConfig,
-} from '../../utils/config.js'
+import { getGlobalConfig, getRemoteControlAtStartup, saveGlobalConfig } from '@anthropic/config'
+import type { GlobalConfig } from '@anthropic/config'
 import { errorMessage } from '../../utils/errors.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { logError } from '../../utils/log.js'
-import {
-  getInitialSettings,
-  updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+import { getInitialSettings, updateSettingsForSource } from '@anthropic/config'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { CONFIG_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, generatePrompt } from './prompt.js'
@@ -347,7 +340,7 @@ export const ConfigTool = buildTool({
       // and the settings cache resets for the next /voice read.
       if (feature('VOICE_MODE') && setting === 'voiceEnabled') {
         const { settingsChangeDetector } = await import(
-          '../../utils/settings/changeDetector.js'
+          '@anthropic/config'
         )
         settingsChangeDetector.notifyChange('userSettings')
       }

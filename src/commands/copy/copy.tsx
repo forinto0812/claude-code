@@ -16,7 +16,7 @@ import { Box, Text } from '../../ink.js'
 import { logEvent } from '../../services/analytics/index.js'
 import type { LocalJSXCommandCall } from '../../types/command.js'
 import type { AssistantMessage, Message } from '../../types/message.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { extractTextContent, stripPromptXMLTags } from '../../utils/messages.js'
 import { countCharInString } from '../../utils/stringUtils.js'
 

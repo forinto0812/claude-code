@@ -13,7 +13,7 @@ import {
   backgroundAll,
   hasForegroundTasks,
 } from '../tasks/LocalShellTask/LocalShellTask.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { env } from '../utils/env.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
 import { KeyboardShortcutHint } from './design-system/KeyboardShortcutHint.js'

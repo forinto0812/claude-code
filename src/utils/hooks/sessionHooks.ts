@@ -3,7 +3,7 @@ import type { AppState } from 'src/state/AppState.js'
 import type { Message } from 'src/types/message.js'
 import { logForDebugging } from '../debug.js'
 import type { AggregatedHookResult } from '../hooks.js'
-import type { HookCommand } from '../settings/types.js'
+import type { HookCommand } from '@anthropic/config'
 import { isHookEqual } from './hooksSettings.js'
 
 type OnHookSuccess = (

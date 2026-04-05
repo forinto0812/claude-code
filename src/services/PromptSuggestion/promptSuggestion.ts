@@ -16,7 +16,7 @@ import {
   createUserMessage,
   getLastAssistantMessage,
 } from '../../utils/messages.js'
-import { getInitialSettings } from '../../utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import { isTeammate } from '../../utils/teammate.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
 import {

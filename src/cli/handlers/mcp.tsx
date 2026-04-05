@@ -46,7 +46,7 @@ import {
   getCurrentProjectConfig,
   getGlobalConfig,
   saveCurrentProjectConfig,
-} from '../../utils/config.js'
+} from '@anthropic/config'
 import { isFsInaccessible } from '../../utils/errors.js'
 import { gracefulShutdown } from '../../utils/gracefulShutdown.js'
 import { safeParseJSON } from '../../utils/json.js'

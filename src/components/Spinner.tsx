@@ -46,7 +46,7 @@ import {
 
 import { TeammateSpinnerTree } from './Spinner/TeammateSpinnerTree.js'
 import { useAnimationFrame } from '../ink.js'
-import { getGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import { t, useLocale } from '../i18n/index.js'
 export type { SpinnerMode } from './Spinner/index.js'
 

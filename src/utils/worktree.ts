@@ -12,7 +12,7 @@ import {
 } from 'fs/promises'
 import ignore from 'ignore'
 import { basename, dirname, join } from 'path'
-import { saveCurrentProjectConfig } from './config.js'
+import { saveCurrentProjectConfig } from '@anthropic/config'
 import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { errorMessage, getErrnoCode } from './errors.js'
@@ -41,7 +41,7 @@ import { getPlatform } from './platform.js'
 import {
   getInitialSettings,
   getRelativeSettingsFilePathForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import { sleep } from './sleep.js'
 import { isInITerm2 } from './swarm/backends/detection.js'
 

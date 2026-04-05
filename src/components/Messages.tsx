@@ -28,7 +28,7 @@ import { collapseBackgroundBashNotifications } from '../utils/collapseBackground
 import { collapseHookSummaries } from '../utils/collapseHookSummaries.js'
 import { collapseReadSearchGroups } from '../utils/collapseReadSearch.js'
 import { collapseTeammateShutdowns } from '../utils/collapseTeammateShutdowns.js'
-import { getGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import { isEnvTruthy } from '../utils/envUtils.js'
 import { isFullscreenEnvEnabled } from '../utils/fullscreen.js'
 import { applyGrouping } from '../utils/groupToolUses.js'

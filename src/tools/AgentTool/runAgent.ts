@@ -67,7 +67,7 @@ import {
 import {
   isRestrictedToPluginOnly,
   isSourceAdminTrusted,
-} from '../../utils/settings/pluginOnlyPolicy.js'
+} from '@anthropic/config'
 import {
   asSystemPrompt,
   type SystemPrompt,

@@ -10,7 +10,7 @@ import {
 } from '../../utils/analyzeContext.js'
 import { formatTokens } from '../../utils/format.js'
 import { getMessagesAfterCompactBoundary } from '../../utils/messages.js'
-import { getSourceDisplayName } from '../../utils/settings/constants.js'
+import { getSourceDisplayName } from '@anthropic/config'
 import { plural } from '../../utils/stringUtils.js'
 
 /**

@@ -21,11 +21,8 @@ import {
   removeMarketplaceSource,
 } from '../../utils/plugins/marketplaceManager.js'
 import { getPluginEditableScopes } from '../../utils/plugins/pluginStartupCheck.js'
-import type { EditableSettingSource } from '../../utils/settings/constants.js'
-import {
-  getSettingsForSource,
-  updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+import type { EditableSettingSource } from '@anthropic/config'
+import { getSettingsForSource, updateSettingsForSource } from '@anthropic/config'
 import { AddMarketplace } from './AddMarketplace.js'
 import { BrowseMarketplace } from './BrowseMarketplace.js'
 import { DiscoverPlugins } from './DiscoverPlugins.js'

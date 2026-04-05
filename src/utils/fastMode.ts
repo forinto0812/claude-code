@@ -17,7 +17,7 @@ import {
   hasProfileScope,
 } from './auth.js'
 import { isInBundledMode } from './bundledMode.js'
-import { getGlobalConfig, saveGlobalConfig } from './config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { logForDebugging } from './debug.js'
 import { isEnvTruthy } from './envUtils.js'
 import {
@@ -32,7 +32,7 @@ import {
   getInitialSettings,
   getSettingsForSource,
   updateSettingsForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import { createSignal } from './signal.js'
 
 export function isFastModeEnabled(): boolean {

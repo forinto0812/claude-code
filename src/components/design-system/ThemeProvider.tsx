@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 import useStdin from '../../ink/hooks/use-stdin.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import {
   getSystemThemeName,
   type SystemTheme,

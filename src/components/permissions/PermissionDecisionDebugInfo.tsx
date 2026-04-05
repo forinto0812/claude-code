@@ -15,7 +15,7 @@ import type { PermissionUpdate } from '../../utils/permissions/PermissionUpdateS
 import { permissionRuleValueToString } from '../../utils/permissions/permissionRuleParser.js'
 import { detectUnreachableRules } from '../../utils/permissions/shadowedRuleDetection.js'
 import { SandboxManager } from '../../utils/sandbox/sandbox-adapter.js'
-import { getSettingSourceDisplayNameLowercase } from '../../utils/settings/constants.js'
+import { getSettingSourceDisplayNameLowercase } from '@anthropic/config'
 
 type PermissionDecisionInfoItemProps = {
   title?: string

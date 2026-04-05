@@ -2,7 +2,7 @@ import {
   DANGEROUS_SHELL_SETTINGS,
   SAFE_ENV_VARS,
 } from '../../utils/managedEnvConstants.js'
-import type { SettingsJson } from '../../utils/settings/types.js'
+import type { SettingsJson } from '@anthropic/config'
 import { jsonStringify } from '../../utils/slowOperations.js'
 
 type DangerousShellSetting = (typeof DANGEROUS_SHELL_SETTINGS)[number]

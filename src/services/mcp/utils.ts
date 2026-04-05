@@ -7,11 +7,8 @@ import type { Tool } from '../../Tool.js'
 import type { AgentDefinition } from '../../tools/AgentTool/loadAgentsDir.js'
 import { getCwd } from '../../utils/cwd.js'
 import { getGlobalClaudeFile } from '../../utils/env.js'
-import { isSettingSourceEnabled } from '../../utils/settings/constants.js'
-import {
-  getSettings_DEPRECATED,
-  hasSkipDangerousModePermissionPrompt,
-} from '../../utils/settings/settings.js'
+import { isSettingSourceEnabled } from '@anthropic/config'
+import { getSettings_DEPRECATED, hasSkipDangerousModePermissionPrompt } from '@anthropic/config'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { getEnterpriseMcpFilePath, getMcpConfigByName } from './config.js'
 import { mcpInfoFromString } from './mcpStringUtils.js'

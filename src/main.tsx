@@ -11,7 +11,8 @@ import { profileCheckpoint, profileReport } from './utils/startupProfiler.js'
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 profileCheckpoint('main_tsx_entry')
 
-import { startMdmRawRead } from './utils/settings/mdm/rawRead.js'
+import { startMdmRawRead, settingsChangeDetector, ensureMdmSettingsLoaded, resetSettingsCache, parseSettingSourcesFlag } from '@anthropic/config'
+import type { ValidationError } from '@anthropic/config'
 
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 startMdmRawRead()
@@ -77,7 +78,7 @@ import {
 import {
   loadRemoteManagedSettings,
   refreshRemoteManagedSettings,
-} from './services/remoteManagedSettings/index.js'
+} from '@anthropic/config'
 import type { ToolInputJSONSchema } from './Tool.js'
 import {
   createSyntheticOutputTool,
@@ -107,7 +108,7 @@ import {
   getRemoteControlAtStartup,
   isAutoUpdaterDisabled,
   saveGlobalConfig,
-} from './utils/config.js'
+} from '@anthropic/config'
 import { seedEarlyInput, stopCapturingEarlyInput } from './utils/earlyInput.js'
 import { getInitialEffortSetting, parseEffortValue } from './utils/effort.js'
 import {
@@ -121,7 +122,6 @@ import { createSystemMessage, createUserMessage } from './utils/messages.js'
 import { getPlatform } from './utils/platform.js'
 import { getBaseRenderOptions } from './utils/renderOptions.js'
 import { getSessionIngressAuthToken } from './utils/sessionIngressAuth.js'
-import { settingsChangeDetector } from './utils/settings/changeDetector.js'
 import { skillChangeDetector } from './utils/skills/skillChangeDetector.js'
 import { jsonParse, writeFileSync_DEPRECATED } from './utils/slowOperations.js'
 import { computeInitialTeamContext } from './utils/swarm/reconnection.js'
@@ -279,15 +279,12 @@ import {
   searchSessionsByCustomTitle,
   sessionIdExists,
 } from './utils/sessionStorage.js'
-import { ensureMdmSettingsLoaded } from './utils/settings/mdm/settings.js'
 import {
   getInitialSettings,
   getManagedSettingsKeysForLogging,
   getSettingsForSource,
   getSettingsWithErrors,
-} from './utils/settings/settings.js'
-import { resetSettingsCache } from './utils/settings/settingsCache.js'
-import type { ValidationError } from './utils/settings/validation.js'
+} from '@anthropic/config'
 import {
   DEFAULT_TASKS_MODE_TASK_LIST_ID,
   TASK_STATUSES,
@@ -357,7 +354,6 @@ import {
   type ProcessedResume,
   processResumedConversation,
 } from 'src/utils/sessionRestore.js'
-import { parseSettingSourcesFlag } from 'src/utils/settings/constants.js'
 import { plural } from 'src/utils/stringUtils.js'
 import {
   type ChannelEntry,
@@ -951,7 +947,7 @@ export async function main() {
   if (feature('LODESTONE')) {
     const handleUriIdx = process.argv.indexOf('--handle-uri')
     if (handleUriIdx !== -1 && process.argv[handleUriIdx + 1]) {
-      const { enableConfigs } = await import('./utils/config.js')
+      const { enableConfigs } = await import('@anthropic/config')
       enableConfigs()
       const uri = process.argv[handleUriIdx + 1]!
       const { handleDeepLinkUri } = await import(
@@ -970,7 +966,7 @@ export async function main() {
       process.env.__CFBundleIdentifier ===
         'com.anthropic.claude-code-url-handler'
     ) {
-      const { enableConfigs } = await import('./utils/config.js')
+      const { enableConfigs } = await import('@anthropic/config')
       enableConfigs()
       const { handleUrlSchemeLaunch } = await import(
         './utils/deepLink/protocolHandler.js'
@@ -1313,7 +1309,7 @@ async function run(): Promise<CommanderCommand> {
     // Load settings sync (non-blocking, fail-open)
     // CLI: uploads local settings to remote (CCR download is handled by print.ts)
     if (feature('UPLOAD_USER_SETTINGS')) {
-      void import('./services/settingsSync/index.js').then(m =>
+      void import('@anthropic/config').then(m =>
         m.uploadUserSettingsInBackground(),
       )
     }

@@ -53,7 +53,7 @@ import {
   getManagedClaudeRulesDir,
   getMemoryPath,
   getUserClaudeRulesDir,
-} from './config.js'
+} from '@anthropic/config'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
@@ -75,8 +75,10 @@ import {
 import type { MemoryType } from './memory/types.js'
 import { expandPath } from './path.js'
 import { pathInWorkingPath } from './permissions/filesystem.js'
-import { isSettingSourceEnabled } from './settings/constants.js'
-import { getInitialSettings } from './settings/settings.js'
+import {
+  getInitialSettings,
+  isSettingSourceEnabled,
+} from '@anthropic/config'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const teamMemPaths = feature('TEAMMEM')

@@ -1,4 +1,4 @@
-import { getInitialSettings } from '../utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import { t } from '../i18n/index.js'
 
 export function getSpinnerVerbs(): string[] {

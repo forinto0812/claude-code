@@ -16,7 +16,7 @@ import { sanitizePath } from '../utils/path.js'
 import {
   getInitialSettings,
   getSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 
 /**
  * Whether auto-memory features are enabled (memdir, agent memory, past session search).

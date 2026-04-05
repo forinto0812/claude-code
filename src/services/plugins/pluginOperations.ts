@@ -65,7 +65,7 @@ import type {
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+} from '@anthropic/config'
 import { plural } from '../../utils/stringUtils.js'
 
 /** Valid installable scopes (excludes 'managed' which can only be installed from managed-settings.json) */

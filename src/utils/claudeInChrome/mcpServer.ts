@@ -15,7 +15,7 @@ import {
 } from '../../services/analytics/index.js'
 import { initializeAnalyticsSink } from '../../services/analytics/sink.js'
 import { getClaudeAIOAuthTokens } from '../auth.js'
-import { enableConfigs, getGlobalConfig, saveGlobalConfig } from '../config.js'
+import { enableConfigs, getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { logForDebugging } from '../debug.js'
 import { isEnvTruthy } from '../envUtils.js'
 import { sideQuery } from '../sideQuery.js'

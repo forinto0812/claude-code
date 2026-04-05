@@ -20,7 +20,7 @@ import {
   getSubscriptionType,
 } from '../../utils/auth.js'
 import { loadInstalledPluginsV2 } from '../../utils/plugins/installedPluginsManager.js'
-import { getSettingsForSource } from '../../utils/settings/settings.js'
+import { getSettingsForSource } from '@anthropic/config'
 
 export function ChannelsNotice(): React.ReactNode {
   // Snapshot all reads at mount. This notice enters scrollback immediately

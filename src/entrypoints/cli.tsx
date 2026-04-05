@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   // Ant-only: eliminated from external builds via feature flag.
   if (feature('DUMP_SYSTEM_PROMPT') && args[0] === '--dump-system-prompt') {
     profileCheckpoint('cli_dump_system_prompt_path')
-    const { enableConfigs } = await import('../utils/config.js')
+    const { enableConfigs } = await import('@anthropic/config')
     enableConfigs()
     const { getMainLoopModel } = await import('../utils/model/model.js')
     const modelIdx = args.indexOf('--model')
@@ -126,7 +126,7 @@ async function main(): Promise<void> {
       args[0] === 'bridge')
   ) {
     profileCheckpoint('cli_bridge_path')
-    const { enableConfigs } = await import('../utils/config.js')
+    const { enableConfigs } = await import('@anthropic/config')
     enableConfigs()
 
     const { getBridgeDisabledReason, checkBridgeMinVersion } = await import(
@@ -171,7 +171,7 @@ async function main(): Promise<void> {
   // Fast-path for `claude daemon [subcommand]`: long-running supervisor.
   if (feature('DAEMON') && args[0] === 'daemon') {
     profileCheckpoint('cli_daemon_path')
-    const { enableConfigs } = await import('../utils/config.js')
+    const { enableConfigs } = await import('@anthropic/config')
     enableConfigs()
     const { initSinks } = await import('../utils/sinks.js')
     initSinks()
@@ -193,7 +193,7 @@ async function main(): Promise<void> {
       args.includes('--background'))
   ) {
     profileCheckpoint('cli_bg_path')
-    const { enableConfigs } = await import('../utils/config.js')
+    const { enableConfigs } = await import('@anthropic/config')
     enableConfigs()
     const bg = await import('../cli/bg.js')
     switch (args[0]) {
@@ -261,7 +261,7 @@ async function main(): Promise<void> {
       args.some(a => a.startsWith('--worktree=')))
   ) {
     profileCheckpoint('cli_tmux_worktree_fast_path')
-    const { enableConfigs } = await import('../utils/config.js')
+    const { enableConfigs } = await import('@anthropic/config')
     enableConfigs()
     const { isWorktreeModeEnabled } = await import(
       '../utils/worktreeModeEnabled.js'

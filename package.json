@@ -65,6 +65,7 @@
     "@anthropic-ai/mcpb": "^2.1.2",
     "@anthropic-ai/sandbox-runtime": "^0.0.44",
     "@anthropic/agent": "workspace:*",
+    "@anthropic/config": "workspace:*",
     "@anthropic-ai/sdk": "^0.80.0",
     "@anthropic-ai/vertex-sdk": "^0.14.4",
     "@aws-sdk/client-bedrock": "^3.1020.0",

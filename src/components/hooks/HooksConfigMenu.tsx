@@ -29,7 +29,7 @@ import type { IndividualHookConfig } from '../../utils/hooks/hooksSettings.js'
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from '../../utils/settings/settings.js'
+} from '@anthropic/config'
 import { plural } from '../../utils/stringUtils.js'
 import { Dialog } from '../design-system/Dialog.js'
 import { SelectEventMode } from './SelectEventMode.js'

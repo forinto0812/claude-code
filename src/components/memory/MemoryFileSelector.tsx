@@ -20,7 +20,7 @@ import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { getDisplayPath } from '../../utils/file.js'
 import { formatRelativeTimeAgo } from '../../utils/format.js'
 import { projectIsInGitRepo } from '../../utils/memory/versions.js'
-import { updateSettingsForSource } from '../../utils/settings/settings.js'
+import { updateSettingsForSource } from '@anthropic/config'
 import { Select } from '../CustomSelect/index.js'
 import { ListItem } from '../design-system/ListItem.js'
 

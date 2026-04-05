@@ -1,8 +1,8 @@
-import { SETTING_SOURCES, type SettingSource } from '../settings/constants.js'
+import { SETTING_SOURCES, type SettingSource } from '@anthropic/config'
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import { type EnvironmentResource, fetchEnvironments } from './environments.js'
 
 export type EnvironmentSelectionInfo = {

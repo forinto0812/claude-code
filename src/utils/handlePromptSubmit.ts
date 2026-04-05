@@ -18,7 +18,7 @@ import {
   type QueuedCommand,
 } from '../types/textInputTypes.js'
 import { createAbortController } from './abortController.js'
-import type { PastedContent } from './config.js'
+import type { PastedContent } from '@anthropic/config'
 import { logForDebugging } from './debug.js'
 import type { EffortValue } from './effort.js'
 import type { FileHistoryState } from './fileHistory.js'

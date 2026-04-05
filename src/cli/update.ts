@@ -10,7 +10,7 @@ import {
   getGlobalConfig,
   type InstallMethod,
   saveGlobalConfig,
-} from 'src/utils/config.js'
+} from '@anthropic/config'
 import { logForDebugging } from 'src/utils/debug.js'
 import { getDoctorDiagnostic } from 'src/utils/doctorDiagnostic.js'
 import { gracefulShutdown } from 'src/utils/gracefulShutdown.js'
@@ -25,7 +25,7 @@ import {
 import { getPackageManager } from 'src/utils/nativeInstaller/packageManagers.js'
 import { writeToStdout } from 'src/utils/process.js'
 import { gte } from 'src/utils/semver.js'
-import { getInitialSettings } from 'src/utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 
 export async function update() {
   logEvent('tengu_update_check', {})

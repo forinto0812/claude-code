@@ -8,7 +8,7 @@ import {
   getAutoModeUnavailableNotification,
   getAutoModeUnavailableReason,
 } from '../../utils/permissions/permissionSetup.js'
-import { hasAutoModeOptIn } from '../../utils/settings/settings.js'
+import { hasAutoModeOptIn } from '@anthropic/config'
 
 /**
  * Shows a one-shot notification when the shift-tab carousel wraps past where

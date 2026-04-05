@@ -6,7 +6,7 @@ import {
 import {
   getSettings_DEPRECATED,
   updateSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 import { Select } from './CustomSelect/index.js'
 import { Dialog } from './design-system/Dialog.js'
 import { MCPServerDialogCopy } from './MCPServerDialogCopy.js'

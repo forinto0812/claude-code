@@ -73,15 +73,17 @@ import { getFsImplementation } from '../fsOperations.js'
 import { gitExe } from '../git.js'
 import { lazySchema } from '../lazySchema.js'
 import { logError } from '../log.js'
-import { getSettings_DEPRECATED } from '../settings/settings.js'
+import {
+  SettingsSchema,
+  getSettings_DEPRECATED,
+} from '@anthropic/config'
+import type { HooksSettings } from '@anthropic/config'
 import {
   clearPluginSettingsBase,
   getPluginSettingsBase,
   resetSettingsCache,
   setPluginSettingsBase,
-} from '../settings/settingsCache.js'
-import type { HooksSettings } from '../settings/types.js'
-import { SettingsSchema } from '../settings/types.js'
+} from '@anthropic/config'
 import { jsonParse, jsonStringify } from '../slowOperations.js'
 import { getAddDirEnabledPlugins } from './addDirPluginSettings.js'
 import { verifyAndDemote } from './dependencyResolver.js'

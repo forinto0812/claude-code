@@ -46,7 +46,7 @@ import {
   checkHasTrustDialogAccepted,
   getGlobalConfig,
   saveGlobalConfig,
-} from './config.js'
+} from '@anthropic/config'
 import { logAntError, logForDebugging } from './debug.js'
 import {
   getClaudeConfigHomeDir,
@@ -72,7 +72,7 @@ import {
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import { sleep } from './sleep.js'
 import { jsonParse } from './slowOperations.js'
 import { clearToolSchemaCache } from './toolSchemaCache.js'

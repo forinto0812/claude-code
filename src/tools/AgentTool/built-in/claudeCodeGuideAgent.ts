@@ -7,7 +7,7 @@ import { WEB_FETCH_TOOL_NAME } from 'src/tools/WebFetchTool/prompt.js'
 import { WEB_SEARCH_TOOL_NAME } from 'src/tools/WebSearchTool/prompt.js'
 import { isUsing3PServices } from 'src/utils/auth.js'
 import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
-import { getSettings_DEPRECATED } from 'src/utils/settings/settings.js'
+import { getSettings_DEPRECATED } from '@anthropic/config'
 import { jsonStringify } from '../../../utils/slowOperations.js'
 import type {
   AgentDefinition,

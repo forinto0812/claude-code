@@ -8,10 +8,9 @@ import { useUpdateNotification } from '../hooks/useUpdateNotification.js'
 import { Box, Text } from '../ink.js'
 import type { AutoUpdaterResult } from '../utils/autoUpdater.js'
 import { getMaxVersion, getMaxVersionMessage } from '../utils/autoUpdater.js'
-import { isAutoUpdaterDisabled } from '../utils/config.js'
+import { isAutoUpdaterDisabled, getInitialSettings } from '@anthropic/config'
 import { installLatest } from '../utils/nativeInstaller/index.js'
 import { gt } from '../utils/semver.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
 
 /**
  * Categorize error messages for analytics

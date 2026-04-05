@@ -1,7 +1,8 @@
 import { feature } from 'bun:bundle'
 import memoize from 'lodash-es/memoize.js'
 import { basename } from 'path'
-import type { SettingSource } from 'src/utils/settings/constants.js'
+import { HooksSchema, type HooksSettings } from '@anthropic/config'
+import type { SettingSource } from '@anthropic/config'
 import { z } from 'zod/v4'
 import { isAutoMemoryEnabled } from '../../memdir/paths.js'
 import {
@@ -36,7 +37,6 @@ import {
   clearPluginAgentCache,
   loadPluginAgents,
 } from '../../utils/plugins/loadPluginAgents.js'
-import { HooksSchema, type HooksSettings } from '../../utils/settings/types.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { FILE_EDIT_TOOL_NAME } from '../FileEditTool/constants.js'
 import { FILE_READ_TOOL_NAME } from '../FileReadTool/prompt.js'

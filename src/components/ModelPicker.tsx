@@ -34,7 +34,7 @@ import { getModelOptions } from '../utils/model/modelOptions.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
 import { Byline } from './design-system/Byline.js'

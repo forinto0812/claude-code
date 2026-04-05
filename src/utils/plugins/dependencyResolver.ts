@@ -12,8 +12,10 @@
  */
 
 import type { LoadedPlugin, PluginError } from '../../types/plugin.js'
-import type { EditableSettingSource } from '../settings/constants.js'
-import { getSettingsForSource } from '../settings/settings.js'
+import {
+  getSettingsForSource,
+} from '@anthropic/config'
+import type { EditableSettingSource } from '@anthropic/config'
 import { parsePluginIdentifier } from './pluginIdentifier.js'
 import type { PluginId } from './schemas.js'
 

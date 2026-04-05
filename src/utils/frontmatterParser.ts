@@ -4,7 +4,7 @@
  */
 
 import { logForDebugging } from './debug.js'
-import type { HooksSettings } from './settings/types.js'
+import type { HooksSettings } from '@anthropic/config'
 import { parseYaml } from './yaml.js'
 
 export type FrontmatterData = {

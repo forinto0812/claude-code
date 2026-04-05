@@ -20,7 +20,7 @@ import { logError } from '../log.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import { buildPluginTelemetryFields } from '../telemetry/pluginTelemetry.js'
 import { clearAllCaches } from './cacheUtils.js'
 import {

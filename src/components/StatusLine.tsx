@@ -30,7 +30,7 @@ import { getRawUtilization } from '../services/claudeAiLimits.js'
 import type { Message } from '../types/message.js'
 import type { StatusLineCommandInput } from '../types/statusLine.js'
 import type { VimMode } from '../types/textInputTypes.js'
-import { checkHasTrustDialogAccepted } from '../utils/config.js'
+import { checkHasTrustDialogAccepted } from '@anthropic/config'
 import {
   calculateContextPercentages,
   getContextWindowForModel,

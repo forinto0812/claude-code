@@ -11,7 +11,7 @@ import {
   parseUserSpecifiedModel,
 } from '../utils/model/model.js'
 import { validateModel } from '../utils/model/validateModel.js'
-import { updateSettingsForSource } from '../utils/settings/settings.js'
+import { updateSettingsForSource } from '@anthropic/config'
 
 const call: LocalCommandCall = async (args, context) => {
   const arg = args.trim().toLowerCase()

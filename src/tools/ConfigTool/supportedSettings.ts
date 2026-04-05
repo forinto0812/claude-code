@@ -1,10 +1,6 @@
 import { feature } from 'bun:bundle'
-import { getRemoteControlAtStartup } from '../../utils/config.js'
-import {
-  EDITOR_MODES,
-  NOTIFICATION_CHANNELS,
-  TEAMMATE_MODES,
-} from '../../utils/configConstants.js'
+import { getRemoteControlAtStartup } from '@anthropic/config'
+import { EDITOR_MODES, NOTIFICATION_CHANNELS, TEAMMATE_MODES } from '@anthropic/config'
 import { getModelOptions } from '../../utils/model/modelOptions.js'
 import { validateModel } from '../../utils/model/validateModel.js'
 import { THEME_NAMES, THEME_SETTINGS } from '../../utils/theme.js'

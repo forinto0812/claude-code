@@ -3,7 +3,7 @@ import {
   DEFAULT_OUTPUT_STYLE_NAME,
   OUTPUT_STYLE_CONFIG,
 } from '../constants/outputStyles.js'
-import { getSettings_DEPRECATED } from './settings/settings.js'
+import { getSettings_DEPRECATED } from '@anthropic/config'
 
 /**
  * Determines the prompt category for agent usage.

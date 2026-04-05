@@ -12,11 +12,11 @@ import { logError } from './log.js'
 import { cleanupOldVersions } from './nativeInstaller/index.js'
 import { cleanupOldPastes } from './pasteStore.js'
 import { getProjectsDir } from './sessionStorage.js'
-import { getSettingsWithAllErrors } from './settings/allErrors.js'
+import { getSettingsWithAllErrors } from '@anthropic/config'
 import {
   getSettings_DEPRECATED,
   rawSettingsContainsKey,
-} from './settings/settings.js'
+} from '@anthropic/config'
 import { TOOL_RESULTS_SUBDIR } from './toolResultStorage.js'
 import { cleanupStaleAgentWorktrees } from './worktree.js'
 

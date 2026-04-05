@@ -5,7 +5,7 @@ import {
   useKeybinding,
   useKeybindings,
 } from '../../keybindings/useKeybinding.js'
-import type { PastedContent } from '../../utils/config.js'
+import type { PastedContent } from '@anthropic/config'
 import { getImageFromClipboard } from '../../utils/imagePaste.js'
 import type { ImageDimensions } from '../../utils/imageResizer.js'
 import { ClickableImageRef } from '../ClickableImageRef.js'

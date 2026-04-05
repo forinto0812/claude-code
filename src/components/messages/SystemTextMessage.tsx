@@ -35,7 +35,7 @@ import {
   formatNumber,
   formatSecondsShort,
 } from '../../utils/format.js'
-import { getGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import Link from '../../ink/components/Link.js'
 import ThemedText from '../design-system/ThemedText.js'
 import { CtrlOToExpand } from '../CtrlOToExpand.js'

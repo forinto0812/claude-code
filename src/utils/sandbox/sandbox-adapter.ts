@@ -32,9 +32,12 @@ import {
 import { logForDebugging } from '../debug.js'
 import { expandPath } from '../path.js'
 import { getPlatform, type Platform } from '../platform.js'
-import { settingsChangeDetector } from '../settings/changeDetector.js'
-import { SETTING_SOURCES, type SettingSource } from '../settings/constants.js'
-import { getManagedSettingsDropInDir } from '../settings/managedPath.js'
+import {
+  SETTING_SOURCES,
+  getManagedSettingsDropInDir,
+  settingsChangeDetector,
+} from '@anthropic/config'
+import type { SettingSource, SettingsJson } from '@anthropic/config'
 import {
   getInitialSettings,
   getSettings_DEPRECATED,
@@ -42,8 +45,7 @@ import {
   getSettingsForSource,
   getSettingsRootPathForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
-import type { SettingsJson } from '../settings/types.js'
+} from '@anthropic/config'
 
 // ============================================================================
 // Settings Converter

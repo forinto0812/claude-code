@@ -4,46 +4,46 @@ import { unwatchFile, watchFile } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import pickBy from 'lodash-es/pickBy.js'
 import { basename, dirname, join, resolve } from 'path'
-import { getOriginalCwd, getSessionTrustAccepted } from '../bootstrap/state.js'
-import { getAutoMemEntrypoint } from '../memdir/paths.js'
-import { logEvent } from '../services/analytics/index.js'
-import type { McpServerConfig } from '../services/mcp/types.js'
+import { getOriginalCwd, getSessionTrustAccepted } from '../../../src/bootstrap/state.js'
+import { getAutoMemEntrypoint } from '../../../src/memdir/paths.js'
+import { logEvent } from '../../../src/services/analytics/index.js'
+import type { McpServerConfig } from '../../../src/services/mcp/types.js'
 import type {
   BillingType,
   ReferralEligibilityResponse,
-} from '../services/oauth/types.js'
-import { getCwd } from '../utils/cwd.js'
-import { registerCleanup } from './cleanupRegistry.js'
-import { logForDebugging } from './debug.js'
-import { logForDiagnosticsNoPII } from './diagLogs.js'
-import { getGlobalClaudeFile } from './env.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
-import { ConfigParseError, getErrnoCode } from './errors.js'
-import { writeFileSyncAndFlush_DEPRECATED } from './file.js'
-import { getFsImplementation } from './fsOperations.js'
-import { findCanonicalGitRoot } from './git.js'
-import { safeParseJSON } from './json.js'
-import { stripBOM } from './jsonRead.js'
-import * as lockfile from './lockfile.js'
-import { logError } from './log.js'
-import type { MemoryType } from './memory/types.js'
-import { normalizePathForConfigKey } from './path.js'
-import { getEssentialTrafficOnlyReason } from './privacyLevel.js'
-import { getManagedFilePath } from './settings/managedPath.js'
-import type { ThemeSetting } from './theme.js'
+} from '../../../src/services/oauth/types.js'
+import { getCwd } from '../../../src/utils/cwd.js'
+import { registerCleanup } from '../../../src/utils/cleanupRegistry.js'
+import { logForDebugging } from '../../../src/utils/debug.js'
+import { logForDiagnosticsNoPII } from '../../../src/utils/diagLogs.js'
+import { getGlobalClaudeFile } from '../../../src/utils/env.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from '../../../src/utils/envUtils.js'
+import { ConfigParseError, getErrnoCode } from '../../../src/utils/errors.js'
+import { writeFileSyncAndFlush_DEPRECATED } from '../../../src/utils/file.js'
+import { getFsImplementation } from '../../../src/utils/fsOperations.js'
+import { findCanonicalGitRoot } from '../../../src/utils/git.js'
+import { safeParseJSON } from '../../../src/utils/json.js'
+import { stripBOM } from '../../../src/utils/jsonRead.js'
+import * as lockfile from '../../../src/utils/lockfile.js'
+import { logError } from '../../../src/utils/log.js'
+import type { MemoryType } from '../../../src/utils/memory/types.js'
+import { normalizePathForConfigKey } from '../../../src/utils/path.js'
+import { getEssentialTrafficOnlyReason } from '../../../src/utils/privacyLevel.js'
+import { getManagedFilePath } from '../settings/managedPath.js'
+import type { ThemeSetting } from '../../../src/utils/theme.js'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const teamMemPaths = feature('TEAMMEM')
-  ? (require('../memdir/teamMemPaths.js') as typeof import('../memdir/teamMemPaths.js'))
+  ? (require('../../../src/memdir/teamMemPaths.js') as typeof import('../../../src/memdir/teamMemPaths.js'))
   : null
 const ccrAutoConnect = feature('CCR_AUTO_CONNECT')
-  ? (require('../bridge/bridgeEnabled.js') as typeof import('../bridge/bridgeEnabled.js'))
+  ? (require('../../../src/bridge/bridgeEnabled.js') as typeof import('../../../src/bridge/bridgeEnabled.js'))
   : null
 
 /* eslint-enable @typescript-eslint/no-require-imports */
-import type { ImageDimensions } from './imageResizer.js'
-import type { ModelOption } from './model/modelOptions.js'
-import { jsonParse, jsonStringify } from './slowOperations.js'
+import type { ImageDimensions } from '../../../src/utils/imageResizer.js'
+import type { ModelOption } from '../../../src/utils/model/modelOptions.js'
+import { jsonParse, jsonStringify } from '../../../src/utils/slowOperations.js'
 
 // Re-entrancy guard: prevents getConfig → logEvent → getGlobalConfig → getConfig
 // infinite recursion when the config file is corrupted. logEvent's sampling check
@@ -152,9 +152,9 @@ export type InstallMethod = 'local' | 'native' | 'global' | 'unknown'
 export {
   EDITOR_MODES,
   NOTIFICATION_CHANNELS,
-} from './configConstants.js'
+} from './constants.js'
 
-import type { EDITOR_MODES, NOTIFICATION_CHANNELS } from './configConstants.js'
+import type { EDITOR_MODES, NOTIFICATION_CHANNELS } from './constants.js'
 
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number]
 
@@ -267,7 +267,7 @@ export type GlobalConfig = {
   }
 
   // /buddy companion soul — bones regenerated from userId on read. See src/buddy/.
-  companion?: import('../buddy/types.js').StoredCompanion
+  companion?: import('../../../src/buddy/types.js').StoredCompanion
   companionMuted?: boolean
 
   // Feedback survey tracking

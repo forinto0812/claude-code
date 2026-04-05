@@ -8,7 +8,7 @@ import { formatTokens } from '../utils/format.js'
 import {
   getSourceDisplayName,
   type SettingSource,
-} from '../utils/settings/constants.js'
+} from '@anthropic/config'
 import { plural } from '../utils/stringUtils.js'
 import { ContextSuggestions } from './ContextSuggestions.js'
 

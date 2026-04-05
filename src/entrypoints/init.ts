@@ -1,6 +1,6 @@
 import { profileCheckpoint } from '../utils/startupProfiler.js'
 import '../bootstrap/state.js'
-import '../utils/config.js'
+import '@anthropic/config'
 import type { Attributes, MetricOptions } from '@opentelemetry/api'
 import memoize from 'lodash-es/memoize.js'
 import { getIsNonInteractiveSession } from 'src/bootstrap/state.js'
@@ -12,15 +12,11 @@ import {
   initializePolicyLimitsLoadingPromise,
   isPolicyLimitsEligible,
 } from '../services/policyLimits/index.js'
-import {
-  initializeRemoteManagedSettingsLoadingPromise,
-  isEligibleForRemoteManagedSettings,
-  waitForRemoteManagedSettingsToLoad,
-} from '../services/remoteManagedSettings/index.js'
+import { initializeRemoteManagedSettingsLoadingPromise, isEligibleForRemoteManagedSettings, waitForRemoteManagedSettingsToLoad } from '@anthropic/config'
+import { enableConfigs, recordFirstStartTime } from '@anthropic/config'
 import { preconnectAnthropicApi } from '../utils/apiPreconnect.js'
 import { applyExtraCACertsFromConfig } from '../utils/caCertsConfig.js'
 import { registerCleanup } from '../utils/cleanupRegistry.js'
-import { enableConfigs, recordFirstStartTime } from '../utils/config.js'
 import { logForDebugging } from '../utils/debug.js'
 import { detectCurrentRepository } from '../utils/detectRepository.js'
 import { logForDiagnosticsNoPII } from '../utils/diagLogs.js'

@@ -1,6 +1,9 @@
-import { isRemoteManagedSettingsEligible } from '../services/remoteManagedSettings/syncCache.js'
+import {
+  getGlobalConfig,
+  isRemoteManagedSettingsEligible,
+  isSettingSourceEnabled,
+} from '@anthropic/config'
 import { clearCACertsCache } from './caCerts.js'
-import { getGlobalConfig } from './config.js'
 import { isEnvTruthy } from './envUtils.js'
 import {
   isProviderManagedEnvVar,
@@ -8,11 +11,10 @@ import {
 } from './managedEnvConstants.js'
 import { clearMTLSCache } from './mtls.js'
 import { clearProxyCache, configureGlobalAgents } from './proxy.js'
-import { isSettingSourceEnabled } from './settings/constants.js'
 import {
   getSettings_DEPRECATED,
   getSettingsForSource,
-} from './settings/settings.js'
+} from '@anthropic/config'
 
 /**
  * `claude ssh` remote: ANTHROPIC_UNIX_SOCKET routes auth through a -R forwarded

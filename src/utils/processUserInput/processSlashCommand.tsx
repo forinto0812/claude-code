@@ -82,7 +82,7 @@ import {
 import {
   isRestrictedToPluginOnly,
   isSourceAdminTrusted,
-} from '../settings/pluginOnlyPolicy.js'
+} from '@anthropic/config'
 import { parseSlashCommand } from '../slashCommandParsing.js'
 import { sleep } from '../sleep.js'
 import { recordSkillUsage } from '../suggestions/skillUsageTracking.js'

@@ -11,7 +11,7 @@ import {
 import {
   getSettings_DEPRECATED,
   getSettingsFilePathForSource,
-} from '../../utils/settings/settings.js'
+} from '@anthropic/config'
 import type { ThemeName } from '../../utils/theme.js'
 
 export async function call(

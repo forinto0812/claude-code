@@ -56,11 +56,8 @@ import {
 } from '../utils/markdownConfigLoader.js'
 import { parseUserSpecifiedModel } from '../utils/model/model.js'
 import { executeShellCommandsInPrompt } from '../utils/promptShellExecution.js'
-import type { SettingSource } from '../utils/settings/constants.js'
-import { isSettingSourceEnabled } from '../utils/settings/constants.js'
-import { getManagedFilePath } from '../utils/settings/managedPath.js'
-import { isRestrictedToPluginOnly } from '../utils/settings/pluginOnlyPolicy.js'
-import { HooksSchema, type HooksSettings } from '../utils/settings/types.js'
+import { isSettingSourceEnabled, getManagedFilePath, isRestrictedToPluginOnly, HooksSchema, type HooksSettings } from '@anthropic/config'
+import type { SettingSource } from '@anthropic/config'
 import { createSignal } from '../utils/signal.js'
 import { registerMCPSkillBuilders } from './mcpSkillBuilders.js'
 

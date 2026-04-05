@@ -17,7 +17,7 @@ import {
 import {
   getInitialSettings,
   updateSettingsForSource,
-} from '../utils/settings/settings.js'
+} from '@anthropic/config'
 
 interface InstallProps {
   onDone: (result: string, options?: { display?: CommandResultDisplay }) => void

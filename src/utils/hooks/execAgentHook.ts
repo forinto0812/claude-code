@@ -19,7 +19,7 @@ import { createUserMessage, handleMessageFromStream } from '../messages.js'
 import { getSmallFastModel } from '../model/model.js'
 import { hasPermissionsToUseTool } from '../permissions/permissions.js'
 import { getAgentTranscriptPath, getTranscriptPath } from '../sessionStorage.js'
-import type { AgentHook } from '../settings/types.js'
+import type { AgentHook } from '@anthropic/config'
 import { jsonStringify } from '../slowOperations.js'
 import { asSystemPrompt } from '../systemPromptType.js'
 import {

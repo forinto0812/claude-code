@@ -18,9 +18,8 @@ import type { HookCallbackMatcher } from 'src/types/hooks.js'
 import { randomUUID } from 'src/utils/crypto.js'
 import type { ModelSetting } from 'src/utils/model/model.js'
 import type { ModelStrings } from 'src/utils/model/modelStrings.js'
-import type { SettingSource } from 'src/utils/settings/constants.js'
-import { resetSettingsCache } from 'src/utils/settings/settingsCache.js'
-import type { PluginHookMatcher } from 'src/utils/settings/types.js'
+import { resetSettingsCache } from '@anthropic/config'
+import type { SettingSource, PluginHookMatcher } from '@anthropic/config'
 import { createSignal } from 'src/utils/signal.js'
 
 // Union type for registered hooks - can be SDK callbacks or native plugin hooks

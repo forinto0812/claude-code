@@ -14,7 +14,7 @@ import {
 import { getAnthropicApiKeyWithSource } from '../auth.js'
 import { getCwd } from '../cwd.js'
 import { getFastModeState } from '../fastMode.js'
-import { getSettings_DEPRECATED } from '../settings/settings.js'
+import { getSettings_DEPRECATED } from '@anthropic/config'
 
 // TODO(next-minor): remove this translation once SDK consumers have migrated
 // to the 'Agent' tool name. The wire name was renamed Task → Agent in #19647,

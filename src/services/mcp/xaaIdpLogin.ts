@@ -25,7 +25,7 @@ import { toError } from '../../utils/errors.js'
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
 import { getSecureStorage } from '../../utils/secureStorage/index.js'
-import { getInitialSettings } from '../../utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import { jsonParse } from '../../utils/slowOperations.js'
 import { buildRedirectUri, findAvailablePort } from './oauthPort.js'
 

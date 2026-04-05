@@ -50,7 +50,7 @@ import { useVoiceState } from '../../context/voice.js'
 import { isFullscreenEnvEnabled } from '../../utils/fullscreen.js'
 import { isXtermJs } from '../../ink/terminal.js'
 import { useHasSelection, useSelection } from '../../ink/hooks/use-selection.js'
-import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig } from '@anthropic/config'
 import { getPlatform } from '../../utils/platform.js'
 import { PrBadge } from '../PrBadge.js'
 

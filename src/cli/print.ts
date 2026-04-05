@@ -5,8 +5,8 @@ import { dirname } from 'path'
 import {
   downloadUserSettings,
   redownloadUserSettings,
-} from 'src/services/settingsSync/index.js'
-import { waitForRemoteManagedSettingsToLoad } from 'src/services/remoteManagedSettings/index.js'
+  waitForRemoteManagedSettingsToLoad,
+} from '@anthropic/config'
 import { StructuredIO } from 'src/cli/structuredIO.js'
 import { RemoteIO } from 'src/cli/remoteIO.js'
 import {
@@ -164,9 +164,8 @@ import { TEAMMATE_MESSAGE_TAG, TICK_TAG } from 'src/constants/xml.js'
 import {
   getSettings_DEPRECATED,
   getSettingsWithSources,
-} from 'src/utils/settings/settings.js'
-import { settingsChangeDetector } from 'src/utils/settings/changeDetector.js'
-import { applySettingsChange } from 'src/utils/settings/applySettingsChange.js'
+} from '@anthropic/config'
+import { settingsChangeDetector, applySettingsChange } from '@anthropic/config'
 import {
   isFastModeAvailable,
   isFastModeEnabled,

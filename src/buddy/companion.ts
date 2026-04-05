@@ -1,4 +1,4 @@
-import { getGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import {
   type Companion,
   type CompanionBones,

@@ -63,7 +63,11 @@ import {
   isValidImagePaste,
 } from 'src/types/textInputTypes.js'
 import { randomUUID, type UUID } from 'crypto'
-import { getSettings_DEPRECATED } from './settings/settings.js'
+import {
+  getGlobalConfig,
+  getSettings_DEPRECATED,
+} from '@anthropic/config'
+import type { PastedContent } from '@anthropic/config'
 import { getSnippetForTwoFileDiff } from 'src/tools/FileEditTool/utils.js'
 import type {
   ContentBlockParam,
@@ -71,8 +75,6 @@ import type {
   Base64ImageSource,
 } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { maybeResizeAndDownsampleImageBlock } from './imageResizer.js'
-import type { PastedContent } from './config.js'
-import { getGlobalConfig } from './config.js'
 import {
   getDefaultSonnetModel,
   getDefaultHaikuModel,

@@ -6,7 +6,7 @@
  * affect the teammate mode for the current session.
  */
 
-import { getGlobalConfig } from '../../../utils/config.js'
+import { getGlobalConfig } from '@anthropic/config'
 import { logForDebugging } from '../../../utils/debug.js'
 import { logError } from '../../../utils/log.js'
 

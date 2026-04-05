@@ -4,7 +4,7 @@ import {
 } from 'src/bootstrap/state.js'
 import { logError } from '../log.js'
 import { sequential } from '../sequential.js'
-import { getInitialSettings } from '../settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import { findFirstMatch, getBedrockInferenceProfiles } from './bedrock.js'
 import {
   ALL_MODEL_CONFIGS,

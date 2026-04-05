@@ -22,7 +22,7 @@ import { hasEmbeddedSearchTools } from '../utils/embeddedTools.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
 import { formatFileSize } from '../utils/format.js'
 import { getProjectDir } from '../utils/sessionStorage.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
+import { getInitialSettings } from '@anthropic/config'
 import {
   MEMORY_FRONTMATTER_EXAMPLE,
   TRUSTING_RECALL_SECTION,

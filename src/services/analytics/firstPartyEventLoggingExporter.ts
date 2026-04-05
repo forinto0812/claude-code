@@ -20,7 +20,7 @@ import {
   hasProfileScope,
   isClaudeAISubscriber,
 } from '../../utils/auth.js'
-import { checkHasTrustDialogAccepted } from '../../utils/config.js'
+import { checkHasTrustDialogAccepted } from '@anthropic/config'
 import { logForDebugging } from '../../utils/debug.js'
 import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { errorMessage, isFsInaccessible, toError } from '../../utils/errors.js'

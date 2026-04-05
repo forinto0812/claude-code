@@ -6,11 +6,11 @@ import type {
   WorkingDirectorySource,
 } from '../../types/permissions.js'
 import { logForDebugging } from '../debug.js'
-import type { EditableSettingSource } from '../settings/constants.js'
+import type { EditableSettingSource } from '@anthropic/config'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
+} from '@anthropic/config'
 import { jsonStringify } from '../slowOperations.js'
 import { toPosixPath } from './filesystem.js'
 import type { PermissionRuleValue } from './PermissionRule.js'

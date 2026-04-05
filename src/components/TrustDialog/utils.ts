@@ -1,6 +1,6 @@
 import type { PermissionRule } from 'src/utils/permissions/PermissionRule.js'
-import { getSettingsForSource } from 'src/utils/settings/settings.js'
-import type { SettingsJson } from 'src/utils/settings/types.js'
+import { getSettingsForSource } from '@anthropic/config'
+import type { SettingsJson } from '@anthropic/config'
 import { BASH_TOOL_NAME } from '../../tools/BashTool/toolName.js'
 import { SAFE_ENV_VARS } from '../../utils/managedEnvConstants.js'
 import { getPermissionRulesForSource } from '../../utils/permissions/permissionsLoader.js'

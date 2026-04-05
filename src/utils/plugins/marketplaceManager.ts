@@ -41,8 +41,8 @@ import {
   getInitialSettings,
   getSettingsForSource,
   updateSettingsForSource,
-} from '../settings/settings.js'
-import type { SettingsJson } from '../settings/types.js'
+} from '@anthropic/config'
+import type { SettingsJson } from '@anthropic/config'
 import {
   jsonParse,
   jsonStringify,

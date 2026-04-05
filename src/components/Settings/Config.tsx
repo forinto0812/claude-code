@@ -15,19 +15,10 @@ import {
   useKeybindings,
 } from '../../keybindings/useKeybinding.js'
 import figures from 'figures'
-import {
-  type GlobalConfig,
-  saveGlobalConfig,
-  getCurrentProjectConfig,
-  type OutputStyle,
-} from '../../utils/config.js'
+import { saveGlobalConfig, getCurrentProjectConfig } from '@anthropic/config'
+import type { GlobalConfig, OutputStyle } from '@anthropic/config'
 import { normalizeApiKeyForConfig } from '../../utils/authPortable.js'
-import {
-  getGlobalConfig,
-  getAutoUpdaterDisabledReason,
-  formatAutoUpdaterDisabledReason,
-  getRemoteControlAtStartup,
-} from '../../utils/config.js'
+import { getGlobalConfig, getAutoUpdaterDisabledReason, formatAutoUpdaterDisabledReason, getRemoteControlAtStartup } from '@anthropic/config'
 import chalk from 'chalk'
 import {
   permissionModeTitle,
@@ -86,11 +77,7 @@ import {
   isSupportedTerminal,
   hasAccessToIDEExtensionDiffFeature,
 } from '../../utils/ide.js'
-import {
-  getInitialSettings,
-  getSettingsForSource,
-  updateSettingsForSource,
-} from '../../utils/settings/settings.js'
+import { getInitialSettings, getSettingsForSource, updateSettingsForSource } from '@anthropic/config'
 import { getUserMsgOptIn, setUserMsgOptIn } from '../../bootstrap/state.js'
 import { DEFAULT_OUTPUT_STYLE_NAME } from 'src/constants/outputStyles.js'
 import { isEnvTruthy, isRunningOnHomespace } from 'src/utils/envUtils.js'

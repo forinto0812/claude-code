@@ -5,7 +5,7 @@ import {
   isProSubscriber,
   isTeamSubscriber,
 } from '../utils/auth.js'
-import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, saveGlobalConfig, updateSettingsForSource } from '@anthropic/config'
 import type { EffortLevel } from '../utils/effort.js'
 import {
   convertEffortValueToLevel,
@@ -14,7 +14,6 @@ import {
   toPersistableEffort,
 } from '../utils/effort.js'
 import { parseUserSpecifiedModel } from '../utils/model/model.js'
-import { updateSettingsForSource } from '../utils/settings/settings.js'
 import type { OptionWithDescription } from './CustomSelect/select.js'
 import { Select } from './CustomSelect/select.js'
 import { effortLevelToSymbol } from './EffortIndicator.js'

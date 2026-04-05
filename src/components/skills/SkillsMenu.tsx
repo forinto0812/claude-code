@@ -18,7 +18,7 @@ import { formatTokens } from '../../utils/format.js'
 import {
   getSettingSourceName,
   type SettingSource,
-} from '../../utils/settings/constants.js'
+} from '@anthropic/config'
 import { plural } from '../../utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { Dialog } from '../design-system/Dialog.js'

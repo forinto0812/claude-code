@@ -13,7 +13,7 @@ import {
 } from '../native-ts/file-index/index.js'
 import { logEvent } from '../services/analytics/index.js'
 import type { FileSuggestionCommandInput } from '../types/fileSuggestion.js'
-import { getGlobalConfig } from '../utils/config.js'
+import { getGlobalConfig, getInitialSettings } from '@anthropic/config'
 import { getCwd } from '../utils/cwd.js'
 import { logForDebugging } from '../utils/debug.js'
 import { errorMessage } from '../utils/errors.js'
@@ -25,7 +25,6 @@ import { executeFileSuggestionCommand } from '../utils/hooks/executors/index.js'
 import { logError } from '../utils/log.js'
 import { expandPath } from '../utils/path.js'
 import { ripGrep } from '../utils/ripgrep.js'
-import { getInitialSettings } from '../utils/settings/settings.js'
 import { createSignal } from '../utils/signal.js'
 
 // Lazily constructed singleton
