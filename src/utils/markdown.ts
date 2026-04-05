@@ -87,7 +87,7 @@ export function formatToken(
     }
     case 'codespan': {
       // inline code
-      return color(theme === 'dark' ? '#FEC84A' : 'permission', theme)(
+      return color(theme?.startsWith('dark') ? '#FEC84A' : 'permission', theme)(
         token.text,
       )
     }

@@ -2,6 +2,7 @@ import chalk, { Chalk } from 'chalk'
 import { env } from './env.js'
 
 const BRAND_COLOR = 'rgb(88,190,255)'
+const BRAND_COLOR_LIGHT = 'rgb(135,210,255)' // Lighter for shimmer
 const BRAND_RED = 'rgb(162,0,67)'
 const BRAND_GREEN = 'rgb(34,139,34)'
 
@@ -120,7 +121,7 @@ const lightTheme: Theme = {
   autoAccept: 'rgb(135,0,255)', // Electric violet
   bashBorder: 'rgb(255,0,135)', // Vibrant pink
   claude: BRAND_COLOR,
-  claudeShimmer: BRAND_COLOR,
+  claudeShimmer: BRAND_COLOR_LIGHT,
   claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(87,105,247)', // Medium blue for system spinner
   claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(117,135,255)', // Lighter blue for system spinner shimmer
   permission: 'rgb(87,105,247)', // Medium blue
@@ -142,12 +143,12 @@ const lightTheme: Theme = {
   warning: 'rgb(150,108,30)', // Amber
   merged: 'rgb(135,0,255)', // Electric violet (matches autoAccept)
   warningShimmer: 'rgb(200,158,80)', // Lighter amber for shimmer effect
-  diffAdded: 'rgb(170,214,170)',
-  diffRemoved: 'rgb(228,170,196)',
-  diffAddedDimmed: 'rgb(220,238,220)',
-  diffRemovedDimmed: 'rgb(242,220,230)',
-  diffAddedWord: BRAND_GREEN,
-  diffRemovedWord: BRAND_RED,
+  diffAdded: 'rgb(153,204,255)', // Light blue instead of green
+  diffRemoved: 'rgb(255,204,204)', // Light red
+  diffAddedDimmed: 'rgb(209,231,253)', // Very light blue
+  diffRemovedDimmed: 'rgb(255,233,233)', // Very light red
+  diffAddedWord: 'rgb(51,102,204)', // Medium blue (less intense than deep blue)
+  diffRemovedWord: 'rgb(153,51,51)', // Softer red (less intense than deep red)
   // Agent colors
   red_FOR_SUBAGENTS_ONLY: 'rgb(220,38,38)', // Red 600
   blue_FOR_SUBAGENTS_ONLY: 'rgb(37,99,235)', // Blue 600
@@ -364,7 +365,7 @@ const lightDaltonizedTheme: Theme = {
   autoAccept: 'rgb(135,0,255)', // Electric violet
   bashBorder: 'rgb(0,102,204)', // Blue instead of pink
   claude: BRAND_COLOR,
-  claudeShimmer: BRAND_COLOR,
+  claudeShimmer: BRAND_COLOR_LIGHT,
   claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(51,102,255)', // Bright blue for system spinner
   claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(101,152,255)', // Lighter bright blue for system spinner shimmer
   permission: 'rgb(51,102,255)', // Bright blue
@@ -381,8 +382,8 @@ const lightDaltonizedTheme: Theme = {
   suggestion: 'rgb(51,102,255)', // Bright blue
   remember: 'rgb(51,102,255)', // Bright blue
   background: 'rgb(0,153,153)', // Cyan (color-blind friendly)
-  success: BRAND_GREEN,
-  error: BRAND_RED,
+  success: 'rgb(0,102,153)', // Blue instead of green for deuteranopia
+  error: 'rgb(204,0,0)', // Pure red for better distinction
   warning: 'rgb(255,153,0)', // Orange adjusted for deuteranopia
   merged: 'rgb(135,0,255)', // Electric violet (matches autoAccept)
   warningShimmer: 'rgb(255,183,50)', // Lighter orange for shimmer
@@ -445,7 +446,7 @@ const darkTheme: Theme = {
   autoAccept: 'rgb(175,135,255)', // Electric violet
   bashBorder: 'rgb(253,93,177)', // Bright pink
   claude: BRAND_COLOR,
-  claudeShimmer: BRAND_COLOR,
+  claudeShimmer: BRAND_COLOR_LIGHT,
   claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(131,210,238)', // Light cyan-blue
   claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(177,231,245)', // Lighter cyan-blue for shimmer
   permission: 'rgb(131,210,238)', // Light cyan-blue
@@ -526,7 +527,7 @@ const darkDaltonizedTheme: Theme = {
   autoAccept: 'rgb(175,135,255)', // Electric violet
   bashBorder: 'rgb(51,153,255)', // Bright blue
   claude: BRAND_COLOR,
-  claudeShimmer: BRAND_COLOR,
+  claudeShimmer: BRAND_COLOR_LIGHT,
   claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(153,204,255)', // Light blue for system spinner
   claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(183,224,255)', // Lighter blue for system spinner shimmer
   permission: 'rgb(153,204,255)', // Light blue
@@ -570,8 +571,8 @@ const darkDaltonizedTheme: Theme = {
   // TUI V2 colors
   clawd_body: BRAND_COLOR,
   clawd_background: 'rgb(0,0,0)',
-  userMessageBackground: '#191919',
-  userMessageBackgroundHover: '#191919',
+  userMessageBackground: 'rgb(55, 55, 55)', // Lighter grey for better visual contrast
+  userMessageBackgroundHover: 'rgb(70, 70, 70)',
   messageActionsBackground: 'rgb(44, 50, 62)', // cool gray, slight blue
   selectionBg: 'rgb(38, 79, 120)', // classic dark-mode selection blue (VS Code dark default); light fgs stay readable
   bashMessageBackgroundColor: 'rgb(65, 60, 65)',
