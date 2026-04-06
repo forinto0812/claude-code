@@ -14,24 +14,15 @@ import { dirname, join } from 'path'
 import { tmpdir } from 'os'
 import figures from 'figures'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- / n N Esc [ v are bare letters in transcript modal context, same class as g/G/j/k in ScrollKeybindingHandler
-import { useInput } from '../ink.js'
+import { useInput } from '@anthropic/ink'
 import { useSearchInput } from '../hooks/useSearchInput.js'
 import { useTerminalSize } from '../hooks/useTerminalSize.js'
-import { useSearchHighlight } from '../ink/hooks/use-search-highlight.js'
+import { useSearchHighlight } from '@anthropic/ink'
 import type { JumpHandle } from '../components/VirtualMessageList.js'
 import { renderMessagesToPlainText } from '../utils/exportRenderer.js'
 import { openFileInExternalEditor } from '../utils/editor.js'
 import { writeFile } from 'fs/promises'
-import {
-  Box,
-  Text,
-  useStdin,
-  useTheme,
-  useTerminalFocus,
-  useTerminalTitle,
-  useTabStatus,
-} from '../ink.js'
-import type { TabStatusKind } from '../ink/hooks/use-tab-status.js'
+import { type TabStatusKind, Box, Text, useStdin, useTheme, useTerminalFocus, useTerminalTitle, useTabStatus } from '@anthropic/ink'
 import { CostThresholdDialog } from '../components/CostThresholdDialog.js'
 import { IdleReturnDialog } from '../components/IdleReturnDialog.js'
 import * as React from 'react'
@@ -51,8 +42,7 @@ import {
   startPreventSleep,
   stopPreventSleep,
 } from '../services/preventSleep.js'
-import { useTerminalNotification } from '../ink/useTerminalNotification.js'
-import { hasCursorUpViewportYankBug } from '../ink/terminal.js'
+import { useTerminalNotification, hasCursorUpViewportYankBug } from '@anthropic/ink'
 import {
   createFileStateCacheWithSizeLimit,
   mergeFileStateCaches,
@@ -564,7 +554,7 @@ import {
   maybeGetTmuxMouseHint,
   isMouseTrackingEnabled,
 } from '../utils/fullscreen.js'
-import { AlternateScreen } from '../ink/components/AlternateScreen.js'
+import { AlternateScreen } from '@anthropic/ink'
 import { ScrollKeybindingHandler } from '../components/ScrollKeybindingHandler.js'
 import {
   useMessageActions,
@@ -574,8 +564,8 @@ import {
   type MessageActionsNav,
   type MessageActionCaps,
 } from '../components/messageActions.js'
-import { setClipboard } from '../ink/termio/osc.js'
-import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js'
+import { setClipboard } from '@anthropic/ink'
+import type { ScrollBoxHandle } from '@anthropic/ink'
 import {
   createAttachmentMessage,
   getQueuedCommandAttachments,
