@@ -1,5 +1,95 @@
 # DEV-LOG
 
+## GrowthBook Local Gate Defaults + P0/P1 Feature Enablement (2026-04-06)
+
+**分支**: `feat/growthbook-enablement`
+
+### 背景
+
+Claude Code 使用 GrowthBook（Anthropic 自建 proxy at api.anthropic.com）进行远程功能开关控制，代码中使用 `tengu_*` 前缀命名。在反编译版本中 GrowthBook 不启动（analytics 空实现），导致 70+ 个功能被 gate 拦截。
+
+经 4 个并行研究代理深度分析，确认**所有被 gate 控制的功能代码都是真实现**（非 stub）。
+
+### 实现方案
+
+在 `growthbook.ts` 中添加 `LOCAL_GATE_DEFAULTS` 映射表，当 GrowthBook 未连接时使用本地默认值替代硬编码 `false`。修改了 4 个 getter 函数：
+- `getFeatureValueInternal()`
+- `getFeatureValue_CACHED_MAY_BE_STALE()`
+- `checkStatsigFeatureGate_CACHED_MAY_BE_STALE()`
+- `checkGate_CACHED_OR_BLOCKING()`
+
+可通过 `CLAUDE_CODE_DISABLE_LOCAL_GATES=1` 环境变量一键禁用。
+
+### 启用的功能
+
+**P0 — 纯本地功能（7 个 gate）：**
+
+| Gate | 功能 |
+|------|------|
+| `tengu_keybinding_customization_release` | 自定义快捷键（~/.claude/keybindings.json） |
+| `tengu_streaming_tool_execution2` | 流式工具执行（边收边执行） |
+| `tengu_kairos_cron` | 定时任务系统 |
+| `tengu_amber_json_tools` | Token 高效 JSON 工具格式（省 ~4.5%） |
+| `tengu_immediate_model_command` | 运行中即时切换模型 |
+| `tengu_basalt_3kr` | MCP 指令增量传输 |
+| `tengu_pebble_leaf_prune` | 会话存储叶剪枝优化 |
+
+**P1 — API 依赖功能（8 个 gate）：**
+
+| Gate | 功能 |
+|------|------|
+| `tengu_session_memory` | 会话记忆（跨会话上下文持久化） |
+| `tengu_passport_quail` | 自动记忆提取 |
+| `tengu_chomp_inflection` | 提示建议 |
+| `tengu_hive_evidence` | 验证代理（对抗性验证） |
+| `tengu_kairos_brief` | Brief 精简输出模式 |
+| `tengu_sedge_lantern` | 离开摘要 |
+| `tengu_onyx_plover` | 自动梦境（记忆巩固） |
+| `tengu_willow_mode` | 空闲返回提示 |
+
+**Kill Switch（10 个 gate 保持 true）：**
+
+`tengu_turtle_carbon`、`tengu_amber_stoat`、`tengu_amber_flint`、`tengu_slim_subagent_claudemd`、`tengu_birch_trellis`、`tengu_collage_kaleidoscope`、`tengu_compact_cache_prefix`、`tengu_kairos_cron_durable`、`tengu_attribution_header`、`tengu_slate_prism`
+
+**新增编译 flag：**
+
+| Flag | build.ts | dev.ts | 用途 |
+|------|:--------:|:------:|------|
+| `AGENT_TRIGGERS` | ON | ON | 定时任务系统 |
+| `EXTRACT_MEMORIES` | ON | ON | 自动记忆提取 |
+| `VERIFICATION_AGENT` | ON | ON | 对抗性验证代理 |
+| `KAIROS_BRIEF` | ON | ON | Brief 精简模式 |
+| `AWAY_SUMMARY` | ON | ON | 离开摘要 |
+| `ULTRATHINK` | ON | ON | Ultrathink 扩展思考（双重门控修复） |
+| `BUILTIN_EXPLORE_PLAN_AGENTS` | ON | ON | 内置 Explore/Plan agents（双重门控修复） |
+| `LODESTONE` | ON | ON | Deep link 协议注册（双重门控修复） |
+
+**排除的编译 flag：**
+- `KAIROS` — 拉入 `useProactive.js`（缺失文件），`KAIROS_BRIEF` 足够
+- `TERMINAL_PANEL` — 拉入 `TerminalCaptureTool`（缺失文件）
+
+**双重门控修复说明：**
+部分功能同时被编译 flag 和 GrowthBook gate 控制（双重门控），仅开 GrowthBook gate 不够。
+审计发现 3 个被卡住的：`ULTRATHINK`、`BUILTIN_EXPLORE_PLAN_AGENTS`、`LODESTONE`。
+
+### 修改文件
+
+| 文件 | 变更 |
+|------|------|
+| `build.ts` | `DEFAULT_BUILD_FEATURES` 新增 8 个编译 flag |
+| `scripts/dev.ts` | `DEFAULT_FEATURES` 新增 8 个编译 flag |
+| `src/services/analytics/growthbook.ts` | 新增 `LOCAL_GATE_DEFAULTS` 映射 + `getLocalGateDefault()` + 修改 4 个 getter |
+| `docs/features/growthbook-enablement-plan.md` | 完整研究报告和启用计划 |
+
+### 验证
+
+| 项目 | 结果 |
+|------|------|
+| `bun run build` | ✅ 成功 (475 files) |
+| `bun test` | ✅ 无新增失败 (23 fail 为已有问题) |
+
+---
+
 ## Enable SHOT_STATS, TOKEN_BUDGET, PROMPT_CACHE_BREAK_DETECTION (2026-04-05)
 
 **PR**: [claude-code-best/claude-code#140](https://github.com/claude-code-best/claude-code/pull/140)
