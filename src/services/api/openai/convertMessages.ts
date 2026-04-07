@@ -92,6 +92,14 @@ function convertInternalUserMessage(
       }
     }
 
+    // Emit tool results before any user text. When a user turn mixes text blocks
+    // (e.g. skill context) with tool_result blocks, tool messages must come first
+    // to satisfy the OpenAI protocol: tool messages must immediately follow the
+    // assistant's tool_calls with no user message in between.
+    for (const tr of toolResults) {
+      result.push(convertToolResult(tr))
+    }
+
     // 如果有图片，构建多模态 content 数组
     if (imageParts.length > 0) {
       const multiContent: Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }> = []
@@ -108,10 +116,6 @@ function convertInternalUserMessage(
         role: 'user',
         content: textParts.join('\n'),
       } satisfies ChatCompletionUserMessageParam)
-    }
-
-    for (const tr of toolResults) {
-      result.push(convertToolResult(tr))
     }
   }
 

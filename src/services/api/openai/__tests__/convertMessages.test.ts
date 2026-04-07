@@ -155,6 +155,124 @@ describe('anthropicMessagesToOpenAI', () => {
     expect(result[3].role).toBe('tool')
   })
 
+  // --- Regression: failure.json scenario ---
+  // When a user turn contains BOTH injected text (e.g. skill context) AND a
+  // tool_result, the tool message MUST come before the user text message.
+  // OpenAI rejects any user message inserted between assistant(tool_calls)
+  // and the corresponding tool result.
+  test('emits tool messages before user text when user turn has mixed text+tool_result', () => {
+    const result = anthropicMessagesToOpenAI(
+      [
+        makeAssistantMsg([
+          {
+            type: 'tool_use' as const,
+            id: 'call_skill_001',
+            name: 'Skill',
+            input: { skill: 'experiment', args: 'list my experiment environments' },
+          },
+        ]),
+        makeUserMsg([
+          // injected skill context (text block)
+          { type: 'text', text: 'Base directory for this skill: /home/experiment\n\n# Skill content...' },
+          // tool result
+          {
+            type: 'tool_result' as const,
+            tool_use_id: 'call_skill_001',
+            content: 'Launching skill: experiment',
+          },
+        ]),
+      ],
+      [] as any,
+    )
+
+    // Expected order: assistant → tool → user
+    expect(result).toHaveLength(3)
+    expect(result[0].role).toBe('assistant')
+    expect((result[0] as any).tool_calls[0].id).toBe('call_skill_001')
+
+    // tool MUST come before user text
+    expect(result[1].role).toBe('tool')
+    expect((result[1] as any).tool_call_id).toBe('call_skill_001')
+    expect((result[1] as any).content).toBe('Launching skill: experiment')
+
+    expect(result[2].role).toBe('user')
+    expect((result[2] as any).content).toContain('Skill content')
+  })
+
+  test('emits tool messages before user text when multiple tool_results mixed with text', () => {
+    const result = anthropicMessagesToOpenAI(
+      [
+        makeAssistantMsg([
+          {
+            type: 'tool_use' as const,
+            id: 'call_001',
+            name: 'bash',
+            input: { command: 'echo hello' },
+          },
+          {
+            type: 'tool_use' as const,
+            id: 'call_002',
+            name: 'read_file',
+            input: { path: '/tmp/foo' },
+          },
+        ]),
+        makeUserMsg([
+          { type: 'text', text: 'context injected by system' },
+          {
+            type: 'tool_result' as const,
+            tool_use_id: 'call_001',
+            content: 'hello',
+          },
+          {
+            type: 'tool_result' as const,
+            tool_use_id: 'call_002',
+            content: 'file content',
+          },
+        ]),
+      ],
+      [] as any,
+    )
+
+    // Expected: assistant → tool(call_001) → tool(call_002) → user(text)
+    expect(result).toHaveLength(4)
+    expect(result[0].role).toBe('assistant')
+    expect(result[1].role).toBe('tool')
+    expect((result[1] as any).tool_call_id).toBe('call_001')
+    expect(result[2].role).toBe('tool')
+    expect((result[2] as any).tool_call_id).toBe('call_002')
+    expect(result[3].role).toBe('user')
+    expect((result[3] as any).content).toBe('context injected by system')
+  })
+
+  test('user turn with only tool_result (no text) keeps correct order', () => {
+    const result = anthropicMessagesToOpenAI(
+      [
+        makeAssistantMsg([
+          {
+            type: 'tool_use' as const,
+            id: 'call_only_tool',
+            name: 'bash',
+            input: { command: 'pwd' },
+          },
+        ]),
+        makeUserMsg([
+          {
+            type: 'tool_result' as const,
+            tool_use_id: 'call_only_tool',
+            content: '/home/user',
+          },
+        ]),
+      ],
+      [] as any,
+    )
+
+    // No text in user turn → no user message emitted, only tool
+    expect(result).toHaveLength(2)
+    expect(result[0].role).toBe('assistant')
+    expect(result[1].role).toBe('tool')
+    expect((result[1] as any).tool_call_id).toBe('call_only_tool')
+  })
+
   test('converts base64 image to image_url', () => {
     const result = anthropicMessagesToOpenAI(
       [makeUserMsg([
