@@ -1,0 +1,241 @@
+{
+  "name": "claude-code-vscode",
+  "displayName": "Claude Code",
+  "description": "Claude Code AI assistant integrated into VS Code - powered by the csc project",
+  "version": "0.1.0",
+  "publisher": "csc",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Chat", "Other"],
+  "keywords": ["claude", "anthropic", "ai", "assistant", "copilot"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "icon": "assets/icon.png",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claude-code",
+          "title": "Claude Code",
+          "icon": "assets/claude-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "claude-code": [
+        {
+          "type": "webview",
+          "id": "claudeCode.chatView",
+          "name": "Chat",
+          "retainContextWhenHidden": true
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "claudeCode.newChat",
+        "title": "Claude Code: 新建对话",
+        "icon": "$(add)"
+      },
+      {
+        "command": "claudeCode.clearChat",
+        "title": "Claude Code: 清除当前对话",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "claudeCode.sendSelection",
+        "title": "Claude Code: 发送选中代码到 Claude",
+        "icon": "$(send)"
+      },
+      {
+        "command": "claudeCode.explainSelection",
+        "title": "Claude Code: 解释选中代码"
+      },
+      {
+        "command": "claudeCode.refactorSelection",
+        "title": "Claude Code: 重构选中代码"
+      },
+      {
+        "command": "claudeCode.fixSelection",
+        "title": "Claude Code: 修复选中代码问题"
+      },
+      {
+        "command": "claudeCode.openSettings",
+        "title": "Claude Code: 打开设置",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "claudeCode.stopGeneration",
+        "title": "Claude Code: 停止生成",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "claudeCode.showSessionHistory",
+        "title": "Claude Code: 查看会话历史"
+      },
+      {
+        "command": "claudeCode.togglePanel",
+        "title": "Claude Code: 切换面板",
+        "icon": "$(layout-sidebar-right)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "claudeCode.editorSubmenu",
+          "group": "claudeCode",
+          "when": "editorHasSelection"
+        }
+      ],
+      "claudeCode.editorSubmenu": [
+        {
+          "command": "claudeCode.sendSelection",
+          "group": "1_send"
+        },
+        {
+          "command": "claudeCode.explainSelection",
+          "group": "1_send"
+        },
+        {
+          "command": "claudeCode.refactorSelection",
+          "group": "1_send"
+        },
+        {
+          "command": "claudeCode.fixSelection",
+          "group": "1_send"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "claudeCode.newChat",
+          "when": "view == claudeCode.chatView",
+          "group": "navigation"
+        },
+        {
+          "command": "claudeCode.clearChat",
+          "when": "view == claudeCode.chatView",
+          "group": "navigation"
+        },
+        {
+          "command": "claudeCode.openSettings",
+          "when": "view == claudeCode.chatView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "claudeCode.editorSubmenu",
+        "label": "Claude Code"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "claudeCode.sendSelection",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "claudeCode.newChat",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Code",
+      "properties": {
+        "claudeCode.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Claude Code CLI 路径（dist/cli.js 或 bun 可执行文件）。留空则自动检测项目根目录。"
+        },
+        "claudeCode.runtime": {
+          "type": "string",
+          "enum": ["auto", "node", "bun"],
+          "default": "auto",
+          "description": "运行时：auto（自动选择）、node（Node.js）、bun（Bun）"
+        },
+        "claudeCode.provider": {
+          "type": "string",
+          "enum": ["anthropic", "openai", "gemini", "bedrock", "vertex", "grok"],
+          "default": "anthropic",
+          "description": "AI 提供商"
+        },
+        "claudeCode.model": {
+          "type": "string",
+          "default": "",
+          "description": "模型名称（留空使用提供商默认模型）"
+        },
+        "claudeCode.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API 密钥（推荐使用环境变量 ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY）"
+        },
+        "claudeCode.openaiBaseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI 兼容端点 Base URL（如 http://localhost:11434/v1）"
+        },
+        "claudeCode.permissionMode": {
+          "type": "string",
+          "enum": ["default", "acceptEdits", "bypassPermissions"],
+          "default": "default",
+          "description": "工具权限模式：default（询问）、acceptEdits（自动接受编辑）、bypassPermissions（跳过所有权限）"
+        },
+        "claudeCode.workingDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "工作目录（留空使用当前工作区根目录）"
+        },
+        "claudeCode.autoApproveTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Read", "Glob", "Grep"],
+          "description": "自动批准的工具列表"
+        },
+        "claudeCode.maxTurns": {
+          "type": "number",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "最大对话轮次"
+        },
+        "claudeCode.enableStreaming": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用流式输出"
+        },
+        "claudeCode.showThinking": {
+          "type": "boolean",
+          "default": false,
+          "description": "显示模型思考过程"
+        },
+        "claudeCode.systemPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "附加系统提示（追加到默认系统提示后）"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.js --production",
+    "dev": "node esbuild.js --watch",
+    "lint": "eslint src --ext .ts",
+    "package": "vsce package",
+    "install-vsce": "npm install -g @vscode/vsce"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "esbuild": "^0.20.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {}
+}

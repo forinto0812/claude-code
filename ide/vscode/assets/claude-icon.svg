@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Claude 机器人图标 - 简洁风格 -->
+  <rect width="24" height="24" rx="6" fill="#CC785C"/>
+  <!-- 头部轮廓 -->
+  <circle cx="12" cy="10" r="6" fill="#F5E6D8" opacity="0.95"/>
+  <!-- 眼睛 -->
+  <circle cx="9.5" cy="9.5" r="1.2" fill="#1A1A1A"/>
+  <circle cx="14.5" cy="9.5" r="1.2" fill="#1A1A1A"/>
+  <!-- 高光 -->
+  <circle cx="9.9" cy="9.1" r="0.4" fill="white"/>
+  <circle cx="14.9" cy="9.1" r="0.4" fill="white"/>
+  <!-- 嘴巴 -->
+  <path d="M9.5 12 Q12 13.5 14.5 12" stroke="#1A1A1A" stroke-width="0.8" stroke-linecap="round" fill="none"/>
+  <!-- 身体 -->
+  <rect x="8" y="17" width="8" height="4" rx="2" fill="#F5E6D8" opacity="0.9"/>
+  <!-- 天线 -->
+  <line x1="12" y1="4" x2="12" y2="2" stroke="#F5E6D8" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="12" cy="2" r="0.8" fill="#F5E6D8"/>
+</svg>

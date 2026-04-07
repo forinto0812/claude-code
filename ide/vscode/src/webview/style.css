@@ -1,0 +1,894 @@
+/* Claude Code VSCode 插件 WebView 样式
+ * 使用 VSCode CSS 变量适配主题（深色/浅色/高对比度）
+ */
+
+/* ===== 基础重置 ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* 使用 VSCode 内置 CSS 变量 */
+  --claude-bg: var(--vscode-sideBar-background, #1e1e1e);
+  --claude-fg: var(--vscode-foreground, #cccccc);
+  --claude-border: var(--vscode-panel-border, #3c3c3c);
+  --claude-input-bg: var(--vscode-input-background, #3c3c3c);
+  --claude-input-fg: var(--vscode-input-foreground, #cccccc);
+  --claude-input-border: var(--vscode-input-border, #5a5a5a);
+  --claude-btn-bg: var(--vscode-button-background, #0e639c);
+  --claude-btn-fg: var(--vscode-button-foreground, #ffffff);
+  --claude-btn-hover: var(--vscode-button-hoverBackground, #1177bb);
+  --claude-link: var(--vscode-textLink-foreground, #3794ff);
+  --claude-code-bg: var(--vscode-textCodeBlock-background, #2d2d2d);
+  --claude-selection: var(--vscode-editor-selectionBackground, #264f78);
+  --claude-badge: var(--vscode-badge-background, #4d4d4d);
+  --claude-badge-fg: var(--vscode-badge-foreground, #ffffff);
+  --claude-warning: var(--vscode-editorWarning-foreground, #cca700);
+  --claude-error: var(--vscode-editorError-foreground, #f44747);
+  --claude-success: var(--vscode-testing-iconPassed, #73c991);
+  /* 用户消息气泡背景 */
+  --claude-user-bubble: var(--vscode-editor-selectionBackground, #264f7840);
+  /* 助手消息气泡背景 */
+  --claude-assistant-bubble: var(--vscode-editorWidget-background, #252526);
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+  color: var(--claude-fg);
+  background: var(--claude-bg);
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== 头部工具栏 ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--claude-border);
+  flex-shrink: 0;
+  gap: var(--spacing-sm);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.session-title {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--claude-fg);
+  opacity: 0.8;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--claude-badge);
+  color: var(--claude-badge-fg);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.status-badge.running {
+  background: var(--claude-btn-bg);
+  color: var(--claude-btn-fg);
+}
+
+.status-badge.error {
+  background: var(--claude-error);
+  color: #fff;
+}
+
+.status-badge.waiting {
+  background: var(--claude-warning);
+  color: #000;
+}
+
+/* ===== 图标按钮 ===== */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--claude-fg);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  opacity: 1;
+  background: var(--vscode-toolbar-hoverBackground, rgba(255,255,255,0.1));
+}
+
+.icon-btn:active {
+  opacity: 0.8;
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ===== 消息列表区域 ===== */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  scroll-behavior: smooth;
+}
+
+/* 滚动条样式 */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--claude-border);
+  border-radius: 3px;
+}
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #5a5a5a);
+}
+
+/* ===== 欢迎屏幕 ===== */
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--spacing-lg);
+  opacity: 0.7;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.welcome-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.welcome-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.welcome-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+.welcome-tips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+  max-width: 240px;
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 11px;
+  background: var(--claude-assistant-bubble);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--claude-border);
+  color: var(--claude-fg);
+  transition: background 0.15s;
+}
+
+.tip-item:hover {
+  background: var(--vscode-list-hoverBackground, rgba(255,255,255,0.05));
+}
+
+/* ===== 消息气泡 ===== */
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  animation: fadeInUp 0.2s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-items: flex-end;
+}
+
+.message.assistant {
+  align-items: flex-start;
+}
+
+.message.system {
+  align-items: center;
+}
+
+/* 消息发送者标签 */
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 0 var(--spacing-xs);
+}
+
+.message.user .message-header {
+  flex-direction: row-reverse;
+}
+
+/* 消息气泡主体 */
+.message-bubble {
+  max-width: 90%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  position: relative;
+}
+
+.message.user .message-bubble {
+  background: var(--claude-user-bubble);
+  border: 1px solid var(--claude-selection);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.message.assistant .message-bubble {
+  background: var(--claude-assistant-bubble);
+  border: 1px solid var(--claude-border);
+  border-bottom-left-radius: var(--radius-sm);
+  max-width: 100%;
+  width: 100%;
+}
+
+.message.system .message-bubble {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: var(--claude-fg);
+  opacity: 0.5;
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xs) 0;
+}
+
+/* 流式输出光标动画 */
+.message-bubble.streaming::after {
+  content: '▋';
+  display: inline-block;
+  animation: blink 0.8s step-end infinite;
+  color: var(--claude-btn-bg);
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ===== Markdown 渲染样式 ===== */
+.message-bubble p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.message-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.message-bubble code {
+  font-family: var(--vscode-editor-font-family, 'Cascadia Code', 'Courier New', monospace);
+  font-size: 0.9em;
+  background: var(--claude-code-bg);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  color: var(--vscode-textPreformat-foreground, #d7ba7d);
+}
+
+.message-bubble pre {
+  background: var(--claude-code-bg);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  overflow-x: auto;
+  margin: var(--spacing-sm) 0;
+  position: relative;
+}
+
+.message-bubble pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--claude-fg);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 代码块复制按钮 */
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--claude-border);
+  padding: var(--spacing-xs) var(--spacing-md);
+  margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) var(--spacing-md);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--claude-fg);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  opacity: 0.7;
+}
+
+.copy-btn:hover { opacity: 1; }
+
+.message-bubble h1, .message-bubble h2, .message-bubble h3 {
+  margin: var(--spacing-md) 0 var(--spacing-sm);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.message-bubble h1 { font-size: 1.2em; }
+.message-bubble h2 { font-size: 1.1em; }
+.message-bubble h3 { font-size: 1em; }
+
+.message-bubble ul, .message-bubble ol {
+  padding-left: var(--spacing-lg);
+  margin: var(--spacing-sm) 0;
+}
+
+.message-bubble li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.6;
+}
+
+.message-bubble blockquote {
+  border-left: 3px solid var(--claude-btn-bg);
+  padding-left: var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.message-bubble a {
+  color: var(--claude-link);
+  text-decoration: none;
+}
+
+.message-bubble a:hover {
+  text-decoration: underline;
+}
+
+.message-bubble table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: var(--spacing-sm) 0;
+  font-size: 12px;
+}
+
+.message-bubble th, .message-bubble td {
+  border: 1px solid var(--claude-border);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.message-bubble th {
+  background: rgba(255,255,255,0.05);
+  font-weight: 600;
+}
+
+/* ===== 工具调用区域 ===== */
+.tool-calls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.tool-call {
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-call-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.tool-call-name {
+  font-weight: 600;
+  color: var(--claude-link);
+}
+
+.tool-call-status {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.tool-call-status.pending { background: var(--claude-badge); color: var(--claude-badge-fg); }
+.tool-call-status.approved { background: var(--claude-success); color: #000; }
+.tool-call-status.denied { background: var(--claude-error); color: #fff; }
+.tool-call-status.completed { background: var(--claude-success); color: #000; }
+.tool-call-status.error { background: var(--claude-error); color: #fff; }
+
+.tool-call-body {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--claude-code-bg);
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.tool-call.expanded .tool-call-body {
+  display: block;
+}
+
+.tool-call-result {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--claude-border);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 100px;
+  overflow-y: auto;
+  opacity: 0.8;
+}
+
+.tool-call-result.error {
+  color: var(--claude-error);
+}
+
+/* ===== 思考过程区域 ===== */
+.thinking-block {
+  border: 1px dashed var(--claude-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.thinking-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 11px;
+  opacity: 0.6;
+  cursor: pointer;
+  background: rgba(255,255,255,0.02);
+}
+
+.thinking-content {
+  padding: var(--spacing-md);
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: pre-wrap;
+  display: none;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.thinking-block.expanded .thinking-content {
+  display: block;
+}
+
+/* ===== 权限审批区域 ===== */
+.permission-card {
+  border: 1px solid var(--claude-warning);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: var(--spacing-sm) 0;
+  animation: fadeInUp 0.2s ease;
+}
+
+.permission-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(204, 167, 0, 0.1);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--claude-warning);
+}
+
+.permission-body {
+  padding: var(--spacing-md);
+}
+
+.permission-tool-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--claude-link);
+  margin-bottom: var(--spacing-sm);
+}
+
+.permission-input {
+  background: var(--claude-code-bg);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  font-size: 11px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+.permission-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.permission-remember {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 11px;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.permission-remember input {
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--claude-btn-bg);
+  color: var(--claude-btn-fg);
+  border-color: var(--claude-btn-bg);
+}
+
+.btn-primary:hover { background: var(--claude-btn-hover); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--claude-error);
+  border-color: var(--claude-error);
+}
+
+.btn-danger:hover { background: rgba(244, 71, 71, 0.1); }
+
+.btn-secondary {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  border-color: var(--claude-border);
+}
+
+.btn-secondary:hover { background: var(--vscode-button-secondaryHoverBackground, #45494e); }
+
+/* ===== 输入区域 ===== */
+.input-area {
+  flex-shrink: 0;
+  border-top: 1px solid var(--claude-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background: var(--claude-bg);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  background: var(--claude-input-bg);
+  border: 1px solid var(--claude-input-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  transition: border-color 0.15s;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.message-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--claude-input-fg);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;
+  min-height: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  word-break: break-word;
+}
+
+.message-input::placeholder {
+  color: var(--vscode-input-placeholderForeground, #8c8c8c);
+}
+
+.send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--claude-btn-bg);
+  color: var(--claude-btn-fg);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+  font-size: 14px;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: var(--claude-btn-hover);
+}
+
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-btn.stop {
+  background: var(--claude-error);
+}
+
+.send-btn.stop:hover {
+  background: #cc3333;
+}
+
+/* 输入提示文字 */
+.input-hint {
+  font-size: 10px;
+  color: var(--claude-fg);
+  opacity: 0.4;
+  text-align: right;
+}
+
+/* ===== 加载动画 ===== */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--claude-fg);
+  opacity: 0.3;
+  animation: loadingDot 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes loadingDot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ===== 会话历史面板 ===== */
+.sessions-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--claude-bg);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sessions-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--claude-border);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.sessions-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  gap: var(--spacing-sm);
+  transition: background 0.15s;
+}
+
+.session-item:hover {
+  background: var(--vscode-list-hoverBackground, rgba(255,255,255,0.05));
+  border-color: var(--claude-border);
+}
+
+.session-item.active {
+  background: var(--vscode-list-activeSelectionBackground, rgba(14, 99, 156, 0.2));
+  border-color: var(--claude-btn-bg);
+}
+
+.session-item-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.session-item-title {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-item-meta {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 1px;
+}
+
+.session-delete-btn {
+  opacity: 0;
+  color: var(--claude-error);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.session-item:hover .session-delete-btn {
+  opacity: 0.7;
+}
+
+.session-delete-btn:hover {
+  opacity: 1 !important;
+}
+
+/* ===== 空状态 ===== */
+.empty-sessions {
+  text-align: center;
+  opacity: 0.5;
+  font-size: 12px;
+  padding: var(--spacing-xl);
+}
+
+/* ===== 响应式适配（窄侧边栏） ===== */
+@media (max-width: 280px) {
+  .message-bubble {
+    max-width: 100%;
+  }
+  .toolbar {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}
+
+/* ===== 可访问性 ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder, #007fd4);
+  outline-offset: 1px;
+}
