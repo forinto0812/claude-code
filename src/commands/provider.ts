@@ -155,7 +155,7 @@ const provider = {
   type: 'local',
   name: 'provider',
   description:
-    'Switch API provider (anthropic/openai/gemini/grok/bedrock/vertex/foundry)',
+    '切换 API 提供商 (anthropic/openai/gemini/grok/bedrock/vertex/foundry)',
   aliases: ['api'],
   argumentHint: '[anthropic|openai|gemini|grok|bedrock|vertex|foundry|unset]',
   supportsNonInteractive: true,

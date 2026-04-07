@@ -19,7 +19,7 @@ export function registerDreamSkill(): void {
   registerBundledSkill({
     name: 'dream',
     description:
-      'Manually trigger memory consolidation — review, organize, and prune your auto-memory files.',
+      '手动触发记忆整合 — 审查、整理和清理您的自动记忆文件。',
     whenToUse:
       'Use when the user says /dream or wants to manually consolidate memories, organize memory files, or clean up stale entries.',
     userInvocable: true,

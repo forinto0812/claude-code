@@ -164,7 +164,7 @@ export function registerSkillifySkill(): void {
   registerBundledSkill({
     name: 'skillify',
     description:
-      "Capture this session's repeatable process into a skill. Call at end of the process you want to capture with an optional description.",
+      '将此会话的可重复过程捕获为技能。在要捕获的过程结束时调用，可选择添加描述。',
     allowedTools: [
       'Read',
       'Write',

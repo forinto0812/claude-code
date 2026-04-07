@@ -1,6 +1,6 @@
 ---
 name: teach-me
-description: "Personalized 1-on-1 AI tutor. Diagnoses level, builds learning path, teaches via guided questions, tracks misconceptions. Use when user wants to learn/study/understand a topic, says 'teach me', 'help me understand', or invokes /teach-me."
+description: "个性化一对一 AI 导师。诊断水平、制定学习路径、通过引导式提问教学、追踪误解。当用户想要学习/研究/理解某个主题时说 'teach me'、'help me understand' 或调用 /teach-me 时使用。"
 ---
 
 # Teach Me

@@ -191,7 +191,7 @@ const call: LocalCommandCall = async args => {
 const bridgeKick = {
   type: 'local',
   name: 'bridge-kick',
-  description: 'Inject bridge failure states for manual recovery testing',
+  description: '注入桥接故障状态以进行手动恢复测试',
   isEnabled: () => process.env.USER_TYPE === 'ant',
   supportsNonInteractive: false,
   load: () => Promise.resolve({ call }),

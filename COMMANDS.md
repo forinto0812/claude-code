@@ -354,27 +354,63 @@
 | `master` | 接收上游更新，直接 `git pull` 即可 |
 | `translated` | 存放翻译更改，合并 master 后快速定位新命令 |
 
-### 更新流程
+### 更新流程（⚠️ 方向很重要！）
 
-1. **切换到 master 并拉取更新**：
+```bash
+# 1. 切换到 master 并拉取上游最新代码
+git checkout master
+git pull
+
+# 2. 切回 translated 分支
+git checkout translated
+
+# 3. 把上游 master 的内容合并进来（重要！）
+git merge master
+```
+
+**这个方向是正确的**：上游新增 → 自动进入你的 translated 分支
+
+### ⚠️ 危险操作：绝对不要这样做！
+
+```bash
+# ❌ 错误！方向搞反了！
+git checkout master
+git merge translated
+```
+
+**后果**：
+- 可能丢失上游 master 新增的内容
+- 可能覆盖上游的修改
+
+**比喻**：
+| 操作 | 结果 |
+|------|------|
+| 你去图书馆借书（merge master → translated） | 新书到手，旧书还在 ✅ |
+| 把你的书架复制到图书馆（merge translated → master） | 可能丢失图书馆的新书 ❌ |
+
+### 合并后检查
+
+1. 查看新增文件：
    ```bash
-   git checkout master
-   git pull origin master
+   git log --oneline master..translated  # 看你这边提交了啥
+   git log --oneline translated..master  # 看上游新增了啥（合并后这个应该有内容）
    ```
 
-2. **切换到 translated 并合并**：
-   ```bash
-   git checkout translated
-   git merge master
-   ```
+2. 打开 `/help` 检查新命令是否出现
 
-3. **处理冲突后，对照本文件的"翻译对照表"部分检查新增命令**
+3. 翻译新增的命令描述（参考"翻译对照表"部分）
 
-4. **翻译完成后提交**：
+4. 提交翻译更新：
    ```bash
    git add .
    git commit -m "翻译: 更新至 xxxx 版本"
    ```
+
+### 关于 COMMANDS.md
+
+- 这个文件在 translated 分支，**上游没有**
+- 合并上游代码时，**不会被删除或覆盖**
+- 如果在合并过程中看到冲突提示，**不要删除这个文件**
 
 ### 备份文件
 
