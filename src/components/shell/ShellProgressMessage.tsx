@@ -39,11 +39,13 @@ export function ShellProgressMessage({
     return (
       <MessageResponse>
         <OffscreenFreeze>
-          <Text dimColor>Running… </Text>
-          <ShellTimeDisplay
-            elapsedTimeSeconds={elapsedTimeSeconds}
-            timeoutMs={timeoutMs}
-          />
+          <Box width="100%">
+            <Text dimColor>Running… </Text>
+            <ShellTimeDisplay
+              elapsedTimeSeconds={elapsedTimeSeconds}
+              timeoutMs={timeoutMs}
+            />
+          </Box>
         </OffscreenFreeze>
       </MessageResponse>
     )
@@ -62,15 +64,16 @@ export function ShellProgressMessage({
   return (
     <MessageResponse>
       <OffscreenFreeze>
-        <Box flexDirection="column">
+        <Box width="100%" flexDirection="column">
           <Box
+            width="100%"
             height={verbose ? undefined : Math.min(5, lines.length)}
             flexDirection="column"
             overflow="hidden"
           >
             <Text dimColor>{displayLines}</Text>
           </Box>
-          <Box flexDirection="row" gap={1}>
+          <Box width="100%" flexDirection="row" gap={1}>
             {lineStatus ? <Text dimColor>{lineStatus}</Text> : null}
             <ShellTimeDisplay
               elapsedTimeSeconds={elapsedTimeSeconds}

@@ -100,15 +100,17 @@ export function AssistantToolUseMessage({
     if (isQueued || isResolved) return null;
     return (
       <Box flexDirection="column" width="100%" backgroundColor={bg}>
-        {renderToolUseProgressMessage(
-          tool,
-          tools,
-          lookups,
-          param.id,
-          progressMessagesForMessage,
-          { verbose, inProgressToolCallCount, isTranscriptMode },
-          terminalSize,
-        )}
+        <ToolUseProgressRenderer
+          tool={tool}
+          tools={tools}
+          lookups={lookups}
+          toolUseID={param.id}
+          progressMessagesForMessage={progressMessagesForMessage}
+          verbose={verbose}
+          inProgressToolCallCount={inProgressToolCallCount}
+          isTranscriptMode={isTranscriptMode}
+          terminalSize={terminalSize}
+        />
       </Box>
     );
   }
@@ -185,19 +187,17 @@ export function AssistantToolUseMessage({
               <Text dimColor>Waiting for permission…</Text>
             </MessageResponse>
           ) : (
-            renderToolUseProgressMessage(
-              tool,
-              tools,
-              lookups,
-              param.id,
-              progressMessagesForMessage,
-              {
-                verbose,
-                inProgressToolCallCount,
-                isTranscriptMode,
-              },
-              terminalSize,
-            )
+            <ToolUseProgressRenderer
+              tool={tool}
+              tools={tools}
+              lookups={lookups}
+              toolUseID={param.id}
+              progressMessagesForMessage={progressMessagesForMessage}
+              verbose={verbose}
+              inProgressToolCallCount={inProgressToolCallCount}
+              isTranscriptMode={isTranscriptMode}
+              terminalSize={terminalSize}
+            />
           ))}
         {!isResolved && isQueued && renderToolUseQueuedMessage(tool)}
       </Box>
@@ -218,28 +218,33 @@ function renderToolUseMessage(
   }
 }
 
-function renderToolUseProgressMessage(
-  tool: Tool,
-  tools: Tools,
-  lookups: ReturnType<typeof buildMessageLookups>,
-  toolUseID: string,
-  progressMessagesForMessage: ProgressMessage[],
-  {
-    verbose,
-    inProgressToolCallCount,
-    isTranscriptMode,
-  }: {
-    verbose: boolean;
-    inProgressToolCallCount?: number;
-    isTranscriptMode?: boolean;
-  },
-  terminalSize: { columns: number; rows: number },
-): React.ReactNode {
+function ToolUseProgressRenderer({
+  tool,
+  tools,
+  lookups,
+  toolUseID,
+  progressMessagesForMessage,
+  verbose,
+  inProgressToolCallCount,
+  isTranscriptMode,
+  terminalSize,
+}: {
+  tool: Tool;
+  tools: Tools;
+  lookups: ReturnType<typeof buildMessageLookups>;
+  toolUseID: string;
+  progressMessagesForMessage: ProgressMessage[];
+  verbose: boolean;
+  inProgressToolCallCount?: number;
+  isTranscriptMode?: boolean;
+  terminalSize: { columns: number; rows: number };
+}): React.ReactNode {
   const toolProgressMessages = progressMessagesForMessage.filter(
     (msg): msg is ProgressMessage<ToolProgressData> => msg.data.type !== 'hook_progress',
   );
+  let toolMessages: React.ReactNode = null;
   try {
-    const toolMessages =
+    toolMessages =
       tool.renderToolUseProgressMessage?.(toolProgressMessages, {
         tools,
         verbose,
@@ -247,24 +252,25 @@ function renderToolUseProgressMessage(
         inProgressToolCallCount: inProgressToolCallCount ?? 1,
         isTranscriptMode,
       }) ?? null;
-    return (
-      <>
-        <SentryErrorBoundary>
-          <HookProgressMessage
-            hookEvent="PreToolUse"
-            lookups={lookups}
-            toolUseID={toolUseID}
-            verbose={verbose}
-            isTranscriptMode={isTranscriptMode}
-          />
-        </SentryErrorBoundary>
-        {toolMessages}
-      </>
-    );
   } catch (error) {
     logError(new Error(`Error rendering tool use progress message for ${tool.name}: ${error}`));
-    return null;
+    toolMessages = null;
   }
+
+  return (
+    <>
+      <SentryErrorBoundary>
+        <HookProgressMessage
+          hookEvent="PreToolUse"
+          lookups={lookups}
+          toolUseID={toolUseID}
+          verbose={verbose}
+          isTranscriptMode={isTranscriptMode}
+        />
+      </SentryErrorBoundary>
+      {toolMessages}
+    </>
+  );
 }
 
 function renderToolUseQueuedMessage(tool: Tool): React.ReactNode {

@@ -8,7 +8,10 @@ import { errorMessage } from '../../utils/errors.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { logMCPError } from '../../utils/log.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-import { isOutputLineTruncated } from '../../utils/terminal.js'
+import {
+  getTruncationTerminalWidth,
+  isOutputLineTruncated,
+} from '../../utils/terminal.js'
 import { DESCRIPTION, LIST_MCP_RESOURCES_TOOL_NAME, PROMPT } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 
@@ -103,7 +106,7 @@ export const ListMcpResourcesTool = buildTool({
   userFacingName: () => 'listMcpResources',
   renderToolResultMessage,
   isResultTruncated(output: Output): boolean {
-    return isOutputLineTruncated(jsonStringify(output))
+    return isOutputLineTruncated(jsonStringify(output), getTruncationTerminalWidth())
   },
   mapToolResultToToolResultBlockParam(content, toolUseID) {
     if (!content || content.length === 0) {

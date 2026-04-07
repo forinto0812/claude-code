@@ -13,6 +13,7 @@
 
 import type { ClientRequest, IncomingMessage } from 'http'
 import WebSocket from 'ws'
+import OpenAI, { toFile } from 'openai'
 import { getOauthConfig } from '../constants/oauth.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
@@ -22,6 +23,7 @@ import {
 import { logForDebugging } from '../utils/debug.js'
 import { getUserAgent } from '../utils/http.js'
 import { logError } from '../utils/log.js'
+import { getAPIProvider } from '../utils/model/providers.js'
 import { getWebSocketTLSOptions } from '../utils/mtls.js'
 import { getWebSocketProxyAgent, getWebSocketProxyUrl } from '../utils/proxy.js'
 import { jsonParse, jsonStringify } from '../utils/slowOperations.js'
@@ -71,6 +73,8 @@ export type VoiceStreamConnection = {
   isConnected: () => boolean
 }
 
+export type VoiceSttProvider = 'anthropic-oauth' | 'openai'
+
 // The voice_stream endpoint returns transcript chunks and endpoint markers.
 type VoiceStreamTranscriptText = {
   type: 'TranscriptText'
@@ -95,23 +99,170 @@ type VoiceStreamMessage =
 
 // ─── Availability ──────────────────────────────────────────────────────
 
-export function isVoiceStreamAvailable(): boolean {
-  // voice_stream uses the same OAuth as Claude Code — available when the
-  // user is authenticated with Anthropic (Claude.ai subscriber or has
-  // valid OAuth tokens).
-  if (!isAnthropicAuthEnabled()) {
-    return false
+export function getVoiceSttProvider(): VoiceSttProvider | null {
+  const provider = getAPIProvider()
+  if (provider === 'openai' && process.env.OPENAI_API_KEY) {
+    return 'openai'
   }
-  const tokens = getClaudeAIOAuthTokens()
-  return tokens !== null && tokens.accessToken !== null
+
+  try {
+    if (isAnthropicAuthEnabled()) {
+      const tokens = getClaudeAIOAuthTokens()
+      if (tokens !== null && tokens.accessToken !== null) {
+        return 'anthropic-oauth'
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+export function isVoiceStreamAvailable(): boolean {
+  return getVoiceSttProvider() !== null
+}
+
+export function getVoiceModeAvailability(): {
+  provider: VoiceSttProvider | null
+  available: boolean
+} {
+  const provider = getVoiceSttProvider()
+  return {
+    provider,
+    available: provider !== null,
+  }
 }
 
 // ─── Connection ────────────────────────────────────────────────────────
+
+function getVoiceOpenAIConfig(): {
+  apiKey: string
+  baseURL: string | undefined
+  model: string
+} {
+  return {
+    apiKey: process.env.OPENAI_API_KEY ?? '',
+    baseURL: process.env.OPENAI_BASE_URL,
+    model:
+      process.env.OPENAI_TRANSCRIPTION_MODEL ||
+      process.env.OPENAI_MODEL ||
+      'gpt-4o-mini-transcribe',
+  }
+}
+
+function encodePcm16LeAsWav(pcm: Buffer): Buffer {
+  const sampleRate = 16_000
+  const channels = 1
+  const bitsPerSample = 16
+  const byteRate = sampleRate * channels * (bitsPerSample / 8)
+  const blockAlign = channels * (bitsPerSample / 8)
+  const header = Buffer.alloc(44)
+
+  header.write('RIFF', 0)
+  header.writeUInt32LE(36 + pcm.length, 4)
+  header.write('WAVE', 8)
+  header.write('fmt ', 12)
+  header.writeUInt32LE(16, 16)
+  header.writeUInt16LE(1, 20)
+  header.writeUInt16LE(channels, 22)
+  header.writeUInt32LE(sampleRate, 24)
+  header.writeUInt32LE(byteRate, 28)
+  header.writeUInt16LE(blockAlign, 32)
+  header.writeUInt16LE(bitsPerSample, 34)
+  header.write('data', 36)
+  header.writeUInt32LE(pcm.length, 40)
+
+  return Buffer.concat([header, pcm])
+}
+
+function createOpenAITranscriptionConnection(
+  callbacks: VoiceStreamCallbacks,
+  options?: { language?: string; keyterms?: string[] },
+): VoiceStreamConnection {
+  const chunks: Buffer[] = []
+  let connected = true
+  let finalized = false
+
+  return {
+    send(audioChunk: Buffer): void {
+      if (finalized) return
+      chunks.push(Buffer.from(audioChunk))
+    },
+    async finalize(): Promise<FinalizeSource> {
+      if (finalized) return 'ws_already_closed'
+      finalized = true
+      connected = false
+
+      if (chunks.length === 0) {
+        callbacks.onClose()
+        return 'no_data_timeout'
+      }
+
+      try {
+        const { apiKey, baseURL, model } = getVoiceOpenAIConfig()
+
+        const client = new OpenAI({
+          apiKey,
+          ...(baseURL && { baseURL }),
+          maxRetries: 0,
+          timeout: parseInt(process.env.API_TIMEOUT_MS || String(600 * 1000), 10),
+          dangerouslyAllowBrowser: true,
+        })
+
+        const audio = encodePcm16LeAsWav(Buffer.concat(chunks))
+        const file = await toFile(audio, 'voice-input.wav', {
+          type: 'audio/wav',
+        })
+        const transcription = await client.audio.transcriptions.create({
+          file,
+          model,
+          language: options?.language,
+          prompt: options?.keyterms?.length
+            ? `Key terms: ${options.keyterms.join(', ')}`
+            : undefined,
+          response_format: 'verbose_json',
+        })
+
+        const text = transcription.text?.trim() ?? ''
+        if (text) {
+          callbacks.onTranscript(text, true)
+        }
+        callbacks.onClose()
+        return text ? 'post_closestream_endpoint' : 'no_data_timeout'
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        callbacks.onError(`Transcription failed: ${message}`)
+        callbacks.onClose()
+        return 'safety_timeout'
+      }
+    },
+    close(): void {
+      finalized = true
+      connected = false
+      callbacks.onClose()
+    },
+    isConnected(): boolean {
+      return connected && !finalized
+    },
+  }
+}
 
 export async function connectVoiceStream(
   callbacks: VoiceStreamCallbacks,
   options?: { language?: string; keyterms?: string[] },
 ): Promise<VoiceStreamConnection | null> {
+  const provider = getVoiceSttProvider()
+  if (!provider) {
+    return null
+  }
+
+  if (provider !== 'anthropic-oauth') {
+    const connection = createOpenAITranscriptionConnection(callbacks, options)
+    callbacks.onReady(connection)
+    return connection
+  }
+
   // Ensure OAuth token is fresh before connecting
   await checkAndRefreshOAuthTokenIfNeeded()
 

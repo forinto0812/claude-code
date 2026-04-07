@@ -480,6 +480,24 @@ export function renderToolUseProgressMessage(
     isTranscriptMode?: boolean;
   },
 ): React.ReactNode {
+  const toolUseCount = count(progressMessages, msg => {
+    if (!hasProgressMessage(msg.data)) {
+      return false;
+    }
+    const message = msg.data.message;
+    return message.message.content.some(content => content.type === 'tool_use');
+  });
+
+  const agentMessages = progressMessages
+    .filter((msg): msg is ProgressMessage<AgentToolProgress> => hasProgressMessage(msg.data))
+    .map(msg => msg.data.message);
+
+  const tokens = agentMessages.length ? resolveAgentTotalTokens(agentMessages) : 0;
+  const progressStats: AgentProgressStats = {
+    toolUseCount,
+    tokens: tokens > 0 ? tokens : null,
+  };
+
   if (!progressMessages.length) {
     return (
       <MessageResponse height={1}>
@@ -493,24 +511,6 @@ export function renderToolUseProgressMessage(
   const toolToolRenderLinesEstimate = (inProgressToolCallCount ?? 1) * ESTIMATED_LINES_PER_TOOL + TERMINAL_BUFFER_LINES;
   const shouldUseCondensedMode =
     !isTranscriptMode && terminalSize && terminalSize.rows && terminalSize.rows < toolToolRenderLinesEstimate;
-
-  const progressStats = React.useMemo<AgentProgressStats>(() => {
-    const toolUseCount = count(progressMessages, msg => {
-      if (!hasProgressMessage(msg.data)) {
-        return false;
-      }
-      const message = msg.data.message;
-      return message.message.content.some(content => content.type === 'tool_use');
-    });
-
-    const agentMessages = progressMessages
-      .filter((msg): msg is ProgressMessage<AgentToolProgress> => hasProgressMessage(msg.data))
-      .map(msg => msg.data.message);
-
-    const tokens = agentMessages.length ? resolveAgentTotalTokens(agentMessages) : 0;
-
-    return { toolUseCount, tokens: tokens > 0 ? tokens : null };
-  }, [progressMessages]);
 
   if (shouldUseCondensedMode) {
     const { toolUseCount, tokens } = progressStats;

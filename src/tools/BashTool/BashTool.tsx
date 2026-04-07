@@ -66,7 +66,10 @@ import { semanticNumber } from '../../utils/semanticNumber.js'
 import { EndTruncatingAccumulator } from '../../utils/stringUtils.js'
 import { getTaskOutputPath } from '../../utils/task/diskOutput.js'
 import { TaskOutput } from '../../utils/task/TaskOutput.js'
-import { isOutputLineTruncated } from '../../utils/terminal.js'
+import {
+  getTruncationTerminalWidth,
+  isOutputLineTruncated,
+} from '../../utils/terminal.js'
 import {
   buildLargeToolResultMessage,
   ensureToolResultsDir,
@@ -1093,10 +1096,11 @@ export const BashTool = buildTool({
     }
   },
   renderToolUseErrorMessage,
-  isResultTruncated(output: Out): boolean {
+  isResultTruncated(output: Out, { terminalSize }): boolean {
+    const columns = getTruncationTerminalWidth(terminalSize?.columns)
     return (
-      isOutputLineTruncated(output.stdout) ||
-      isOutputLineTruncated(output.stderr)
+      isOutputLineTruncated(output.stdout, columns) ||
+      isOutputLineTruncated(output.stderr, columns)
     )
   },
 } satisfies ToolDef<InputSchema, Out, BashProgress>)

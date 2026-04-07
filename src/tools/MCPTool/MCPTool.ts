@@ -2,7 +2,10 @@ import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import type { PermissionResult } from '../../utils/permissions/PermissionResult.js'
-import { isOutputLineTruncated } from '../../utils/terminal.js'
+import {
+  getTruncationTerminalWidth,
+  isOutputLineTruncated,
+} from '../../utils/terminal.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'
 import {
   renderToolResultMessage,
@@ -65,7 +68,7 @@ export const MCPTool = buildTool({
   renderToolUseProgressMessage,
   renderToolResultMessage,
   isResultTruncated(output: Output): boolean {
-    return isOutputLineTruncated(output)
+    return isOutputLineTruncated(output, getTruncationTerminalWidth())
   },
   mapToolResultToToolResultBlockParam(content, toolUseID) {
     return {

@@ -11,7 +11,10 @@ import {
   persistBinaryContent,
 } from '../../utils/mcpOutputStorage.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-import { isOutputLineTruncated } from '../../utils/terminal.js'
+import {
+  getTruncationTerminalWidth,
+  isOutputLineTruncated,
+} from '../../utils/terminal.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'
 import {
   renderToolResultMessage,
@@ -146,7 +149,7 @@ export const ReadMcpResourceTool = buildTool({
   userFacingName,
   renderToolResultMessage,
   isResultTruncated(output: Output): boolean {
-    return isOutputLineTruncated(jsonStringify(output))
+    return isOutputLineTruncated(jsonStringify(output), getTruncationTerminalWidth())
   },
   mapToolResultToToolResultBlockParam(content, toolUseID) {
     return {

@@ -1,8 +1,11 @@
 import { normalizeLanguageForSTT } from '../../hooks/useVoice.js'
 import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js'
 import { logEvent } from '../../services/analytics/index.js'
+import {
+  getVoiceModeAvailability,
+  type VoiceSttProvider,
+} from '../../services/voiceStreamSTT.js'
 import type { LocalCommandCall } from '../../types/command.js'
-import { isAnthropicAuthEnabled } from '../../utils/auth.js'
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
 import { settingsChangeDetector } from '../../utils/settings/changeDetector.js'
 import {
@@ -13,21 +16,18 @@ import { isVoiceModeEnabled } from '../../voice/voiceModeEnabled.js'
 
 const LANG_HINT_MAX_SHOWS = 2
 
+function getVoiceProviderLabel(provider: VoiceSttProvider): string {
+  return provider === 'anthropic-oauth' ? 'Claude.ai OAuth' : 'API key STT'
+}
+
 export const call: LocalCommandCall = async () => {
-  // Check auth and kill-switch before allowing voice mode
-  if (!isVoiceModeEnabled()) {
-    // Differentiate: OAuth-less users get an auth hint, everyone else
-    // gets nothing (command shouldn't be reachable when the kill-switch is on).
-    if (!isAnthropicAuthEnabled()) {
-      return {
-        type: 'text' as const,
-        value:
-          'Voice mode requires a Claude.ai account. Please run /login to sign in.',
-      }
-    }
+  // Check provider and kill-switch before allowing voice mode
+  const { provider, available } = getVoiceModeAvailability()
+  if (!isVoiceModeEnabled() || !available || !provider) {
     return {
       type: 'text' as const,
-      value: 'Voice mode is not available.',
+      value:
+        'Voice mode is not available. Configure Claude.ai OAuth or a supported API key provider first.',
     }
   }
 
@@ -55,9 +55,6 @@ export const call: LocalCommandCall = async () => {
   }
 
   // Toggle ON — run pre-flight checks first
-  const { isVoiceStreamAvailable } = await import(
-    '../../services/voiceStreamSTT.js'
-  )
   const { checkRecordingAvailability } = await import('../../services/voice.js')
 
   // Check recording availability (microphone access)
@@ -67,15 +64,6 @@ export const call: LocalCommandCall = async () => {
       type: 'text' as const,
       value:
         recording.reason ?? 'Voice mode is not available in this environment.',
-    }
-  }
-
-  // Check for API key
-  if (!isVoiceStreamAvailable()) {
-    return {
-      type: 'text' as const,
-      value:
-        'Voice mode requires a Claude.ai account. Please run /login to sign in.',
     }
   }
 
@@ -145,6 +133,6 @@ export const call: LocalCommandCall = async () => {
   }
   return {
     type: 'text' as const,
-    value: `Voice mode enabled. Hold ${key} to record.${langNote}`,
+    value: `Voice mode enabled (${getVoiceProviderLabel(provider)}). Hold ${key} to record.${langNote}`,
   }
 }
