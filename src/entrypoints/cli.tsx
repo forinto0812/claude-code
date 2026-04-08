@@ -1,5 +1,12 @@
 // Runtime polyfill for bun:bundle (build-time macros)
-const feature = (_name: string) => false;
+// Configurable via CLAUDE_FEATURE_FLAGS env var (comma-separated list of flag names)
+const _enabledFeatures = new Set(
+    (process.env.CLAUDE_FEATURE_FLAGS || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+);
+const feature = (name: string) => _enabledFeatures.has(name);
 if (typeof globalThis.MACRO === "undefined") {
     (globalThis as any).MACRO = {
         VERSION: "2.1.888",

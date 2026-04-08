@@ -1,0 +1,99 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "includes": ["src/**"]
+    },
+    "formatter": {
+        "enabled": false,
+        "indentStyle": "space",
+        "indentWidth": 2,
+        "lineWidth": 100
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single",
+            "semicolons": "asNeeded"
+        }
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "complexity": {
+                "noExtraBooleanCast": "warn",
+                "noForEach": "off",
+                "noUselessTypeConstraint": "off",
+                "noUselessFragments": "warn",
+                "noUselessEmptyExport": "off",
+                "noStaticOnlyClass": "off",
+                "noUselessConstructor": "off",
+                "useOptionalChain": "off"
+            },
+            "correctness": {
+                "noUnusedVariables": "off",
+                "noUnusedImports": "off",
+                "useExhaustiveDependencies": "off",
+                "noUndeclaredVariables": "off",
+                "noUnusedFunctionParameters": "off",
+                "noSwitchDeclarations": "off",
+                "noVoidTypeReturn": "off",
+                "noInvalidUseBeforeDeclaration": "off"
+            },
+            "style": {
+                "useConst": "off",
+                "noNonNullAssertion": "off",
+                "noParameterAssign": "off",
+                "useDefaultParameterLast": "off",
+                "useImportType": "off",
+                "noUnusedTemplateLiteral": "off",
+                "useTemplate": "off",
+                "useSingleVarDeclarator": "off",
+                "useNumberNamespace": "off",
+                "noUselessElse": "off",
+                "useNodejsImportProtocol": "off",
+                "useEnumInitializers": "off",
+                "noInferrableTypes": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "noAssignInExpressions": "off",
+                "noDoubleEquals": "off",
+                "noImplicitAnyLet": "off",
+                "noRedeclare": "off",
+                "noFallthroughSwitchClause": "off",
+                "noAsyncPromiseExecutor": "off",
+                "noConfusingVoidType": "off",
+                "noConsole": "off",
+                "noPrototypeBuiltins": "off",
+                "noShadowRestrictedNames": "off",
+                "noGlobalAssign": "off",
+                "noUnsafeDeclarationMerging": "off",
+                "noEmptyInterface": "off",
+                "noThenProperty": "off",
+                "noMisleadingCharacterClass": "off"
+            },
+            "performance": {
+                "noAccumulatingSpread": "off",
+                "noDelete": "off"
+            },
+            "a11y": {
+                "recommended": false
+            },
+            "security": {
+                "noDangerouslySetInnerHtml": "off"
+            }
+        }
+    },
+    "assist": {
+        "actions": {
+            "source": {
+                "organizeImports": "off"
+            }
+        }
+    }
+}

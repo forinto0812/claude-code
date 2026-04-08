@@ -102,7 +102,11 @@ export {
   COORDINATOR_MODE_ALLOWED_TOOLS,
 } from './constants/tools.js'
 import { feature } from 'bun:bundle'
-// Dead code elimination: conditional import for OVERFLOW_TEST_TOOL
+import { isFeatureEnabled } from './utils/featureFlags.js'
+// Conditional tool imports.
+// Tools with complete implementations use runtime isFeatureEnabled() so they can
+// be toggled via CLAUDE_FEATURE_FLAGS env var. Tools with only stubs/prompts
+// still use build-time feature() for dead code elimination.
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const OverflowTestTool = feature('OVERFLOW_TEST_TOOL')
   ? require('./tools/OverflowTestTool/OverflowTestTool.js').OverflowTestTool
