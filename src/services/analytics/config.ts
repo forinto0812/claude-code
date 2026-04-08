@@ -5,7 +5,7 @@
  * across all analytics systems (Datadog, 1P)
  */
 
-import { isEnvTruthy } from '../../utils/envUtils.js'
+import { getAPIProvider } from '../../utils/model/providers.js'
 import { isTelemetryDisabled } from '../../utils/privacyLevel.js'
 
 /**
@@ -13,15 +13,13 @@ import { isTelemetryDisabled } from '../../utils/privacyLevel.js'
  *
  * Analytics is disabled in the following cases:
  * - Test environment (NODE_ENV === 'test')
- * - Third-party cloud providers (Bedrock/Vertex)
+ * - Third-party model providers (OpenAI/Gemini/Grok/Bedrock/Vertex/Foundry)
  * - Privacy level is no-telemetry or essential-traffic
  */
 export function isAnalyticsDisabled(): boolean {
   return (
     process.env.NODE_ENV === 'test' ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
+    getAPIProvider() !== 'firstParty' ||
     isTelemetryDisabled()
   )
 }

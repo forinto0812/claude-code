@@ -1,5 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk'
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
+import { randomUUID } from 'crypto'
 import {
   getLastApiCompletionTimestamp,
   setLastApiCompletionTimestamp,
@@ -14,9 +15,22 @@ import { logEvent } from '../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../services/analytics/metadata.js'
 import { getAPIMetadata } from '../services/api/claude.js'
 import { getAnthropicClient } from '../services/api/client.js'
+import { getGrokClient } from '../services/api/grok/client.js'
+import { resolveGrokModel } from '../services/api/grok/modelMapping.js'
+import { getOpenAIClient } from '../services/api/openai/client.js'
+import { anthropicMessagesToOpenAI } from '../services/api/openai/convertMessages.js'
+import {
+  anthropicToolChoiceToOpenAI,
+  anthropicToolsToOpenAI,
+} from '../services/api/openai/convertTools.js'
+import { resolveOpenAIModel } from '../services/api/openai/modelMapping.js'
 import { getModelBetas, modelSupportsStructuredOutputs } from './betas.js'
 import { computeFingerprint } from './fingerprint.js'
+import { safeParseJSON } from './json.js'
+import { createAssistantMessage, createUserMessage } from './messages.js'
 import { normalizeModelStringForAPI } from './model/model.js'
+import { getAPIProvider } from './model/providers.js'
+import { asSystemPrompt } from './systemPromptType.js'
 
 type MessageParam = Anthropic.MessageParam
 type TextBlockParam = Anthropic.TextBlockParam
@@ -78,6 +92,200 @@ function extractFirstUserMessageText(messages: MessageParam[]): string {
   return textBlock?.type === 'text' ? textBlock.text : ''
 }
 
+function toSystemPrompt(system?: string | TextBlockParam[]) {
+  return asSystemPrompt(
+    (Array.isArray(system)
+      ? system.map(block => block.text)
+      : system
+        ? [system]
+        : []
+    ).filter(Boolean),
+  )
+}
+
+function toInternalMessages(messages: MessageParam[]) {
+  return messages.flatMap(message => {
+    if (message.role === 'assistant') {
+      return [
+        createAssistantMessage({
+          content:
+            typeof message.content === 'string'
+              ? message.content
+              : (message.content as BetaMessage['content']),
+        }),
+      ]
+    }
+
+    if (message.role === 'user') {
+      return [
+        createUserMessage({
+          content:
+            typeof message.content === 'string'
+              ? message.content
+              : message.content,
+        }),
+      ]
+    }
+
+    return []
+  })
+}
+
+function extractOpenAIResponseText(content: unknown): string {
+  if (typeof content === 'string') {
+    return content
+  }
+
+  if (!Array.isArray(content)) {
+    return ''
+  }
+
+  return content
+    .map(part => {
+      if (!part || typeof part !== 'object') {
+        return ''
+      }
+
+      if ('text' in part && typeof part.text === 'string') {
+        return part.text
+      }
+
+      if ('refusal' in part && typeof part.refusal === 'string') {
+        return part.refusal
+      }
+
+      return ''
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+
+function normalizeOpenAIToolInput(input: string): string | unknown {
+  const parsed = safeParseJSON(input)
+  return parsed === null && input.length > 0 ? input : (parsed ?? {})
+}
+
+function mapOpenAIFinishReason(
+  reason: string | null | undefined,
+  hasToolCalls: boolean,
+): BetaMessage['stop_reason'] {
+  if (hasToolCalls) {
+    return 'tool_use'
+  }
+
+  switch (reason) {
+    case 'length':
+      return 'max_tokens'
+    case 'tool_calls':
+      return 'tool_use'
+    case 'stop':
+    case 'content_filter':
+    default:
+      return 'end_turn'
+  }
+}
+
+async function sideQueryViaOpenAICompatibleProvider(
+  opts: SideQueryOptions,
+  provider: 'grok' | 'openai',
+): Promise<BetaMessage> {
+  const internalMessages = toInternalMessages(opts.messages)
+  const systemPrompt = toSystemPrompt(opts.system)
+  const openaiMessages = anthropicMessagesToOpenAI(
+    internalMessages,
+    systemPrompt,
+  )
+  const openaiTools = opts.tools
+    ? anthropicToolsToOpenAI(opts.tools as BetaToolUnion[])
+    : undefined
+  const openaiToolChoice = anthropicToolChoiceToOpenAI(opts.tool_choice)
+  const resolvedModel =
+    provider === 'grok'
+      ? resolveGrokModel(opts.model)
+      : resolveOpenAIModel(opts.model)
+
+  const client =
+    provider === 'grok'
+      ? getGrokClient({
+          maxRetries: opts.maxRetries ?? 2,
+          source: opts.querySource,
+        })
+      : getOpenAIClient({
+          maxRetries: opts.maxRetries ?? 2,
+          source: opts.querySource,
+        })
+
+  const responseFormat = opts.output_format
+    ? {
+        type: 'json_schema' as const,
+        json_schema: {
+          name: 'side_query',
+          schema: opts.output_format.schema,
+          strict: true,
+        },
+      }
+    : undefined
+
+  const response = await client.chat.completions.create(
+    {
+      model: resolvedModel,
+      messages: openaiMessages,
+      ...(openaiTools && openaiTools.length > 0 && { tools: openaiTools }),
+      ...(openaiToolChoice && { tool_choice: openaiToolChoice }),
+      ...(responseFormat && { response_format: responseFormat }),
+      ...(opts.max_tokens !== undefined && {
+        max_completion_tokens: opts.max_tokens,
+      }),
+      ...(opts.temperature !== undefined && { temperature: opts.temperature }),
+      ...(opts.stop_sequences && { stop: opts.stop_sequences }),
+    },
+    {
+      signal: opts.signal,
+    },
+  )
+
+  const choice = response.choices[0]
+  const toolCalls = choice?.message.tool_calls ?? []
+  const text = extractOpenAIResponseText(choice?.message.content)
+  const content: BetaMessage['content'] = []
+
+  if (text) {
+    content.push({ type: 'text', text })
+  }
+
+  for (const toolCall of toolCalls) {
+    if (toolCall.type !== 'function') {
+      continue
+    }
+
+    content.push({
+      type: 'tool_use',
+      id: toolCall.id ?? randomUUID(),
+      name: toolCall.function.name,
+      input: normalizeOpenAIToolInput(toolCall.function.arguments),
+    })
+  }
+
+  return {
+    id: response.id ?? randomUUID(),
+    type: 'message',
+    role: 'assistant',
+    model: response.model || resolvedModel,
+    content,
+    stop_reason: mapOpenAIFinishReason(
+      choice?.finish_reason,
+      toolCalls.length > 0,
+    ),
+    stop_sequence: null,
+    usage: {
+      input_tokens: response.usage?.prompt_tokens ?? 0,
+      output_tokens: response.usage?.completion_tokens ?? 0,
+      cache_creation_input_tokens: 0,
+      cache_read_input_tokens: 0,
+    },
+  } as BetaMessage
+}
+
 /**
  * Lightweight API wrapper for "side queries" outside the main conversation loop.
  *
@@ -121,81 +329,94 @@ export async function sideQuery(opts: SideQueryOptions): Promise<BetaMessage> {
     stop_sequences,
   } = opts
 
-  const client = await getAnthropicClient({
-    maxRetries,
-    model,
-    source: 'side_query',
-  })
-  const betas = [...getModelBetas(model)]
-  // Add structured-outputs beta if using output_format and provider supports it
-  if (
-    output_format &&
-    modelSupportsStructuredOutputs(model) &&
-    !betas.includes(STRUCTURED_OUTPUTS_BETA_HEADER)
-  ) {
-    betas.push(STRUCTURED_OUTPUTS_BETA_HEADER)
-  }
-
-  // Extract first user message text for fingerprint
-  const messageText = extractFirstUserMessageText(messages)
-
-  // Compute fingerprint for OAuth attribution
-  const fingerprint = computeFingerprint(messageText, MACRO.VERSION)
-  const attributionHeader = getAttributionHeader(fingerprint)
-
-  // Build system as array to keep attribution header in its own block
-  // (prevents server-side parsing from including system content in cc_entrypoint)
-  const systemBlocks: TextBlockParam[] = [
-    attributionHeader ? { type: 'text', text: attributionHeader } : null,
-    // Skip CLI system prompt prefix for internal classifiers that provide their own prompt
-    ...(skipSystemPromptPrefix
-      ? []
-      : [
-          {
-            type: 'text' as const,
-            text: getCLISyspromptPrefix({
-              isNonInteractive: false,
-              hasAppendSystemPrompt: false,
-            }),
-          },
-        ]),
-    ...(Array.isArray(system)
-      ? system
-      : system
-        ? [{ type: 'text' as const, text: system }]
-        : []),
-  ].filter((block): block is TextBlockParam => block !== null)
-
-  let thinkingConfig: BetaThinkingConfigParam | undefined
-  if (thinking === false) {
-    thinkingConfig = { type: 'disabled' }
-  } else if (thinking !== undefined) {
-    thinkingConfig = {
-      type: 'enabled',
-      budget_tokens: Math.min(thinking, max_tokens - 1),
-    }
-  }
-
+  const provider = getAPIProvider()
   const normalizedModel = normalizeModelStringForAPI(model)
   const start = Date.now()
-  // biome-ignore lint/plugin: this IS the wrapper that handles OAuth attribution
-  const response = await client.beta.messages.create(
-    {
-      model: normalizedModel,
-      max_tokens,
-      system: systemBlocks,
-      messages,
-      ...(tools && { tools }),
-      ...(tool_choice && { tool_choice }),
-      ...(output_format && { output_config: { format: output_format } }),
-      ...(temperature !== undefined && { temperature }),
-      ...(stop_sequences && { stop_sequences }),
-      ...(thinkingConfig && { thinking: thinkingConfig }),
-      ...(betas.length > 0 && { betas }),
-      metadata: getAPIMetadata(),
-    },
-    { signal },
-  )
+
+  const response =
+    provider === 'openai' || provider === 'grok'
+      ? await sideQueryViaOpenAICompatibleProvider(opts, provider)
+      : await (async () => {
+          const client = await getAnthropicClient({
+            maxRetries,
+            model,
+            source: 'side_query',
+          })
+          const betas = [...getModelBetas(model)]
+          // Add structured-outputs beta if using output_format and provider supports it
+          if (
+            output_format &&
+            modelSupportsStructuredOutputs(model) &&
+            !betas.includes(STRUCTURED_OUTPUTS_BETA_HEADER)
+          ) {
+            betas.push(STRUCTURED_OUTPUTS_BETA_HEADER)
+          }
+
+          // Extract first user message text for fingerprint computation.
+          // This stays first-party only: OpenAI-compatible providers should not
+          // see Anthropic attribution headers in their prompt text.
+          const messageText = extractFirstUserMessageText(messages)
+
+          // Compute fingerprint for OAuth attribution
+          const fingerprint = computeFingerprint(messageText, MACRO.VERSION)
+          const attributionHeader = getAttributionHeader(fingerprint)
+
+          // Build system as array to keep attribution header in its own block
+          // (prevents server-side parsing from including system content in cc_entrypoint)
+          const systemBlocks: TextBlockParam[] = [
+            attributionHeader
+              ? { type: 'text', text: attributionHeader }
+              : null,
+            // Skip CLI system prompt prefix for internal classifiers that provide their own prompt
+            ...(skipSystemPromptPrefix
+              ? []
+              : [
+                  {
+                    type: 'text' as const,
+                    text: getCLISyspromptPrefix({
+                      isNonInteractive: false,
+                      hasAppendSystemPrompt: false,
+                    }),
+                  },
+                ]),
+            ...(Array.isArray(system)
+              ? system
+              : system
+                ? [{ type: 'text' as const, text: system }]
+                : []),
+          ].filter((block): block is TextBlockParam => block !== null)
+
+          let thinkingConfig: BetaThinkingConfigParam | undefined
+          if (thinking === false) {
+            thinkingConfig = { type: 'disabled' }
+          } else if (thinking !== undefined) {
+            thinkingConfig = {
+              type: 'enabled',
+              budget_tokens: Math.min(thinking, max_tokens - 1),
+            }
+          }
+
+          // biome-ignore lint/plugin: this IS the wrapper that handles OAuth attribution
+          return client.beta.messages.create(
+            {
+              model: normalizedModel,
+              max_tokens,
+              system: systemBlocks,
+              messages,
+              ...(tools && { tools }),
+              ...(tool_choice && { tool_choice }),
+              ...(output_format && {
+                output_config: { format: output_format },
+              }),
+              ...(temperature !== undefined && { temperature }),
+              ...(stop_sequences && { stop_sequences }),
+              ...(thinkingConfig && { thinking: thinkingConfig }),
+              ...(betas.length > 0 && { betas }),
+              metadata: getAPIMetadata(),
+            },
+            { signal },
+          )
+        })()
 
   const requestId =
     (response as { _request_id?: string | null })._request_id ?? undefined
