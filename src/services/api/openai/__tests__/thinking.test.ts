@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach, afterEach } from 'bun:test'
-import { isOpenAIThinkingEnabled } from '../index.js'
+import { isOpenAIThinkingEnabled, buildOpenAIRequestBody } from '../index.js'
 
 describe('isOpenAIThinkingEnabled', () => {
   const originalEnv = {
@@ -12,8 +12,13 @@ describe('isOpenAIThinkingEnabled', () => {
   })
 
   afterEach(() => {
-    // Restore original env var
-    process.env.OPENAI_ENABLE_THINKING = originalEnv.OPENAI_ENABLE_THINKING
+    // Restore original env var — delete key if it was originally undefined
+    // to avoid leaking the env key into subsequent tests
+    if (originalEnv.OPENAI_ENABLE_THINKING === undefined) {
+      delete process.env.OPENAI_ENABLE_THINKING
+    } else {
+      process.env.OPENAI_ENABLE_THINKING = originalEnv.OPENAI_ENABLE_THINKING
+    }
   })
 
   describe('OPENAI_ENABLE_THINKING env var', () => {
@@ -140,53 +145,82 @@ describe('isOpenAIThinkingEnabled', () => {
   })
 })
 
-describe('thinking request parameters', () => {
-  // Note: These tests verify the request body structure indirectly.
-  // The actual API call is mocked in integration tests.
-  // Here we document the expected parameter formats:
+describe('buildOpenAIRequestBody — thinking params', () => {
+  const baseParams = {
+    model: 'deepseek-reasoner',
+    messages: [{ role: 'user', content: 'hello' }],
+    tools: [] as any[],
+    toolChoice: undefined as any,
+  }
 
-  test('documents official DeepSeek API format: thinking: { type: "enabled" }', () => {
-    // Official DeepSeek API expects:
-    const officialFormat = {
-      thinking: { type: 'enabled' },
-    }
-    expect(officialFormat.thinking.type).toBe('enabled')
+  test('includes official DeepSeek API thinking format when enabled', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: true })
+    expect(body.thinking).toEqual({ type: 'enabled' })
   })
 
-  test('documents vLLM/self-hosted format: enable_thinking + chat_template_kwargs', () => {
-    // Self-hosted DeepSeek-V3.2/vLLM expects:
-    const vllmFormat = {
-      enable_thinking: true,
-      chat_template_kwargs: { thinking: true },
-    }
-    expect(vllmFormat.enable_thinking).toBe(true)
-    expect(vllmFormat.chat_template_kwargs.thinking).toBe(true)
+  test('includes vLLM/self-hosted thinking format when enabled', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: true })
+    expect(body.enable_thinking).toBe(true)
+    expect(body.chat_template_kwargs).toEqual({ thinking: true })
   })
 
-  test('both formats are added simultaneously when thinking is enabled', () => {
-    // The implementation adds both formats so each endpoint
-    // can use the one it recognizes:
-    const combinedFormat = {
-      // Official DeepSeek API format
-      thinking: { type: 'enabled' },
-      // Self-hosted DeepSeek-V3.2/vLLM format
-      enable_thinking: true,
-      chat_template_kwargs: { thinking: true },
-    }
-    expect(combinedFormat.thinking.type).toBe('enabled')
-    expect(combinedFormat.enable_thinking).toBe(true)
-    expect(combinedFormat.chat_template_kwargs.thinking).toBe(true)
+  test('includes both formats simultaneously when enabled', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: true })
+    expect(body.thinking).toEqual({ type: 'enabled' })
+    expect(body.enable_thinking).toBe(true)
+    expect(body.chat_template_kwargs.thinking).toBe(true)
   })
 
-  test('thinking params are NOT added when thinking is disabled', () => {
-    // When thinking is disabled, none of these params should be present:
-    const disabledFormat = {
-      model: 'gpt-4o',
-      messages: [],
-      stream: true,
-    }
-    expect((disabledFormat as any).thinking).toBeUndefined()
-    expect((disabledFormat as any).enable_thinking).toBeUndefined()
-    expect((disabledFormat as any).chat_template_kwargs).toBeUndefined()
+  test('does NOT include thinking params when disabled', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: false })
+    expect(body.thinking).toBeUndefined()
+    expect(body.enable_thinking).toBeUndefined()
+    expect(body.chat_template_kwargs).toBeUndefined()
+  })
+
+  test('always includes stream and stream_options', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: false })
+    expect(body.stream).toBe(true)
+    expect(body.stream_options).toEqual({ include_usage: true })
+  })
+
+  test('includes temperature when thinking is off and override is set', () => {
+    const body = buildOpenAIRequestBody({
+      ...baseParams,
+      enableThinking: false,
+      temperatureOverride: 0.7,
+    })
+    expect(body.temperature).toBe(0.7)
+  })
+
+  test('excludes temperature when thinking is on even if override is set', () => {
+    const body = buildOpenAIRequestBody({
+      ...baseParams,
+      enableThinking: true,
+      temperatureOverride: 0.7,
+    })
+    expect(body.temperature).toBeUndefined()
+  })
+
+  test('excludes temperature when thinking is off and no override', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: false })
+    expect(body.temperature).toBeUndefined()
+  })
+
+  test('includes tools and tool_choice when tools are provided', () => {
+    const body = buildOpenAIRequestBody({
+      ...baseParams,
+      tools: [{ type: 'function', function: { name: 'test' } }],
+      toolChoice: 'auto',
+      enableThinking: false,
+    })
+    expect(body.tools).toHaveLength(1)
+    expect(body.tool_choice).toBe('auto')
+  })
+
+  test('excludes tools when empty', () => {
+    const body = buildOpenAIRequestBody({ ...baseParams, enableThinking: false })
+    expect(body.tools).toBeUndefined()
+    expect(body.tool_choice).toBeUndefined()
   })
 })

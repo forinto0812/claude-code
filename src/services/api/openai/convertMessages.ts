@@ -59,12 +59,20 @@ export function anthropicMessagesToOpenAI(
       }
       if (msg.type === 'user' && hasSeenAssistant) {
         const content = msg.message.content
-        const hasText = typeof content === 'string'
+        // A user message starts a new turn if it contains any non-tool_result content
+        // (text, image, or other media). Tool results alone do NOT start a new turn
+        // because they are continuations of the previous assistant tool call.
+        const startsNewUserTurn = typeof content === 'string'
           ? content.length > 0
           : Array.isArray(content) && content.some(
-              (b: any) => typeof b === 'string' || b.type === 'text',
+              (b: any) =>
+                typeof b === 'string' ||
+                (b &&
+                  typeof b === 'object' &&
+                  'type' in b &&
+                  b.type !== 'tool_result'),
             )
-        if (hasText) {
+        if (startsNewUserTurn) {
           turnBoundaries.add(i)
         }
       }

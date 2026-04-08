@@ -64,6 +64,53 @@ export function isOpenAIThinkingEnabled(model: string): boolean {
 }
 
 /**
+ * Build the request body for OpenAI chat.completions.create().
+ * Extracted for testability — the thinking mode params are injected here.
+ *
+ * DeepSeek thinking mode: inject thinking params via request body.
+ * Two formats are added simultaneously to support different deployments:
+ * - Official DeepSeek API: `thinking: { type: 'enabled' }`
+ * - Self-hosted DeepSeek-V3.2: `enable_thinking: true` + `chat_template_kwargs: { thinking: true }`
+ * OpenAI SDK passes unknown keys through to the HTTP body.
+ * Each endpoint will use the format it recognizes and ignore the others.
+ * @internal Exported for testing purposes only
+ */
+export function buildOpenAIRequestBody(params: {
+  model: string
+  messages: any[]
+  tools: any[]
+  toolChoice: any
+  enableThinking: boolean
+  temperatureOverride?: number
+}): Record<string, any> {
+  const { model, messages, tools, toolChoice, enableThinking, temperatureOverride } = params
+  return {
+    model,
+    messages,
+    ...(tools.length > 0 && {
+      tools,
+      ...(toolChoice && { tool_choice: toolChoice }),
+    }),
+    stream: true,
+    stream_options: { include_usage: true },
+    // DeepSeek thinking mode: enable chain-of-thought output.
+    // When active, temperature/top_p/presence_penalty/frequency_penalty are ignored by DeepSeek.
+    ...(enableThinking && {
+      // Official DeepSeek API format
+      thinking: { type: 'enabled' },
+      // Self-hosted DeepSeek-V3.2 format
+      enable_thinking: true,
+      chat_template_kwargs: { thinking: true },
+    }),
+    // Only send temperature when thinking mode is off (DeepSeek ignores it anyway,
+    // but other providers may respect it)
+    ...(!enableThinking && temperatureOverride !== undefined && {
+      temperature: temperatureOverride,
+    }),
+  }
+}
+
+/**
  * OpenAI-compatible query path. Converts Anthropic-format messages/tools to
  * OpenAI format, calls the OpenAI-compatible endpoint, and converts the
  * SSE stream back to Anthropic BetaRawMessageStreamEvent for consumption
@@ -177,40 +224,17 @@ export async function* queryModelOpenAI(
     )
 
     // 11. Call OpenAI API with streaming
-    // DeepSeek thinking mode: inject thinking params via request body.
-    // Two formats are added simultaneously to support different deployments:
-    // - Official DeepSeek API: `thinking: { type: 'enabled' }`
-    // - Self-hosted DeepSeek-V3.2: `enable_thinking: true` + `chat_template_kwargs: { thinking: true }`
-    // OpenAI SDK passes unknown keys through to the HTTP body.
-    // Each endpoint will use the format it recognizes and ignore the others.
+    const requestBody = buildOpenAIRequestBody({
+      model: openaiModel,
+      messages: openaiMessages,
+      tools: openaiTools,
+      toolChoice: openaiToolChoice,
+      enableThinking,
+      temperatureOverride: options.temperatureOverride,
+    })
     const stream = await client.chat.completions.create(
-      {
-        model: openaiModel,
-        messages: openaiMessages,
-        ...(openaiTools.length > 0 && {
-          tools: openaiTools,
-          ...(openaiToolChoice && { tool_choice: openaiToolChoice }),
-        }),
-        stream: true,
-        stream_options: { include_usage: true },
-        // DeepSeek thinking mode: enable chain-of-thought output.
-        // When active, temperature/top_p/presence_penalty/frequency_penalty are ignored by DeepSeek.
-        ...(enableThinking && {
-          // Official DeepSeek API format
-          thinking: { type: 'enabled' },
-          // Self-hosted DeepSeek-V3.2 format
-          enable_thinking: true,
-          chat_template_kwargs: { thinking: true },
-        }),
-        // Only send temperature when thinking mode is off (DeepSeek ignores it anyway,
-        // but other providers may respect it)
-        ...(!enableThinking && options.temperatureOverride !== undefined && {
-          temperature: options.temperatureOverride,
-        }),
-      },
-      {
-        signal,
-      },
+      requestBody,
+      { signal },
     )
 
     // 12. Convert OpenAI stream to Anthropic events, then process into
