@@ -24,6 +24,7 @@ import {
 import { logForDebugging } from '../../../utils/debug.js'
 import { addToTotalSessionCost } from '../../../cost-tracker.js'
 import { calculateUSDCost } from '../../../utils/modelCost.js'
+import { isEnvTruthy, isEnvDefinedFalsy } from '../../../utils/envUtils.js'
 import type { Options } from '../claude.js'
 import { randomUUID } from 'crypto'
 import {
@@ -38,6 +39,29 @@ import {
   isDeferredTool,
   TOOL_SEARCH_TOOL_NAME,
 } from '../../../tools/ToolSearchTool/prompt.js'
+
+/**
+ * Detect whether DeepSeek-style thinking mode should be enabled.
+ *
+ * Enabled when:
+ * 1. OPENAI_ENABLE_THINKING=1 is set (explicit enable), OR
+ * 2. Model name contains "deepseek-reasoner" OR "DeepSeek-V3.2" (auto-detect, case-insensitive)
+ *
+ * Disabled when:
+ * - OPENAI_ENABLE_THINKING=0/false/no/off is explicitly set (overrides model detection)
+ *
+ * @param model - The resolved OpenAI model name
+ * @internal Exported for testing purposes only
+ */
+export function isOpenAIThinkingEnabled(model: string): boolean {
+  // Explicit disable takes priority (overrides model auto-detect)
+  if (isEnvDefinedFalsy(process.env.OPENAI_ENABLE_THINKING)) return false
+  // Explicit enable
+  if (isEnvTruthy(process.env.OPENAI_ENABLE_THINKING)) return true
+  // Auto-detect from model name (deepseek-reasoner and DeepSeek-V3.2 support thinking mode)
+  const modelLower = model.toLowerCase()
+  return modelLower.includes('deepseek-reasoner') || modelLower.includes('deepseek-v3.2')
+}
 
 /**
  * OpenAI-compatible query path. Converts Anthropic-format messages/tools to
@@ -120,10 +144,10 @@ export async function* queryModelOpenAI(
     )
 
     // 8. Convert messages and tools to OpenAI format
-    const openaiMessages = anthropicMessagesToOpenAI(
-      messagesForAPI,
-      systemPrompt,
-    )
+    const enableThinking = isOpenAIThinkingEnabled(openaiModel)
+    const openaiMessages = anthropicMessagesToOpenAI(messagesForAPI, systemPrompt, {
+      enableThinking,
+    })
     const openaiTools = anthropicToolsToOpenAI(standardTools)
     const openaiToolChoice = anthropicToolChoiceToOpenAI(options.toolChoice)
 
@@ -149,10 +173,16 @@ export async function* queryModelOpenAI(
     })
 
     logForDebugging(
-      `[OpenAI] Calling model=${openaiModel}, messages=${openaiMessages.length}, tools=${openaiTools.length}`,
+      `[OpenAI] Calling model=${openaiModel}, messages=${openaiMessages.length}, tools=${openaiTools.length}, thinking=${enableThinking}`,
     )
 
     // 11. Call OpenAI API with streaming
+    // DeepSeek thinking mode: inject thinking params via request body.
+    // Two formats are added simultaneously to support different deployments:
+    // - Official DeepSeek API: `thinking: { type: 'enabled' }`
+    // - Self-hosted DeepSeek-V3.2: `enable_thinking: true` + `chat_template_kwargs: { thinking: true }`
+    // OpenAI SDK passes unknown keys through to the HTTP body.
+    // Each endpoint will use the format it recognizes and ignore the others.
     const stream = await client.chat.completions.create(
       {
         model: openaiModel,
@@ -163,7 +193,18 @@ export async function* queryModelOpenAI(
         }),
         stream: true,
         stream_options: { include_usage: true },
-        ...(options.temperatureOverride !== undefined && {
+        // DeepSeek thinking mode: enable chain-of-thought output.
+        // When active, temperature/top_p/presence_penalty/frequency_penalty are ignored by DeepSeek.
+        ...(enableThinking && {
+          // Official DeepSeek API format
+          thinking: { type: 'enabled' },
+          // Self-hosted DeepSeek-V3.2 format
+          enable_thinking: true,
+          chat_template_kwargs: { thinking: true },
+        }),
+        // Only send temperature when thinking mode is off (DeepSeek ignores it anyway,
+        // but other providers may respect it)
+        ...(!enableThinking && options.temperatureOverride !== undefined && {
           temperature: options.temperatureOverride,
         }),
       },
@@ -172,8 +213,8 @@ export async function* queryModelOpenAI(
       },
     )
 
-    // 7. Convert OpenAI stream to Anthropic events, then process into
-    //    AssistantMessage + StreamEvent (matching the Anthropic path behavior)
+    // 12. Convert OpenAI stream to Anthropic events, then process into
+    //     AssistantMessage + StreamEvent (matching the Anthropic path behavior)
     const adaptedStream = adaptOpenAIStreamToAnthropic(stream, openaiModel)
 
     // Accumulate content blocks and usage, same as the Anthropic path in claude.ts
