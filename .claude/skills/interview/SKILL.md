@@ -1,6 +1,6 @@
 ---
 name: interview
-description: "Interview me about my requirements"
+description: "通过深入提问来了解我的需求"
 ---
 
 Analyze these requirements "$ARGUMENTS" and interview me in detail using the AskUserQuestionTool about literally anything: technical implementation, UI & UX, concerns, tradeoffs, etc. but make sure the questions are not obvious.

@@ -191,7 +191,7 @@ import stats from './commands/stats/index.js'
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: '生成分析 Claude Code 会话的报告',
   contentLength: 0,
   progressMessage: 'analyzing your sessions',
   source: 'builtin',

@@ -17,7 +17,7 @@ export function registerClaudeInChromeSkill(): void {
   registerBundledSkill({
     name: 'claude-in-chrome',
     description:
-      'Automates your Chrome browser to interact with web pages - clicking elements, filling forms, capturing screenshots, reading console logs, and navigating sites. Opens pages in new tabs within your existing Chrome session. Requires site-level permissions before executing (configured in the extension).',
+      '自动化您的 Chrome 浏览器与网页交互——点击元素、填写表单、捕获截图、读取控制台日志和导航网站。在现有 Chrome 会话中以新标签页打开页面。执行前需要网站级权限（在扩展中配置）。',
     whenToUse:
       'When the user wants to interact with web pages, automate browser tasks, capture screenshots, read console logs, or perform any browser-based actions. Always invoke BEFORE attempting to use any mcp__claude-in-chrome__* tools.',
     allowedTools: CLAUDE_IN_CHROME_MCP_TOOLS,

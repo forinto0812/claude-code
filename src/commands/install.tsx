@@ -298,7 +298,7 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
 export const install = {
   type: 'local-jsx' as const,
   name: 'install',
-  description: 'Install Claude Code native build',
+  description: '安装 Claude Code 原生构建',
   argumentHint: '[options]',
   async call(
     onDone: (

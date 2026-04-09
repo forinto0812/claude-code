@@ -8,7 +8,7 @@ import { registerBundledSkill } from '../bundledSkills.js'
 export function registerCronListSkill(): void {
   registerBundledSkill({
     name: 'cron-list',
-    description: 'List all scheduled cron jobs in this session',
+    description: '列出此会话中所有计划任务',
     whenToUse:
       'When the user wants to see their scheduled/recurring tasks, check active cron jobs, or review what is currently looping.',
     userInvocable: true,
@@ -27,7 +27,7 @@ export function registerCronListSkill(): void {
 export function registerCronDeleteSkill(): void {
   registerBundledSkill({
     name: 'cron-delete',
-    description: 'Cancel a scheduled cron job by ID',
+    description: '按 ID 取消计划任务',
     whenToUse:
       'When the user wants to cancel, stop, or remove a scheduled/recurring task or cron job.',
     argumentHint: '<job-id>',

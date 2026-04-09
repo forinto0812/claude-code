@@ -14,7 +14,7 @@ const remoteControlServer = {
   name: 'remote-control-server',
   aliases: ['rcs'],
   description:
-    'Start a persistent Remote Control server (daemon) that accepts multiple sessions',
+    '启动持久化远程控制服务器（守护进程）以接受多个会话',
   isEnabled,
   get isHidden() {
     return !isEnabled()
