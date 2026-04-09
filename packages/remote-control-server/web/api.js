@@ -4,10 +4,20 @@
 
 const BASE = ""; // same origin
 
+function generateUuid() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts (HTTP without localhost)
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
+  );
+}
+
 export function getUuid() {
   let uuid = localStorage.getItem("rcs_uuid");
   if (!uuid) {
-    uuid = crypto.randomUUID();
+    uuid = generateUuid();
     localStorage.setItem("rcs_uuid", uuid);
   }
   return uuid;
