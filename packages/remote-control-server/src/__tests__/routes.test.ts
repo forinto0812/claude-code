@@ -26,8 +26,10 @@ import { issueToken } from "../auth/token";
 import v1Sessions from "../routes/v1/sessions";
 import v1Environments from "../routes/v1/environments";
 import v1EnvironmentsWork from "../routes/v1/environments.work";
+import v1SessionIngress from "../routes/v1/session-ingress";
 import v2CodeSessions from "../routes/v2/code-sessions";
 import v2Worker from "../routes/v2/worker";
+import v2WorkerEvents from "../routes/v2/worker-events";
 import webAuth from "../routes/web/auth";
 import webSessions from "../routes/web/sessions";
 import webControl from "../routes/web/control";
@@ -38,8 +40,10 @@ function createApp() {
   app.route("/v1/sessions", v1Sessions);
   app.route("/v1/environments", v1Environments);
   app.route("/v1/environments", v1EnvironmentsWork);
+  app.route("/v2/session_ingress", v1SessionIngress);
   app.route("/v1/code/sessions", v2CodeSessions);
   app.route("/v1/code/sessions", v2Worker);
+  app.route("/v1/code/sessions", v2WorkerEvents);
   app.route("/web", webAuth);
   app.route("/web", webSessions);
   app.route("/web", webControl);
@@ -625,5 +629,136 @@ describe("Web Environment Routes", () => {
   test("GET /web/environments — requires UUID", async () => {
     const res = await app.request("/web/environments");
     expect(res.status).toBe(401);
+  });
+});
+
+describe("V1 Session Ingress Routes (HTTP)", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    storeReset();
+    for (const [key] of getAllEventBuses()) {
+      removeEventBus(key);
+    }
+    process.env.RCS_API_KEYS = "test-api-key";
+    app = createApp();
+  });
+
+  test("POST /v2/session_ingress/session/:sessionId/events — ingests events with API key", async () => {
+    // Create session first
+    const sessRes = await app.request("/v1/sessions", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const { id } = await sessRes.json();
+
+    const res = await app.request(`/v2/session_ingress/session/${id}/events`, {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ events: [{ type: "assistant", content: "response" }] }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("ok");
+  });
+
+  test("POST /v2/session_ingress/session/:sessionId/events — rejects without auth", async () => {
+    const res = await app.request("/v2/session_ingress/session/nope/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ events: [] }),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  test("POST /v2/session_ingress/session/:sessionId/events — 404 for unknown session", async () => {
+    const res = await app.request("/v2/session_ingress/session/nope/events", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ events: [{ type: "user", content: "hi" }] }),
+    });
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("V2 Worker Events Routes", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    storeReset();
+    for (const [key] of getAllEventBuses()) {
+      removeEventBus(key);
+    }
+    process.env.RCS_API_KEYS = "test-api-key";
+    app = createApp();
+  });
+
+  test("POST /v1/code/sessions/:id/worker/events — publishes worker events", async () => {
+    // Create session
+    const sessRes = await app.request("/v1/sessions", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const { id } = await sessRes.json();
+
+    const res = await app.request(`/v1/code/sessions/${id}/worker/events`, {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify([{ type: "assistant", content: "response" }]),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("ok");
+    expect(body.count).toBe(1);
+  });
+
+  test("PUT /v1/code/sessions/:id/worker/state — updates session status", async () => {
+    const sessRes = await app.request("/v1/sessions", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const { id } = await sessRes.json();
+
+    const res = await app.request(`/v1/code/sessions/${id}/worker/state`, {
+      method: "PUT",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "running" }),
+    });
+    expect(res.status).toBe(200);
+  });
+
+  test("PUT /v1/code/sessions/:id/worker/external_metadata — no-op", async () => {
+    const sessRes = await app.request("/v1/sessions", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const { id } = await sessRes.json();
+
+    const res = await app.request(`/v1/code/sessions/${id}/worker/external_metadata`, {
+      method: "PUT",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ meta: "data" }),
+    });
+    expect(res.status).toBe(200);
+  });
+
+  test("POST /v1/code/sessions/:id/worker/events/:eventId/delivery — no-op", async () => {
+    const sessRes = await app.request("/v1/sessions", {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const { id } = await sessRes.json();
+
+    const res = await app.request(`/v1/code/sessions/${id}/worker/events/evt123/delivery`, {
+      method: "POST",
+      headers: { ...AUTH_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "received" }),
+    });
+    expect(res.status).toBe(200);
   });
 });
